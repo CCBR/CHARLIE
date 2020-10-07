@@ -1,0 +1,37 @@
+{
+    "__default__": {
+        "gres": "lscratch:256",
+        "mem": "20g",
+        "partition": "norm,ccr",
+        "threads": "2",
+        "time": "1:00:00"
+    },
+    "cutadapt": {
+        "mem": "120g",
+        "threads": "56",
+        "time": "24:00:00",
+        "partition": "norm,ccr",
+        "gres": "lscratch:256"
+    },
+    "ciri": {
+        "mem": "400g",
+        "threads": "56",
+        "time": "24:00:00",
+        "partition": "largemem",
+        "gres": "lscratch:256"
+    },
+    "star1p": {
+        "mem": "400g",
+        "threads": "56",
+        "time": "24:00:00",
+        "partition": "largemem",
+        "gres": "lscratch:256"
+    },
+    "star2p": {
+        "mem": "400g",
+        "threads": "56",
+        "time": "48:00:00",
+        "partition": "largemem",
+        "gres": "lscratch:256"
+    }    
+}
