@@ -20,8 +20,9 @@ REFFA="/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
 #test
 
 #SAMPLES=["C14_2_1","C14_2_2","C14_2_3","C911_1","C911_2","C911_3","GI1_N","GI1_T","GI2_N","GI2_T","GI3_N","GI3_T","GI4_N","GI4_T","GI5_N","GI5_T","GI6_N","GI6_T","LN1_T","NT_1","NT_2","NT_3","Skin1_N","Skin1_T","Skin2_N","Skin2_T","Skin3_N","Skin3_T","Skin4_N","Skin4_T","Skin5_N","Skin5_T","Skin6_N","Skin6_T","Skin7_N","Skin7_T","Skin8_N","Skin8_T","SLK_17_C","SLK_17_G","SLK_20_C","SLK_20_G","SLK_26_C","SLK_26_G","sampleinput_1","sampleinput_2","ORF57IPsample_1","ORF57IPsample_2"]
-# SAMPLES=['C14_2_1', 'C14_2_2', 'C14_2_3', 'C911_1', 'C911_2', 'C911_3', 'GI1_N', 'GI1_T', 'GI2_N', 'GI2_T', 'GI3_N', 'GI3_T', 'GI4_N', 'GI4_T', 'GI5_N', 'GI5_T', 'GI6_N', 'GI6_T', 'HK1M', 'HK1R', 'HK3M', 'HK3R', 'Infected25HC_1', 'Infected25HC_2', 'Infected25HC_3', 'Infected25HC_4', 'InfectedVehicle_1', 'InfectedVehicle_2', 'InfectedVehicle_3', 'InfectedVehicle_4', 'KS041411_RNase', 'KS041411_total', 'LN1_T', 'Mock25HC_1', 'Mock25HC_2', 'Mock25HC_3', 'Mock25HC_4', 'MockVehicle_1', 'MockVehicle_2', 'MockVehicle_3', 'MockVehicle_4', 'NT_1', 'NT_2', 'NT_3', 'Skin1_N', 'Skin1_T', 'Skin2_N', 'Skin2_T', 'Skin3_N', 'Skin3_T', 'Skin4_N', 'Skin4_T', 'Skin5_N', 'Skin5_T', 'Skin6_N', 'Skin6_T', 'Skin7_N', 'Skin7_T', 'Skin8_N', 'Skin8_T', 'SLK_17_C', 'SLK_17_G', 'SLK_20_C', 'SLK_20_G', 'SLK_26_C', 'SLK_26_G', 'BCBL1_induced', 'BCBL1_uninduced', "sampleinput_1", "sampleinput_2", "ORF57IPsample_1", "ORF57IPsample_2" ]
-SAMPLES=["GI1_N", "GI1_T"]
+#SAMPLES=["BCBL1_induced", "BCBL1_uninduced", "C14_2_1", "C14_2_2", "C14_2_3", "C911_1", "C911_2", "C911_3", "GI1_N", "GI1_T", "GI2_N", "GI2_T", "GI3_N", "GI3_T", "GI4_N", "GI4_T", "GI5_N", "GI5_T", "GI6_N", "GI6_T", "HK1M", "HK1R", "HK3M", "HK3R", "Infected25HC_1", "Infected25HC_2", "Infected25HC_3", "Infected25HC_4", "InfectedVehicle_1", "InfectedVehicle_2", "InfectedVehicle_3", "InfectedVehicle_4", "KS041411_RNase", "KS041411_total", "LN1_T", "Mock25HC_1", "Mock25HC_2", "Mock25HC_3", "Mock25HC_4", "MockVehicle_1", "MockVehicle_2", "MockVehicle_3", "MockVehicle_4", "NT_1", "NT_2", "NT_3", "Skin1_N", "Skin1_T", "Skin2_N", "Skin2_T", "Skin3_N", "Skin3_T", "Skin4_N", "Skin4_T", "Skin5_N", "Skin5_T", "Skin6_N", "Skin6_T", "Skin7_N", "Skin7_T", "Skin8_N", "Skin8_T", "SLK_17_C", "SLK_17_G", "SLK_20_C", "SLK_20_G", "SLK_26_C", "SLK_26_G", "GSM3543750_SRR8401383_1", "GSM3543751_SRR8401384_1", "GSM3258253_SRR7474063", "GSM3258256_SRR7474066_1", "GSM3258259_SRR7474069_1", "GSM3258260_SRR7474070_1", "GSM3258262_SRR7474072", "GSM3258264_SRR7474074_1", "GSM3258265_SRR7474075_1", "GSM3258268_SRR7474078_1", "GSM3258269_SRR7474079", "GSM3309421_SRR7611489", "GSM3309422_SRR7611490", "GSM3309423_SRR7611491", "GSM3309424_SRR7611492_1", "GSM3309425_SRR7611493", "GSM3309426_SRR7611494_1", "GSM3309427_SRR7611495_1", "GSM3309428_SRR7611496_1", "GSM3309429_SRR7611497", "GSM3309430_SRR7611498"]
+SAMPLES=["BCBL1_induced", "BCBL1_uninduced", "C14_2_1", "C14_2_2", "C14_2_3", "C911_1", "C911_2", "C911_3", "GI1_N", "GI1_T", "GI2_N", "GI2_T", "GI3_N", "GI3_T", "GI4_N", "GI4_T", "GI5_N", "GI5_T", "GI6_N", "GI6_T", "HK1M", "HK1R", "HK3M", "HK3R", "Infected25HC_1", "Infected25HC_2", "Infected25HC_3", "Infected25HC_4", "InfectedVehicle_1", "InfectedVehicle_2", "InfectedVehicle_3", "InfectedVehicle_4", "KS041411_RNase", "KS041411_total", "LN1_T", "Mock25HC_1", "Mock25HC_2", "Mock25HC_3", "Mock25HC_4", "MockVehicle_1", "MockVehicle_2", "MockVehicle_3", "MockVehicle_4", "NT_1", "NT_2", "NT_3", "Skin1_N", "Skin1_T", "Skin2_N", "Skin2_T", "Skin3_N", "Skin3_T", "Skin4_N", "Skin4_T", "Skin5_N", "Skin5_T", "Skin6_N", "Skin6_T", "Skin7_N", "Skin7_T", "Skin8_N", "Skin8_T", "SLK_17_C", "SLK_17_G", "SLK_20_C", "SLK_20_G", "SLK_26_C", "SLK_26_G", "GSM3258253_SRR7474063", "GSM3258256_SRR7474066", "GSM3258259_SRR7474069", "GSM3258260_SRR7474070", "GSM3258262_SRR7474072", "GSM3258264_SRR7474074", "GSM3258265_SRR7474075", "GSM3258268_SRR7474078", "GSM3258269_SRR7474079", "GSM3309421_SRR7611489", "GSM3309422_SRR7611490", "GSM3309423_SRR7611491", "GSM3309424_SRR7611492", "GSM3309425_SRR7611493", "GSM3309426_SRR7611494", "GSM3309427_SRR7611495", "GSM3309428_SRR7611496", "GSM3309429_SRR7611497", "GSM3309430_SRR7611498", "GSM3543750_SRR8401383", "GSM3543751_SRR8401384" ]
+# SAMPLES=["GI1_N", "GI1_T","GI2_N", "GI2_T"]
 WORKDIR="/data/Ziegelbauer_lab/circRNADetection/ccbr983_v3"
 
 rule all:
@@ -78,7 +79,7 @@ rule star1p:
 		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
 	output:
 		junction=join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"),
-		bam=temp(join(WORKDIR,"STAR1p","{sample}.Aligned.out.bam"))
+		bam=temp(join(WORKDIR,"STAR1p","{sample}_p1.Aligned.out.bam"))
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
@@ -170,7 +171,7 @@ STAR --genomeDir {params.starindexdir} \
 --chimSegmentMin 20 \
 --chimOutType Junctions \
 --chimMultimapNmax 10 \
---limitSjdbInsertNsj 3000000 \
+--limitSjdbInsertNsj 5000000 \
 --alignTranscriptsPerReadNmax 2000000 \
 --outSAMtype BAM Unsorted \
 --alignEndsProtrude 10 ConcordantPair \
