@@ -253,3 +253,17 @@ perl {params.ciripl} \
 -A {params.gtf} \
 -G {output.cirilog} -T {threads}
 """
+
+rule create_ciri_count_matrix:
+	input:
+		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES)
+	output:
+		join(WORKDIR,"ciri_count_matrix.txt"),
+		join(WORKDIR,"ciri_count_matrix_with_annotations.txt")
+	params:
+		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py")
+		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
+	shell:"""
+module load python/3.8
+python {params.script} {lookup}
+
