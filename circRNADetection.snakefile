@@ -36,17 +36,6 @@ rule all:
 		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES),
 		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES)
 
-# rule index_rl:
-# 	input:
-# 		fq=join(WORKDIR,"fastqs","{sample}.R1.fastq.gz")
-# 	output:
-# 		rl=join(WORKDIR,"trim","{sample}.index_rl")
-# 	params:
-# 		sample="{sample}",
-# 		workdir=WORKDIR
-# 	shell:"""
-# python {params.workdir}/get_index_rl.py {input.fq} > {output.rl}
-# """
 
 rule cutadapt:
 	input:
@@ -181,45 +170,6 @@ STAR --genomeDir {params.starindexdir} \
 --sjdbOverhang $overhang
 """
 
-# rule kshv_only_back_spliced_bed:
-# 	input:
-# 		join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction")
-# 	output:
-# 		join(WORKDIR,"{sample}","{sample}_chrKSHV_only.back_spliced_junction.bed")
-# 	params:
-# 		sample="{sample}",
-# 		workdir=WORKDIR,
-# 		circexplorerversion=CIRCEXPLORER_VERSION,
-# 		scriptsdir=SCRIPTS_DIR
-# 	threads: 1
-# 	shell:"""
-# module load circexplorer2/{params.circexplorerversion}
-# cd {params.workdir}
-# python {params.scriptsdir}/filter_junction.py {input} > {params.sample}/{params.sample}_chrKSHV_only_Chimeric.out.junction
-# cd {params.sample}
-# CIRCexplorer2 parse -t STAR {params.sample}_chrKSHV_only_Chimeric.out.junction > {params.sample}_chrKSHV_only_Chimeric.out.junction_parse.log 2>&1
-# mv back_spliced_junction.bed {params.sample}_chrKSHV_only.back_spliced_junction.bed
-# """
-
-# rule human_only_back_spliced_bed:
-# 	input:
-# 		join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction")
-# 	output:
-# 		join(WORKDIR,"{sample}","{sample}_human_only.back_spliced_junction.bed")
-# 	params:
-# 		sample="{sample}",
-# 		workdir=WORKDIR,
-# 		circexplorerversion=CIRCEXPLORER_VERSION,
-# 		scriptsdir=SCRIPTS_DIR
-# 	threads: 1
-# 	shell:"""
-# module load circexplorer2/{params.circexplorerversion}
-# cd {params.workdir}
-# python {params.scriptsdir}/filter_junction_human.py {input} |sort -k1,1 -k2,2n > {params.sample}/{params.sample}_human_only_Chimeric.out.junction
-# cd {params.sample}
-# CIRCexplorer2 parse -t STAR {params.sample}_human_only_Chimeric.out.junction > {params.sample}_human_only_Chimeric.out.junction_parse.log 2>&1
-# mv back_spliced_junction.bed {params.sample}_human_only.back_spliced_junction.bed
-# """
 
 rule annotate_human_circRNA:
 	input:
