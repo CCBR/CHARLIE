@@ -10,8 +10,10 @@ import numpy as np
 from pathlib import Path
 import os
 import matplotlib.pyplot as plt
+import sys
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
+lookupfile=sys.argv[1]
 
 # In[2]:
 
@@ -88,7 +90,7 @@ ciri_count_matrix.to_csv("ciri_count_matrix.txt",sep="\t",header=True)
 # In[7]:
 
 
-annotations=pandas.read_csv("/data/CCBR_Pipeliner/db/PipeDB/db/circRNA/hg19_hg38_annotated_lookup.txt",sep="\t",header=0)
+annotations=pandas.read_csv(lookupfile,sep="\t",header=0)
 annotations.set_index(["hg38ID"],inplace=True)
 annotations.head()
 
