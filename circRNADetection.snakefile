@@ -30,11 +30,12 @@ rule all:
 		expand(join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES),
 		join(WORKDIR,"STAR1p","pass1.out.tab"),
 		expand(join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction"), sample=SAMPLES),
-		# expand(join(WORKDIR,"{sample}","{sample}_chrKSHV_only.back_spliced_junction.bed"), sample=SAMPLES),	
-		# expand(join(WORKDIR,"{sample}","{sample}_human_only.back_spliced_junction.bed"), sample=SAMPLES),
-		# expand(join(WORKDIR,"{sample}","{sample}_human_only.circularRNA_known.txt"), sample=SAMPLES),
 		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES),
-		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES)
+		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES),
+		join(WORKDIR,"ciri_count_matrix.txt"),
+		join(WORKDIR,"ciri_count_matrix_with_annotations.txt"),
+		join(WORKDIR,"circExplorer_count_matrix.txt"),
+		join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
 
 
 rule cutadapt:
@@ -170,29 +171,6 @@ STAR --genomeDir {params.starindexdir} \
 --sjdbOverhang $overhang
 """
 
-
-rule annotate_human_circRNA:
-	input:
-		join(WORKDIR,"{sample}","{sample}_human_only.back_spliced_junction.bed")
-	output:
-		join(WORKDIR,"{sample}","{sample}_human_only.circularRNA_known.txt")
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		circexplorerversion=CIRCEXPLORER_VERSION,
-		genepred=GENEPRED_W_GENEID,
-		reffa=REFFA
-	threads: 1
-	shell:"""
-module load circexplorer2/{params.circexplorerversion}
-cd {params.workdir}
-CIRCexplorer2 annotate \
--r {params.genepred} \
--g {params.reffa} \
--b {input} \
--o {params.sample}/{params.sample}_human_only.circularRNA_known.txt
-"""
-
 rule annotate_circRNA:
 	input:
 		junctionfile=join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction")
@@ -261,9 +239,23 @@ rule create_ciri_count_matrix:
 		join(WORKDIR,"ciri_count_matrix.txt"),
 		join(WORKDIR,"ciri_count_matrix_with_annotations.txt")
 	params:
-		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py")
+		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
 		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
 	shell:"""
 module load python/3.8
-python {params.script} {lookup}
+python {params.script} {params.lookup}
+"""
 
+rule create_circexplorer_count_matrix:
+	input:
+		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES)
+	output:
+		join(WORKDIR,"circExplorer_count_matrix.txt"),
+		join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
+	params:
+		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
+		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
+	shell:"""
+module load python/3.8
+python {params.script} {params.lookup}
+"""
