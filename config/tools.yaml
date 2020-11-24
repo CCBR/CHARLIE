@@ -1,0 +1,8 @@
+cutadapt:
+ version: "cutadapt/1.18"
+star:
+ version: "star/2.7.0f"
+bwa:
+ version: "bwa/0.7.17"
+circexplorer:
+ version: "circexplorer2/2.3.5"
