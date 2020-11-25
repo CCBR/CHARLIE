@@ -1,5 +1,6 @@
 ## you most probably dont need to change these
 tools: "config/tools.yaml"
+cluster: "config/cluster.json"
 star_index_dir: "/data/Ziegelbauer_lab/circRNADetection/resources/STAR_index_no_GTF"
 hg38_plus_virusus_fa: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
 hg38_plus_virusus_gtf: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_gencodeV35_plus_viruses.gtf"
@@ -7,9 +8,10 @@ hg38_plus_virusus_bwa_index: "/data/Ziegelbauer_lab/circRNADetection/resources/h
 ciri_perl_script: "/data/Ziegelbauer_lab/circRNADetection/resources/CIRI_v2.0.6/CIRI2.pl"
 genepred_w_geneid: "/data/Ziegelbauer_lab/circRNADetection/resources/genes.genepred_w_geneid"
 reffa: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
+adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
 ## you probably need to change or comment/uncomment some of these
 #
-workdir: "/data/RBL_NCI/ONT/ont_rnaseq/workflow/ONT_RNAseq/test_workdir_1DcDNA"
+workdir: "/data/Ziegelbauer_lab/circRNADetection/ccbr983_v4"
 #
 samples: "config/samples.tsv"

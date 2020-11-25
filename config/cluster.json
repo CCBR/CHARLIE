@@ -6,8 +6,8 @@
         "threads": "2",
         "time": "1:00:00",
         "name"      : "{rule}.{wildcards}",
-        "output"    : "logs/cluster/{rule}.{wildcards}.out",
-        "error"     : "logs/cluster/{rule}.{wildcards}.err"
+        "output"    : "logs/{rule}.{wildcards}.out",
+        "error"     : "logs/{rule}.{wildcards}.err"
     },
     "cutadapt": {
         "mem": "120g",
