@@ -1,261 +1,347 @@
 from os.path import join
+import sys
 import os
+import pandas as pd
+import yaml
+import pprint
 
-#tool versions
-CUTADAPT_VERSION="1.18"
-STAR_VERSION="2.7.0f"
-BWA_VERSION="0.7.17"
-CIRCEXPLORER_VERSION="2.3.5"
+def get_fastqs(wildcards):
+	d=dict()
+	d["R1"]=SAMPLESDF["R1"][wildcards.sample]
+	d["R2"]=SAMPLESDF["R2"][wildcards.sample]
+	return d
 
-#resouce absolute paths
-SCRIPTS_DIR="/data/Ziegelbauer_lab/circRNADetection/scripts"
-STAR_INDEX_DIR="/data/Ziegelbauer_lab/circRNADetection/resources/STAR_index_no_GTF"
-HG38_PLUS_VIRUSES_FA="/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
-HG38_PLUS_VIRUSES_GTF="/data/Ziegelbauer_lab/circRNADetection/resources/hg38_gencodeV35_plus_viruses.gtf"
-HG38_PLUS_VIRUSES_BWA_INDEX="/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
-CIRI_PERL_SCRIPT="/data/Ziegelbauer_lab/circRNADetection/resources/CIRI_v2.0.6/CIRI2.pl"
-GENEPRED_W_GENEID="/data/Ziegelbauer_lab/circRNADetection/resources/genes.genepred_w_geneid"
-REFFA="/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
+def get_peorse(wildcards):
+	return SAMPLESDF["PEorSE"][wildcards.sample]
 
-#test
+def check_existence(filename):
+	"""Checks if file exists on filesystem
+	:param filename <str>: Name of file to check
+	"""
+	filename=filename.strip()
+	if not os.path.exists(filename):
+		sys.exit("File: {} does not exists!".format(filename))
+	return True
 
-#SAMPLES=["C14_2_1","C14_2_2","C14_2_3","C911_1","C911_2","C911_3","GI1_N","GI1_T","GI2_N","GI2_T","GI3_N","GI3_T","GI4_N","GI4_T","GI5_N","GI5_T","GI6_N","GI6_T","LN1_T","NT_1","NT_2","NT_3","Skin1_N","Skin1_T","Skin2_N","Skin2_T","Skin3_N","Skin3_T","Skin4_N","Skin4_T","Skin5_N","Skin5_T","Skin6_N","Skin6_T","Skin7_N","Skin7_T","Skin8_N","Skin8_T","SLK_17_C","SLK_17_G","SLK_20_C","SLK_20_G","SLK_26_C","SLK_26_G","sampleinput_1","sampleinput_2","ORF57IPsample_1","ORF57IPsample_2"]
-#SAMPLES=["BCBL1_induced", "BCBL1_uninduced", "C14_2_1", "C14_2_2", "C14_2_3", "C911_1", "C911_2", "C911_3", "GI1_N", "GI1_T", "GI2_N", "GI2_T", "GI3_N", "GI3_T", "GI4_N", "GI4_T", "GI5_N", "GI5_T", "GI6_N", "GI6_T", "HK1M", "HK1R", "HK3M", "HK3R", "Infected25HC_1", "Infected25HC_2", "Infected25HC_3", "Infected25HC_4", "InfectedVehicle_1", "InfectedVehicle_2", "InfectedVehicle_3", "InfectedVehicle_4", "KS041411_RNase", "KS041411_total", "LN1_T", "Mock25HC_1", "Mock25HC_2", "Mock25HC_3", "Mock25HC_4", "MockVehicle_1", "MockVehicle_2", "MockVehicle_3", "MockVehicle_4", "NT_1", "NT_2", "NT_3", "Skin1_N", "Skin1_T", "Skin2_N", "Skin2_T", "Skin3_N", "Skin3_T", "Skin4_N", "Skin4_T", "Skin5_N", "Skin5_T", "Skin6_N", "Skin6_T", "Skin7_N", "Skin7_T", "Skin8_N", "Skin8_T", "SLK_17_C", "SLK_17_G", "SLK_20_C", "SLK_20_G", "SLK_26_C", "SLK_26_G", "GSM3543750_SRR8401383_1", "GSM3543751_SRR8401384_1", "GSM3258253_SRR7474063", "GSM3258256_SRR7474066_1", "GSM3258259_SRR7474069_1", "GSM3258260_SRR7474070_1", "GSM3258262_SRR7474072", "GSM3258264_SRR7474074_1", "GSM3258265_SRR7474075_1", "GSM3258268_SRR7474078_1", "GSM3258269_SRR7474079", "GSM3309421_SRR7611489", "GSM3309422_SRR7611490", "GSM3309423_SRR7611491", "GSM3309424_SRR7611492_1", "GSM3309425_SRR7611493", "GSM3309426_SRR7611494_1", "GSM3309427_SRR7611495_1", "GSM3309428_SRR7611496_1", "GSM3309429_SRR7611497", "GSM3309430_SRR7611498"]
-SAMPLES=["BCBL1_induced", "BCBL1_uninduced", "C14_2_1", "C14_2_2", "C14_2_3", "C911_1", "C911_2", "C911_3", "GI1_N", "GI1_T", "GI2_N", "GI2_T", "GI3_N", "GI3_T", "GI4_N", "GI4_T", "GI5_N", "GI5_T", "GI6_N", "GI6_T", "HK1M", "HK1R", "HK3M", "HK3R", "Infected25HC_1", "Infected25HC_2", "Infected25HC_3", "Infected25HC_4", "InfectedVehicle_1", "InfectedVehicle_2", "InfectedVehicle_3", "InfectedVehicle_4", "KS041411_RNase", "KS041411_total", "LN1_T", "Mock25HC_1", "Mock25HC_2", "Mock25HC_3", "Mock25HC_4", "MockVehicle_1", "MockVehicle_2", "MockVehicle_3", "MockVehicle_4", "NT_1", "NT_2", "NT_3", "Skin1_N", "Skin1_T", "Skin2_N", "Skin2_T", "Skin3_N", "Skin3_T", "Skin4_N", "Skin4_T", "Skin5_N", "Skin5_T", "Skin6_N", "Skin6_T", "Skin7_N", "Skin7_T", "Skin8_N", "Skin8_T", "SLK_17_C", "SLK_17_G", "SLK_20_C", "SLK_20_G", "SLK_26_C", "SLK_26_G", "GSM3258253_SRR7474063", "GSM3258256_SRR7474066", "GSM3258259_SRR7474069", "GSM3258260_SRR7474070", "GSM3258262_SRR7474072", "GSM3258264_SRR7474074", "GSM3258265_SRR7474075", "GSM3258268_SRR7474078", "GSM3258269_SRR7474079", "GSM3309421_SRR7611489", "GSM3309422_SRR7611490", "GSM3309423_SRR7611491", "GSM3309424_SRR7611492", "GSM3309425_SRR7611493", "GSM3309426_SRR7611494", "GSM3309427_SRR7611495", "GSM3309428_SRR7611496", "GSM3309429_SRR7611497", "GSM3309430_SRR7611498", "GSM3543750_SRR8401383", "GSM3543751_SRR8401384", "rK_LEC_si_Con_1_S7_L001", "rK_LEC_si_Con_1_S7_L002", "rK_LEC_si_Con_1_S7_L003", "rK_LEC_si_Con_1_S7_L004", "rK_LEC_si_Con_2_S8_L001", "rK_LEC_si_Con_2_S8_L002", "rK_LEC_si_Con_2_S8_L003", "rK_LEC_si_Con_2_S8_L004", "rK_LEC_si_Con_3_S9_L001", "rK_LEC_si_Con_3_S9_L002", "rK_LEC_si_Con_3_S9_L003", "rK_LEC_si_Con_3_S9_L004", "rK_LEC_si_Prox1_1_S10_L001", "rK_LEC_si_Prox1_1_S10_L002", "rK_LEC_si_Prox1_1_S10_L003", "rK_LEC_si_Prox1_1_S10_L004", "rK_LEC_si_Prox1_2_S11_L001", "rK_LEC_si_Prox1_2_S11_L002", "rK_LEC_si_Prox1_2_S11_L003", "rK_LEC_si_Prox1_2_S11_L004", "rK_LEC_si_Prox1_3_S12_L001", "rK_LEC_si_Prox1_3_S12_L002", "rK_LEC_si_Prox1_3_S12_L003", "rK_LEC_si_Prox1_3_S12_L004" ]
-# SAMPLES=["GI1_N", "GI1_T","GI2_N", "GI2_T"]
-WORKDIR="/data/Ziegelbauer_lab/circRNADetection/ccbr983_v3"
+
+def check_readaccess(filename):
+	"""Checks permissions to see if user can read a file
+	:param filename <str>: Name of file to check
+	"""
+	filename=filename.strip()
+	check_existence(filename)
+	if not os.access(filename,os.R_OK):
+		sys.exit("File: {} exists, but user cannot read from file due to permissions!".format(filename))
+	return True
+
+
+def check_writeaccess(filename):
+	"""Checks permissions to see if user can write to a file
+	:param filename <str>: Name of file to check
+	"""
+	filename=filename.strip()
+	check_existence(filename)
+	if not os.access(filename,os.W_OK):
+		sys.exit("File: {} exists, but user cannot write to file due to permissions!".format(filename))
+	return True
+
+##### load config and sample sheets #####
+
+check_readaccess("config/config.yaml")
+configfile: "config/config.yaml"
+
+#resouce absolute path
+WORKDIR=config['workdir']
+SCRIPTS_DIR=join(WORKDIR,"scripts")
+RESOURCES_DIR=join(WORKDIR,"resources")
+if not os.path.exists(join(WORKDIR,"fastqs")):
+	os.mkdir(join(WORKDIR,"fastqs"))
+for f in ["samples", "tools", "cluster"]:
+	check_readaccess(config[f])
+
+SAMPLESDF = pd.read_csv(config["samples"],sep="\t",header=0,index_col="sampleName")
+SAMPLES = list(SAMPLESDF.index)
+SAMPLESDF["R1"]=join(RESOURCES_DIR,"dummy")
+SAMPLESDF["R2"]=join(RESOURCES_DIR,"dummy")
+SAMPLESDF["PEorSE"]="PE"
+
+for sample in SAMPLES:
+	R1file=SAMPLESDF["path_to_R1_fastq"][sample]
+	R2file=SAMPLESDF["path_to_R2_fastq"][sample]
+	# print(sample,R1file,R2file)
+	check_readaccess(R1file)
+	R1filenewname=join(WORKDIR,"fastqs",sample+".R1.fastq.gz")
+	if os.path.exists(R1filenewname):
+		os.remove(R1filenewname)
+	os.symlink(R1file,R1filenewname)
+	SAMPLESDF["R1"][sample]=R1filenewname
+	if str(R2file)!='nan':
+		check_readaccess(R2file)
+		R2filenewname=join(WORKDIR,"fastqs",sample+".R2.fastq.gz")
+		if os.path.exists(R2filenewname):
+			os.remove(R2filenewname)
+		os.symlink(R2file,R2filenewname)
+		SAMPLESDF["R2"][sample]=R2filenewname
+	else:
+		SAMPLESDF["PEorSE"][sample]="SE"
+pprint.pprint(SAMPLESDF["PEorSE"])
+exit
+
+## Load tools from YAML file
+with open(config["tools"]) as f:
+	TOOLS = yaml.safe_load(f)
 
 rule all:
 	input:
-		expand(join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES),
-		join(WORKDIR,"STAR1p","pass1.out.tab"),
-		expand(join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction"), sample=SAMPLES),
-		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES),
-		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES),
-		join(WORKDIR,"ciri_count_matrix.txt"),
-		join(WORKDIR,"ciri_count_matrix_with_annotations.txt"),
-		join(WORKDIR,"circExplorer_count_matrix.txt"),
-		join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
+		expand(join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
+		expand(join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES)
+		
+
+		# expand(join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES),
+		# join(WORKDIR,"STAR1p","pass1.out.tab"),
+		# expand(join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction"), sample=SAMPLES),
+		# expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES),
+		# expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES),
+		# join(WORKDIR,"ciri_count_matrix.txt"),
+		# join(WORKDIR,"ciri_count_matrix_with_annotations.txt"),
+		# join(WORKDIR,"circExplorer_count_matrix.txt"),
+		# join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
 
 
 rule cutadapt:
 	input:
-		f1=join(WORKDIR,"fastqs","{sample}.R1.fastq.gz"),
-		f2=join(WORKDIR,"fastqs","{sample}.R2.fastq.gz")
+		unpack(get_fastqs)
 	output:
 		of1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
 		of2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
 	params:
 		sample="{sample}",
-		cutadaptversion=CUTADAPT_VERSION
+		peorse=get_peorse,
+		adapters=join(RESOURCES_DIR,"TruSeq_and_nextera_adapters.consolidated.fa")
+	envmodules: TOOLS["cutadapt"]["version"]
 	threads: 56
 	shell:"""
-module load cutadapt/{params.cutadaptversion}
-cutadapt --pair-filter=any \
---nextseq-trim=2 \
---trim-n \
--n 5 -O 5 \
--q 10,10 -m 35:35 \
--b file:/data/CCBR_Pipeliner/db/PipeDB/dev/TruSeq_and_nextera_adapters.consolidated.fa \
--B file:/data/CCBR_Pipeliner/db/PipeDB/dev/TruSeq_and_nextera_adapters.consolidated.fa \
--j {threads} \
--o {output.of1} -p {output.of2} \
-{input.f1} {input.f2}
+if [ "{params.peorse}" == "PE" ];then
+	## Paired-end
+	cutadapt --pair-filter=any \
+	--nextseq-trim=2 \
+	--trim-n \
+	-n 5 -O 5 \
+	-q 10,10 -m 35:35 \
+	-b file:{params.adapters} \
+	-B file:{params.adapters} \
+	-j {threads} \
+	-o {output.of1} -p {output.of2} \
+	{input.R1} {input.R2}
+else
+	## Single-end
+	cutadapt \
+	--nextseq-trim=2 \
+	--trim-n \
+	-n 5 -O 5 \
+	-q 10,10 -m 35 \
+	-b file:{params.adapters} \
+	-j {threads} \
+	-o {output.of1} \
+	{input.R1}
+	touch {output.of2}
+fi
 """
 
-rule star1p:
-	input:
-		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
-		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
-	output:
-		junction=join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"),
-		bam=temp(join(WORKDIR,"STAR1p","{sample}_p1.Aligned.out.bam"))
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		starversion=STAR_VERSION,
-		starindexdir=STAR_INDEX_DIR,
-		gtf=HG38_PLUS_VIRUSES_GTF
-	threads: 56
-	shell:"""
-module load STAR/{params.starversion};
-meanrl=$(zcat {input.fastqr1} {input.fastqr2}|grep "^G\|^A\|^C\|^T\|^N"|awk "{{sum=sum+length(\$1);count=count+1}}END{{printf(\\"%d\\",sum/count)}}")
-echo $meanrl
-overhang=$((meanrl-1))
-echo $overhang
-cd {params.workdir}/STAR1p
-STAR --genomeDir {params.starindexdir} \
---outSAMstrandField None  \
---outFilterMultimapNmax 20 \
---alignSJoverhangMin 8 \
---alignSJDBoverhangMin 1 \
---outFilterMismatchNmax 999 \
---outFilterMismatchNoverLmax 0.3  \
---alignIntronMin 20 \
---alignIntronMax 1000000 \
---alignMatesGapMax 1000000 \
---readFilesIn {input.fastqr1} {input.fastqr2} \
---readFilesCommand zcat \
---runThreadN {threads} \
---outFileNamePrefix {params.sample}_p1. \
---chimSegmentMin 20 \
---chimMultimapNmax 10 \
---chimOutType Junctions \
---alignTranscriptsPerReadNmax 1200000 \
---outSAMtype BAM Unsorted \
---alignEndsProtrude 10 ConcordantPair \
---outFilterIntronMotifs None \
---sjdbGTFfile {params.gtf} \
---outTmpDir=/lscratch/$SLURM_JOB_ID/{params.sample} \
---sjdbOverhang $overhang
-"""
+# rule star1p:
+# 	input:
+# 		unpack(get)
+# 		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
+# 		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
+# 	output:
+# 		junction=join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"),
+# 		bam=temp(join(WORKDIR,"STAR1p","{sample}_p1.Aligned.out.bam"))
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		starversion=STAR_VERSION,
+# 		starindexdir=STAR_INDEX_DIR,
+# 		gtf=HG38_PLUS_VIRUSES_GTF
+# 	threads: 56
+# 	shell:"""
+# module load STAR/{params.starversion};
+# meanrl=$(zcat {input.fastqr1} {input.fastqr2}|grep "^G\|^A\|^C\|^T\|^N"|awk "{{sum=sum+length(\$1);count=count+1}}END{{printf(\\"%d\\",sum/count)}}")
+# echo $meanrl
+# overhang=$((meanrl-1))
+# echo $overhang
+# cd {params.workdir}/STAR1p
+# STAR --genomeDir {params.starindexdir} \
+# --outSAMstrandField None  \
+# --outFilterMultimapNmax 20 \
+# --alignSJoverhangMin 8 \
+# --alignSJDBoverhangMin 1 \
+# --outFilterMismatchNmax 999 \
+# --outFilterMismatchNoverLmax 0.3  \
+# --alignIntronMin 20 \
+# --alignIntronMax 1000000 \
+# --alignMatesGapMax 1000000 \
+# --readFilesIn {input.fastqr1} {input.fastqr2} \
+# --readFilesCommand zcat \
+# --runThreadN {threads} \
+# --outFileNamePrefix {params.sample}_p1. \
+# --chimSegmentMin 20 \
+# --chimMultimapNmax 10 \
+# --chimOutType Junctions \
+# --alignTranscriptsPerReadNmax 1200000 \
+# --outSAMtype BAM Unsorted \
+# --alignEndsProtrude 10 ConcordantPair \
+# --outFilterIntronMotifs None \
+# --sjdbGTFfile {params.gtf} \
+# --outTmpDir=/lscratch/$SLURM_JOB_ID/{params.sample} \
+# --sjdbOverhang $overhang
+# """
 
-rule merge_SJ_tabs:
-	input:
-		expand(join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES)
-	output:
-		join(WORKDIR,"STAR1p","pass1.out.tab")
-	threads: 1
-	shell:"""
-cat {input}|sort -k1,1 -k2,2n|uniq > {output}
-"""
+# rule merge_SJ_tabs:
+# 	input:
+# 		expand(join(WORKDIR,"STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES)
+# 	output:
+# 		join(WORKDIR,"STAR1p","pass1.out.tab")
+# 	threads: 1
+# 	shell:"""
+# cat {input}|sort -k1,1 -k2,2n|uniq > {output}
+# """
 
-rule star2p:
-	input:
-		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
-		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz"),
-		pass1sjtab=join(WORKDIR,"STAR1p","pass1.out.tab")
-	output:
-		junction=join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction"),
-		bam=temp(join(WORKDIR,"STAR2p","{sample}_p2.Aligned.out.bam"))
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		starversion=STAR_VERSION,
-		starindexdir=STAR_INDEX_DIR,
-		gtf=HG38_PLUS_VIRUSES_GTF
-	threads: 56
-	shell:"""
-module load STAR/{params.starversion}
-meanrl=$(zcat {input.fastqr1} {input.fastqr2}|grep "^G\|^A\|^C\|^T\|^N"|awk "{{sum=sum+length(\$1);count=count+1}}END{{printf(\\"%d\\",sum/count)}}")
-echo $meanrl
-overhang=$((meanrl-1))
-echo $overhang
-cd {params.workdir}/STAR2p
-STAR --genomeDir {params.starindexdir} \
---outSAMstrandField None  \
---outFilterType BySJout \
---outFilterMultimapNmax 20 \
---alignSJoverhangMin 8 \
---alignSJDBoverhangMin 1 \
---outFilterMismatchNmax 999 \
---outFilterMismatchNoverLmax 0.3  \
---alignIntronMin 20 \
---alignIntronMax 2000000 \
---alignMatesGapMax 2000000 \
---readFilesIn {input.fastqr1} {input.fastqr2} \
---readFilesCommand  zcat \
---runThreadN 56 \
---outFileNamePrefix {params.sample}_p2. \
---sjdbFileChrStartEnd {input.pass1sjtab} \
---chimSegmentMin 20 \
---chimOutType Junctions \
---chimMultimapNmax 10 \
---limitSjdbInsertNsj 5000000 \
---alignTranscriptsPerReadNmax 2000000 \
---outSAMtype BAM Unsorted \
---alignEndsProtrude 10 ConcordantPair \
---outFilterIntronMotifs None \
---sjdbGTFfile {params.gtf} \
---outTmpDir=/lscratch/$SLURM_JOB_ID/{params.sample} \
---sjdbOverhang $overhang
-"""
+# rule star2p:
+# 	input:
+# 		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
+# 		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz"),
+# 		pass1sjtab=join(WORKDIR,"STAR1p","pass1.out.tab")
+# 	output:
+# 		junction=join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction"),
+# 		bam=temp(join(WORKDIR,"STAR2p","{sample}_p2.Aligned.out.bam"))
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		starversion=STAR_VERSION,
+# 		starindexdir=STAR_INDEX_DIR,
+# 		gtf=HG38_PLUS_VIRUSES_GTF
+# 	threads: 56
+# 	shell:"""
+# module load STAR/{params.starversion}
+# meanrl=$(zcat {input.fastqr1} {input.fastqr2}|grep "^G\|^A\|^C\|^T\|^N"|awk "{{sum=sum+length(\$1);count=count+1}}END{{printf(\\"%d\\",sum/count)}}")
+# echo $meanrl
+# overhang=$((meanrl-1))
+# echo $overhang
+# cd {params.workdir}/STAR2p
+# STAR --genomeDir {params.starindexdir} \
+# --outSAMstrandField None  \
+# --outFilterType BySJout \
+# --outFilterMultimapNmax 20 \
+# --alignSJoverhangMin 8 \
+# --alignSJDBoverhangMin 1 \
+# --outFilterMismatchNmax 999 \
+# --outFilterMismatchNoverLmax 0.3  \
+# --alignIntronMin 20 \
+# --alignIntronMax 2000000 \
+# --alignMatesGapMax 2000000 \
+# --readFilesIn {input.fastqr1} {input.fastqr2} \
+# --readFilesCommand  zcat \
+# --runThreadN 56 \
+# --outFileNamePrefix {params.sample}_p2. \
+# --sjdbFileChrStartEnd {input.pass1sjtab} \
+# --chimSegmentMin 20 \
+# --chimOutType Junctions \
+# --chimMultimapNmax 10 \
+# --limitSjdbInsertNsj 5000000 \
+# --alignTranscriptsPerReadNmax 2000000 \
+# --outSAMtype BAM Unsorted \
+# --alignEndsProtrude 10 ConcordantPair \
+# --outFilterIntronMotifs None \
+# --sjdbGTFfile {params.gtf} \
+# --outTmpDir=/lscratch/$SLURM_JOB_ID/{params.sample} \
+# --sjdbOverhang $overhang
+# """
 
-rule annotate_circRNA:
-	input:
-		junctionfile=join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction")
-	output:
-		backsplicedjunctions=join(WORKDIR,"{sample}","{sample}.back_spliced_junction.bed"),
-		annotations=join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt")
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		circexplorerversion=CIRCEXPLORER_VERSION,
-		genepred=GENEPRED_W_GENEID,
-		reffa=REFFA
-	threads: 1
-	shell:"""
-module load circexplorer2/{params.circexplorerversion}
-cd {params.workdir}/{params.sample}
-CIRCexplorer2 parse \
-	-t STAR \
-	{input.junctionfile} > {params.sample}_circexplorer_parse.log 2>&1
-mv back_spliced_junction.bed {output.backsplicedjunctions}
-CIRCexplorer2 annotate \
--r {params.genepred} \
--g {params.reffa} \
--b {output.backsplicedjunctions} \
--o {output.annotations}
-"""
+# rule annotate_circRNA:
+# 	input:
+# 		junctionfile=join(WORKDIR,"STAR2p","{sample}_p2.Chimeric.out.junction")
+# 	output:
+# 		backsplicedjunctions=join(WORKDIR,"{sample}","{sample}.back_spliced_junction.bed"),
+# 		annotations=join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt")
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		circexplorerversion=CIRCEXPLORER_VERSION,
+# 		genepred=GENEPRED_W_GENEID,
+# 		reffa=REFFA
+# 	threads: 1
+# 	shell:"""
+# module load circexplorer2/{params.circexplorerversion}
+# cd {params.workdir}/{params.sample}
+# CIRCexplorer2 parse \
+# 	-t STAR \
+# 	{input.junctionfile} > {params.sample}_circexplorer_parse.log 2>&1
+# mv back_spliced_junction.bed {output.backsplicedjunctions}
+# CIRCexplorer2 annotate \
+# -r {params.genepred} \
+# -g {params.reffa} \
+# -b {output.backsplicedjunctions} \
+# -o {output.annotations}
+# """
 
 
-rule ciri:
-	input:
-		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
-		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
-	output:
-		cirilog=join(WORKDIR,"{sample}","{sample}.ciri.log"),
-		bwalog=join(WORKDIR,"{sample}","{sample}.bwa.log"),
-		cirisam=temp(join(WORKDIR,"{sample}","{sample}.sam")),
-		ciriout=join(WORKDIR,"{sample}","{sample}.ciri.out")
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		reffa=HG38_PLUS_VIRUSES_FA,
-		gtf=HG38_PLUS_VIRUSES_GTF,
-		bwaindex=HG38_PLUS_VIRUSES_BWA_INDEX,
-		ciripl=CIRI_PERL_SCRIPT,
-		bwaversion=BWA_VERSION
-	threads: 56
-	shell:"""
-module load bwa/{params.bwaversion}
-cd {params.workdir}
-bwa mem -t {threads} -T 19 \
-{params.bwaindex} \
-{input.fastqr1} {input.fastqr2} \
-> {output.cirisam} 2> {output.bwalog}
-perl {params.ciripl} \
--I {output.cirisam} \
--O {output.ciriout} \
--F {params.reffa} \
--A {params.gtf} \
--G {output.cirilog} -T {threads}
-"""
+# rule ciri:
+# 	input:
+# 		fastqr1=join(WORKDIR,"trim","{sample}.R1.trim.fastq.gz"),
+# 		fastqr2=join(WORKDIR,"trim","{sample}.R2.trim.fastq.gz")
+# 	output:
+# 		cirilog=join(WORKDIR,"{sample}","{sample}.ciri.log"),
+# 		bwalog=join(WORKDIR,"{sample}","{sample}.bwa.log"),
+# 		cirisam=temp(join(WORKDIR,"{sample}","{sample}.sam")),
+# 		ciriout=join(WORKDIR,"{sample}","{sample}.ciri.out")
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		reffa=HG38_PLUS_VIRUSES_FA,
+# 		gtf=HG38_PLUS_VIRUSES_GTF,
+# 		bwaindex=HG38_PLUS_VIRUSES_BWA_INDEX,
+# 		ciripl=CIRI_PERL_SCRIPT,
+# 		bwaversion=BWA_VERSION
+# 	threads: 56
+# 	shell:"""
+# module load bwa/{params.bwaversion}
+# cd {params.workdir}
+# bwa mem -t {threads} -T 19 \
+# {params.bwaindex} \
+# {input.fastqr1} {input.fastqr2} \
+# > {output.cirisam} 2> {output.bwalog}
+# perl {params.ciripl} \
+# -I {output.cirisam} \
+# -O {output.ciriout} \
+# -F {params.reffa} \
+# -A {params.gtf} \
+# -G {output.cirilog} -T {threads}
+# """
 
-rule create_ciri_count_matrix:
-	input:
-		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES)
-	output:
-		join(WORKDIR,"ciri_count_matrix.txt"),
-		join(WORKDIR,"ciri_count_matrix_with_annotations.txt")
-	params:
-		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
-		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
-	shell:"""
-module load python/3.8
-python {params.script} {params.lookup}
-"""
+# rule create_ciri_count_matrix:
+# 	input:
+# 		expand(join(WORKDIR,"{sample}","{sample}.ciri.out"),sample=SAMPLES)
+# 	output:
+# 		join(WORKDIR,"ciri_count_matrix.txt"),
+# 		join(WORKDIR,"ciri_count_matrix_with_annotations.txt")
+# 	params:
+# 		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
+# 		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
+# 	shell:"""
+# module load python/3.8
+# python {params.script} {params.lookup}
+# """
 
-rule create_circexplorer_count_matrix:
-	input:
-		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES)
-	output:
-		join(WORKDIR,"circExplorer_count_matrix.txt"),
-		join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
-	params:
-		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
-		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
-	shell:"""
-module load python/3.8
-python {params.script} {params.lookup}
-"""
+# rule create_circexplorer_count_matrix:
+# 	input:
+# 		expand(join(WORKDIR,"{sample}","{sample}.circularRNA_known.txt"),sample=SAMPLES)
+# 	output:
+# 		join(WORKDIR,"circExplorer_count_matrix.txt"),
+# 		join(WORKDIR,"circExplorer_count_matrix_with_annotations.txt")
+# 	params:
+# 		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
+# 		lookup=join(SCRIPTS_DIR,"hg19_hg38_annotated_lookup.txt")
+# 	shell:"""
+# module load python/3.8
+# python {params.script} {params.lookup}
+# """
