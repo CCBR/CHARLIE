@@ -6,6 +6,7 @@ set -euo pipefail
 # ## git clone https://github.com/kopardev/circRNA.git
 # ## and set that as the pipeline home
 PIPELINE_HOME="/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA"
+echo "Pipeline Dir: $PIPELINE_HOME"
 # ## make current folder as working directory
 a=$(readlink -f $0)
 # echo $a
@@ -24,6 +25,10 @@ Required Positional Argument:
   MODE: [Type: Str] Valid options:
     a) init: initial workdir
     b) run: run test data
+    c) cleanup: delete folders to get ready for re-init
+    d) reset: cleanup followed by init
+    e) dryrun: snakemake --dry-run
+    f) unlock: snakemake --unlock
 EOF
 }
 
@@ -35,15 +40,22 @@ cd $WORKDIR
 
 # make sure that config folder exists in the current folder
 if [ ! -d $WORKDIR/config ]; then cp -r $PIPELINE_HOME/config $WORKDIR/;echo "Config Dir: $WORKDIR/config";fi
+if [ ! -d $WORKDIR/scripts ]; then cp -r $PIPELINE_HOME/scripts $WORKDIR/;echo "Scripts Dir: $WORKDIR/scripts";fi
+if [ ! -d $WORKDIR/resources ]; then cp -r $PIPELINE_HOME/resources $WORKDIR/;echo "Resources Dir: $WORKDIR/resources";fi
 
 #create log and stats folders
 if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
 if [ ! -d $WORKDIR/stats ];then mkdir -p $WORKDIR/stats;echo "Stats Dir: $WORKDIR/stats";fi
+
 }
 
 function run () {
   ## initialize if not already done
-  if [ -d $WORKDIR/config ]; then err "Error: config folder not found ... initialize first!";usage && exit 1;fi
+  echo "Working Dir: $WORKDIR"
+  if [ ! -d $WORKDIR/config ]; then err "Error: config folder not found ... initialize first!";usage && exit 1;fi
+  for f in config.yaml tools.yaml cluster.json samples.tsv; do
+    if [ ! -f $WORKDIR/config/$f ]; then err "Error: '${f}' file not found in config folder ... initialize first!";usage && exit 1;fi
+  done
   ## Archive previous run files
   if [ -f ${WORKDIR}/snakemake.log ];then 
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
@@ -57,11 +69,11 @@ function run () {
 
   module load python/3.7
   module load snakemake/5.24.1
-  module load singularity
+  # module load singularity
 
   # --use-conda \
-
-  snakemake $@ -s ${PIPELINE_HOME}/workflow/Snakefile \
+  
+  snakemake $1 -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
   --use-envmodules \
   --printshellcmds \
@@ -80,13 +92,34 @@ function run () {
   mv slurm*out stats && for a in $(ls stats/slurm*out);do gzip -n $a;done
 }
 
+function cleanup() {
+  rm -rf ${WORKDIR}/config
+  rm -rf ${WORKDIR}/logs
+  rm -rf ${WORKDIR}/stats
+  rm -rf ${WORKDIR}/scripts
+  rm -rf ${WORKDIR}/resources
+  rm -rf *snakemake*
+}
+
+# function unlock() {
+#   run --unlock
+# }
+
+# function dryrun() {
+#   run --dry-run 
+# }
+
 function main(){
 
   if [ $# -eq 0 ]; then usage; exit 1; fi
 
   case $1 in
     init) init && exit 0;;
-    run) run && exit 0;;
+    dryrun) run --dry-run && exit 0;;
+    unlock) run --unlock && exit 0;;
+    run) run "" && exit 0;;
+    cleanup) cleanup && exit 0;;
+    reset) cleanup && init && exit 0;;
     -h | --help | help) usage && exit 0;;
     -* | --*) err "Error: Failed to provide mode: <init|run>."; usage && exit 1;;
     *) err "Error: Failed to provide mode: <init|run>. '${1}' is not supported."; usage && exit 1;;
