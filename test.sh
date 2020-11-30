@@ -29,6 +29,7 @@ Required Positional Argument:
     d) reset: cleanup followed by init
     e) dryrun: snakemake --dry-run
     f) unlock: snakemake --unlock
+    g) runlocal: run without submitting to sbatch
 EOF
 }
 
@@ -71,23 +72,39 @@ function run () {
   module load snakemake/5.24.1
   # module load singularity
 
-  # --use-conda \
-  
+  # --use-singularity \
+  # --singularity-args "-B ${WORKDIR}" \
+
+
+  if [ "$1" == "local" ];then
+
+  snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+  --directory $WORKDIR \
+  --use-envmodules \
+  --printshellcmds \
+  --latency-wait 120 \
+  --configfile ${WORKDIR}/config/config.yaml \
+  --cores all \
+  --stats ${WORKDIR}/snakemake.stats \
+  2>&1|tee ${WORKDIR}/snakemake.log
+
+  else
+
   snakemake $1 -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
   --use-envmodules \
   --printshellcmds \
-  --use-singularity \
-  --singularity-args "-B ${WORKDIR}" \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config/config.yaml \
-  --cluster-config ${PIPELINE_HOME}/config/cluster.json \
+  --cluster-config ${WORKDIR}/config/cluster.json \
   --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
   -j 500 \
   --rerun-incomplete \
   --keep-going \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
+
+  fi
 
   mv slurm*out stats && for a in $(ls stats/slurm*out);do gzip -n $a;done
 }
@@ -101,13 +118,6 @@ function cleanup() {
   rm -rf *snakemake*
 }
 
-# function unlock() {
-#   run --unlock
-# }
-
-# function dryrun() {
-#   run --dry-run 
-# }
 
 function main(){
 
@@ -118,6 +128,7 @@ function main(){
     dryrun) run --dry-run && exit 0;;
     unlock) run --unlock && exit 0;;
     run) run "" && exit 0;;
+    runlocal) run local && exit 0;;
     cleanup) cleanup && exit 0;;
     reset) cleanup && init && exit 0;;
     -h | --help | help) usage && exit 0;;
