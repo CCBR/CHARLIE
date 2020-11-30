@@ -14,6 +14,11 @@
         "threads": "56",
         "time": "24:00:00"
     },
+    "fastqc": {
+        "mem": "40g",
+        "threads": "16",
+        "time": "24:00:00"
+    },
     "ciri": {
         "mem": "400g",
         "threads": "56",
