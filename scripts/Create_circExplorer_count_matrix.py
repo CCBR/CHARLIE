@@ -38,15 +38,17 @@ def natural_keys(text):
 
 
 files_circExplorer=list(Path(os.getcwd()).rglob("*.circularRNA_known.txt"))
-files_circExplorer=list(filter(lambda x: not re.search('/old/', str(x)), files_circExplorer))
+files_circExplorer=list(filter(lambda x: False if str(x).find("low_conf")!=-1 else True, files_circExplorer))
 files_circExplorer.sort(key=natural_keys)
-
+print(files_circExplorer)
 
 # In[12]:
 
 
 f=files_circExplorer[0]
 sampleName=f.name.replace(".circularRNA_known.txt","")
+print("Reading file:",f)
+print("Sample Name:",sampleName)
 x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
 x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
 x[sampleName+"_circE"]=x[12].astype(str)
@@ -65,48 +67,33 @@ print(circE_count_matrix.shape)
 
 # In[13]:
 
-
-f=files_circExplorer[1]
-print(f)
-x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
-print(x.head())
-sampleName=f.name.replace(".circularRNA_known.txt","")
-x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
-x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
-x[sampleName+"_circE"]=x[12].astype(str)
-x.drop([0,1,2,12],inplace=True,axis=1)
-x.set_index(["hg38ID"],inplace=True)
-print(x.head())
-print(circE_count_matrix.head())
+for i in range(1,len(files_circExplorer)):
+	f=files_circExplorer[i]
+	print(f)
+	x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
+	print(x.head())
+	sampleName=f.name.replace(".circularRNA_known.txt","")
+	x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
+	x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
+	x[sampleName+"_circE"]=x[12].astype(str)
+	x.drop([0,1,2,12],inplace=True,axis=1)
+	x.set_index(["hg38ID"],inplace=True)
+	print(x.head())
+	print(circE_count_matrix.head())
 
 
 # In[14]:
 
 
-circE_count_matrix=pandas.concat([circE_count_matrix,x],axis=1,join="outer",sort=False)
-print(circE_count_matrix.head())
-
-
-# In[15]:
-
-
-for f in files_circExplorer[1:]:
-    #print(f)
-    sampleName=f.name.replace(".circularRNA_known.txt","")
-    x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
-    x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
-    x[sampleName+"_circE"]=x[12].astype(str)
-    x.drop([0,1,2,12],inplace=True,axis=1)
-    x.set_index(["hg38ID"],inplace=True)
-    circE_count_matrix=pandas.concat([circE_count_matrix,x],axis=1,join="outer",sort=False)
-circE_count_matrix.head()
+	circE_count_matrix=pandas.concat([circE_count_matrix,x],axis=1,join="outer",sort=False)
+	print(circE_count_matrix.head())
 
 
 # In[9]:
 
 
 circE_count_matrix.fillna(0,inplace=True)
-circE_count_matrix.head()
+print(circE_count_matrix.head())
 circE_count_matrix.to_csv("circExplorer_count_matrix.txt",sep="\t",header=True)
 
 
