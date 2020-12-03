@@ -3,7 +3,12 @@ import sys
 import os
 import pandas as pd
 import yaml
-import pprint
+
+# no truncations during print pandas data frames
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
 
 def get_file_size(filename):
 	filename=filename.strip()
@@ -90,17 +95,16 @@ for sample in SAMPLES:
 	R1filenewname=join(WORKDIR,"fastqs",sample+".R1.fastq.gz")
 	if not os.path.exists(R1filenewname):
 		os.symlink(R1file,R1filenewname)
-	SAMPLESDF["R1"][sample]=R1filenewname
+	SAMPLESDF.loc[[sample],"R1"]=R1filenewname
 	if str(R2file)!='nan':
 		check_readaccess(R2file)
 		R2filenewname=join(WORKDIR,"fastqs",sample+".R2.fastq.gz")
 		if not os.path.exists(R2filenewname):
 			os.symlink(R2file,R2filenewname)
-		SAMPLESDF["R2"][sample]=R2filenewname
+		SAMPLESDF.loc[[sample],"R2"]=R2filenewname
 	else:
-		SAMPLESDF["PEorSE"][sample]="SE"
-pprint.pprint(SAMPLESDF["PEorSE"])
-exit
+		SAMPLESDF.loc[[sample],"PEorSE"]="SE"
+print(SAMPLESDF)
 
 ## Load tools from YAML file
 with open(config["tools"]) as f:
@@ -127,7 +131,7 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
 		## ciri aggregate count matrix
 		join(WORKDIR,"results","ciri_count_matrix.txt"),
-		join(WORKDIR,"results","ciri_count_matrix_with_annotations.txt"),
+		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 		## circExplorer aggregate count matrix
 		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
 		join(WORKDIR,"results","circExplorer_count_matrix_with_annotations.txt")
@@ -483,15 +487,17 @@ rule create_circexplorer_count_matrix:
 		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES)
 	output:
 		matrix=join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		matrix_w_annotations=join(WORKDIR,"results","circExplorer_count_matrix_with_annotations.txt")
+		matrix2=join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt")
 	params:
 		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
+		script2=join(SCRIPTS_DIR,"Create_circExplorer_BSJ_count_matrix.py"),
 		lookup=join(RESOURCES_DIR,"hg19_hg38_annotated_lookup.txt"),
 		outdir=join(WORKDIR,"results")
 	envmodules: "python/3.7"
 	shell:"""
 cd {params.outdir}
 python {params.script} {params.lookup}
+python {params.script2} {params.lookup}
 # mv $(basename {output.matrix}) {output.matrix}
 # mv $(basename {output.matrix_w_annotations}) {output.matrix_w_annotations} 
 """
