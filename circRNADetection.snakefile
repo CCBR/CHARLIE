@@ -131,10 +131,10 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
 		## ciri aggregate count matrix
 		join(WORKDIR,"results","ciri_count_matrix.txt"),
-		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 		## circExplorer aggregate count matrix
 		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		join(WORKDIR,"results","circExplorer_count_matrix_with_annotations.txt")
+		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
+		#join(WORKDIR,"results","circExplorer_count_matrix_with_annotations.txt")
 
 
 rule cutadapt:
@@ -468,18 +468,15 @@ rule create_ciri_count_matrix:
 	input:
 		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES)
 	output:
-		matrix=join(WORKDIR,"results","ciri_count_matrix.txt"),
-		matrix_w_annotations=join(WORKDIR,"results","ciri_count_matrix_with_annotations.txt")
+		matrix=join(WORKDIR,"results","ciri_count_matrix.txt")
 	params:
 		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
-		lookup=join(RESOURCES_DIR,"hg19_hg38_annotated_lookup.txt"),
+		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
 		outdir=join(WORKDIR,"results")
 	envmodules: "python/3.7"
 	shell:"""
 cd {params.outdir}
 python {params.script} {params.lookup}
-# mv $(basename {output.matrix}) {output.matrix}
-# mv $(basename {output.matrix_w_annotations}) {output.matrix_w_annotations}
 """
 
 rule create_circexplorer_count_matrix:
@@ -491,13 +488,11 @@ rule create_circexplorer_count_matrix:
 	params:
 		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
 		script2=join(SCRIPTS_DIR,"Create_circExplorer_BSJ_count_matrix.py"),
-		lookup=join(RESOURCES_DIR,"hg19_hg38_annotated_lookup.txt"),
+		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
 		outdir=join(WORKDIR,"results")
 	envmodules: "python/3.7"
 	shell:"""
 cd {params.outdir}
 python {params.script} {params.lookup}
 python {params.script2} {params.lookup}
-# mv $(basename {output.matrix}) {output.matrix}
-# mv $(basename {output.matrix_w_annotations}) {output.matrix_w_annotations} 
 """
