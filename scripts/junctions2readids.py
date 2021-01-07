@@ -1,6 +1,36 @@
 import argparse
 from itertools import groupby
 
+# chimeric junction file columns
+# column 1: chr donorA : chromosome of the donor
+# column 2: brkpt donorA : first base of the intron of the donor (1-based)
+# column 3: strand donorA : strand of the donor
+# column 4: chr acceptorB : chromosome of the acceptor
+# column 5: brkpt acceptorB : first base of the intron of the acceptor (1-based)
+# column 6: strand acceptorB : strand of the acceptor
+# column 7: junction type : -1=encompassing junction (between the mates), 1=GT/AG,2=CT/AC
+# column 8: repeat left lenA : repeat length to the left of the junction
+# column 9: repeat right lenB : repeat length to the right of the junction
+######
+# Columns 10-14 describe the alignments of the two chimeric segments, it is SAM like. Alignments are given with respect to the (+) strand
+######
+# column 10: read name : name of the RNA-seq fragment
+# column 11: start alnA : first base of the first segment (on the + strand)
+# column 12: cigar alnA : CIGAR of the first segment
+# column 13: start alnB : first base of the second segment
+# column 14: cigar alnB : CIGAR of the second segment
+######
+# Columns 15-20 provide alignment score information and relevant metadata. These columns are only output for multimapping chimeriuc algorithm --chimMultimapNmax >0.
+######
+# column 15: num chim aln : number of sufficiently scoring chimeric alignments reported for this
+# RNA-seq fragment.
+# column 16: max poss aln score : maximum possible alignment score for this fragment’s read(s).
+# column 17: non chim aln score : best non-chimeric alignment score
+# column 18: this chim aln score : score for this individual chimeric alignment
+# column 19: bestall chim aln score : the highest chimeric alignment score encountered for this RNA-seq fragment among the num chim aln reported chimeric alignments.
+# column 20: PEmerged bool : boolean indicating that overlapping PE reads were first merge into a single contiguous sequence before alignment.
+# column 21: readgrp : read group assignment for the read as indicated in the BAM file
+
 def split_text(s):
     for k, g in groupby(s, str.isalpha):
         yield ''.join(g)
@@ -23,9 +53,7 @@ def get_cigars(l):
 	return cigars
 	
 parser = argparse.ArgumentParser(description="""
-Extract readids of BSJ reads from chimeric junctions file generated using STAR.
-This script outputs readids to the screen which may be redundant, hence piping 
-the output through `sort` and then `uniq` is highly recommended
+Extract readids,strand,site,cigar etc. of BSJ reads from chimeric junctions file generated using STAR.
 """)
 parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
 # parser.add_argument('-r',dest='readids',required=True,help='Output txt file with a readid per line')
