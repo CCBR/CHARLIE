@@ -35,7 +35,7 @@ inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
 
 # multiple alignments of a read are grouped together by 
-# HI i Query hit index ... eg. HI:i:1, HI:i:2 etc.
+# HI i Query hit index ... eg. HI:i:1, HI:i:2 etc. --> See https://samtools.github.io/hts-specs/SAMtags.pdf
 # each HI represents a different alignent for the pair and 
 # generally contains 3 lines in the alignment file eg:
 # SRR1731877.10077876	163	chr16	16699505	1	30S53M	=	16699513	53	CTACCGTTTCCTGTGATAAGTGCTACTTCTTGAGGCTCTGTTCCATCTTTGTCCCTTTCCAGAGATTTAATCTCTCTCTCTCT	;DDDDHBFHHDG@AAFHHGEHHIIIIIIIIIBDGIEH3DDHGC4?09?BBB0999B?8)./>FH>GHG>==CE@@A>>AE?;;	NH:i:4	HI:i:1	AS:i:97	nM:i:0	NM:i:0	SA:Z:chr16,16700448,+,30M53H,1,0;
