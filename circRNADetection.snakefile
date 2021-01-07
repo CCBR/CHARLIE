@@ -123,19 +123,18 @@ rule all:
 		join(WORKDIR,"results","pass1.out.tab"),
 		## star2p
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.out.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		## BSJ bam
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
 		## circExplorer
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"), sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
 		## ciri
-		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
 		## ciri aggregate count matrix
-		join(WORKDIR,"results","ciri_count_matrix.txt"),
+		# join(WORKDIR,"results","ciri_count_matrix.txt"),
 		## circExplorer aggregate count matrix
-		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
-		#join(WORKDIR,"results","circExplorer_count_matrix_with_annotations.txt")
-
+		# join(WORKDIR,"results","circExplorer_count_matrix.txt"),
+		# join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 
 rule cutadapt:
 	input:
@@ -241,7 +240,7 @@ if [ "{params.peorse}" == "PE" ];then
 	--chimMultimapNmax 10 \
 	--chimOutType Junctions \
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \
-	--outSAMtype BAM Unsorted \
+	--outSAMtype None \
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
@@ -272,7 +271,7 @@ else
 	--chimMultimapNmax 10 \
 	--chimOutType Junctions \
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \
-	--outSAMtype BAM Unsorted \
+	--outSAMtype None \
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
@@ -281,7 +280,7 @@ else
 
 fi
 rm -rf {params.outdir}/{params.sample}_p1._STARgenome
-rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
+# rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
 """
 
 rule merge_SJ_tabs:
@@ -301,7 +300,7 @@ rule star2p:
 		pass1sjtab=rules.merge_SJ_tabs.output.pass1sjtab
 	output:
 		junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.out.bam")
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam")
 	params:
 		sample="{sample}",
 		peorse=get_peorse,
@@ -339,11 +338,11 @@ if [ "{params.peorse}" == "PE" ];then
 	--outFileNamePrefix {params.sample}_p2. \
 	--sjdbFileChrStartEnd {input.pass1sjtab} \
 	--chimSegmentMin 20 \
-	--chimOutType Junctions \
+	--chimOutType Junctions WithinBAM \
 	--chimMultimapNmax 10 \
 	--limitSjdbInsertNsj $limitSjdbInsertNsj \
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \
-	--outSAMtype BAM Unsorted \
+	--outSAMtype BAM SortedByCoordinate \
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
@@ -372,11 +371,11 @@ else
 	--outFileNamePrefix {params.sample}_p2. \
 	--sjdbFileChrStartEnd {input.pass1sjtab} \
 	--chimSegmentMin 20 \
-	--chimOutType Junctions \
+	--chimOutType Junctions WithinBAM \
 	--chimMultimapNmax 10 \
 	--limitSjdbInsertNsj $limitSjdbInsertNsj \
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \
-	--outSAMtype BAM Unsorted \
+	--outSAMtype BAM SortedByCoordinate \
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
@@ -384,6 +383,52 @@ else
 	--sjdbOverhang $overhang
 fi
 rm -rf {params.outdir}/{params.sample}_p2._STARgenome
+"""
+
+rule create_BSJ_bam:
+	input:
+		junction=rules.star2p.output.junction,
+		bam=rules.star2p.output.bam
+	output:
+		readids=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.readids"),
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam")
+	params:
+		sample="{sample}",
+		script1=join(SCRIPTS_DIR,"junctions2readids.py"),
+		script2=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
+		script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py")
+		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
+	threads : 4
+	shell:"""
+cd {params.outdir}
+
+## get BSJ readids along with chrom,site,cigar etc.
+python {params.script1} -j {input.junction} > {ouput.readids}
+
+## extract only the uniq readids
+cut -f1 {output.readids} | sort | uniq > /dev/shm/{params.sample}.readids
+
+## ensure the star2p file is indexed ... is should already be sorted by STAR
+if [ ! -f {input.bam}.bai ];then
+sambamba index {input.bam}
+fi
+
+## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
+## note the argument --readids here is just a list of readids
+python {params.script2} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.chimeric.bam --readids /dev/shm/{params.sample}.readids
+sambamba index /dev/shm/{params.sample}.chimeric.bam
+
+## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
+## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
+python {params.script3} --inputBAM /dev/shm/{params.sample}.chimeric.bam --outputBAM /dev/shm/{params.sample}.BSJs.tmp.bam --readids {output.readids}
+sambamba index /dev/shm/{params.sample}.BSJs.tmp.bam
+
+## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
+samtools view -H /dev/shm/{params.sample}.BSJs.tmp.bam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
+samtools view /dev/shm/{params.sample}.BSJs.tmp.bam | sort | uniq >> /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
+samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sorted.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.sorted.bam
 """
 
 rule annotate_circRNA:
@@ -496,3 +541,5 @@ cd {params.outdir}
 python {params.script} {params.lookup}
 python {params.script2} {params.lookup}
 """
+
+# rule clear:
