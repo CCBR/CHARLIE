@@ -11,4 +11,8 @@ samtools:
 star:
  version: "STAR/2.7.6a"
  alignTranscriptsPerReadNmax: "20000"
+python37:
+ version: "python/3.7"
+sambamba:
+ version: "sambamba/0.8.0"
 
