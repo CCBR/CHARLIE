@@ -396,7 +396,7 @@ rule create_BSJ_bam:
 		sample="{sample}",
 		script1=join(SCRIPTS_DIR,"junctions2readids.py"),
 		script2=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
-		script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py")
+		script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py"),
 		outdir=join(WORKDIR,"results","{sample}","STAR2p")
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
 	threads : 4
@@ -404,7 +404,7 @@ rule create_BSJ_bam:
 cd {params.outdir}
 
 ## get BSJ readids along with chrom,site,cigar etc.
-python {params.script1} -j {input.junction} > {ouput.readids}
+python {params.script1} -j {input.junction} > {output.readids}
 
 ## extract only the uniq readids
 cut -f1 {output.readids} | sort | uniq > /dev/shm/{params.sample}.readids
