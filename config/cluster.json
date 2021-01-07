@@ -4,10 +4,10 @@
         "mem": "20g",
         "partition": "norm,ccr",
         "threads": "2",
-        "time": "1:00:00",
+        "time": "4:00:00",
         "name"      : "{rule}.{wildcards}",
-        "output"    : "logs/{rule}.{wildcards}.out",
-        "error"     : "logs/{rule}.{wildcards}.err"
+        "output"    : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.out",
+        "error"     : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.err"
     },
     "cutadapt": {
         "mem": "120g",
@@ -20,21 +20,18 @@
         "time": "24:00:00"
     },
     "ciri": {
-        "mem": "400g",
+        "mem": "200g",
         "threads": "56",
-        "time": "24:00:00",
-        "partition": "largemem"
+        "time": "24:00:00"
     },
     "star1p": {
-        "mem": "400g",
+        "mem": "200g",
         "threads": "56",
-        "time": "24:00:00",
-        "partition": "largemem"
+        "time": "24:00:00"
     },
     "star2p": {
-        "mem": "400g",
+        "mem": "200g",
         "threads": "56",
-        "time": "48:00:00",
-        "partition": "largemem"
+        "time": "24:00:00"
     }    
 }
