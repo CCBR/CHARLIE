@@ -417,18 +417,21 @@ fi
 ## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
 ## note the argument --readids here is just a list of readids
 python {params.script2} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.chimeric.bam --readids /dev/shm/{params.sample}.readids
-sambamba index /dev/shm/{params.sample}.chimeric.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.chimeric.sorted.bam /dev/shm/{params.sample}.chimeric.bam
+rm -f /dev/shm/{params.sample}.chimeric.bam*
 
 ## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
 ## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
-python {params.script3} --inputBAM /dev/shm/{params.sample}.chimeric.bam --outputBAM /dev/shm/{params.sample}.BSJs.tmp.bam --readids {output.readids}
-sambamba index /dev/shm/{params.sample}.BSJs.tmp.bam
+python {params.script3} --inputBAM /dev/shm/{params.sample}.chimeric.sorted.bam --outputBAM /dev/shm/{params.sample}.BSJs.tmp.bam --readids {output.readids}
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.BSJs.tmp.sorted.bam /dev/shm/{params.sample}.BSJs.tmp.bam
+rm -f /dev/shm/{params.sample}.BSJs.tmp.bam*
 
 ## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
-samtools view -H /dev/shm/{params.sample}.BSJs.tmp.bam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
-samtools view /dev/shm/{params.sample}.BSJs.tmp.bam | sort | uniq >> /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
-samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sorted.bam
-sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.sorted.bam
+samtools view -H /dev/shm/{params.sample}.BSJs.tmp.sorted.bam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
+samtools view /dev/shm/{params.sample}.BSJs.tmp.sorted.bam | sort | uniq >> /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
+samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
+rm -f /dev/shm/{params.sample}.BSJs.tmp.dedup.bam*
 """
 
 rule annotate_circRNA:
