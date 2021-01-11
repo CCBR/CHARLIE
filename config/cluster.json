@@ -37,6 +37,6 @@
     "create_BSJ_bam": {
         "mem": "200g",
         "threads": "4",
-        "time": "12:00:00"
+        "time": "24:00:00"
     }    
 }
