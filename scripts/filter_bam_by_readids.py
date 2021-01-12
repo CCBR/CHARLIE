@@ -10,11 +10,23 @@ parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
 parser.add_argument('--readids', dest='readids', type=str, required=True,
                     help='file with readids to keep (one readid per line)')
 args = parser.parse_args()
-rids=list(map(lambda x:x.strip(),open(args.readids,'r').readlines()))
+rids = list(map(lambda x:x.strip(),open(args.readids,'r').readlines()))
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
+bigdict = dict()
+
+count=0
 for read in inBAM.fetch():
-	if read.query_name in rids:
-		outBAM.write(read)
+	count+=1
+	if count%1000000 == 0:
+		print("%d reads read!"%(count))
+	qn=read.query_name
+	if not qn in bigdict:
+		bigdict[qn]=list()
+	bigdict[qn].append(read)
 inBAM.close()
+
+for r in rids:
+	for read in bigdict[r]:
+		outBAM.write(read)
 outBAM.close()
