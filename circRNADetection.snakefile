@@ -127,14 +127,14 @@ rule all:
 		## BSJ bam
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
 		## circExplorer
-		# expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
 		## ciri
-		# expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
 		## ciri aggregate count matrix
-		# join(WORKDIR,"results","ciri_count_matrix.txt"),
+		join(WORKDIR,"results","ciri_count_matrix.txt"),
 		## circExplorer aggregate count matrix
-		# join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		# join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
+		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
+		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 
 rule cutadapt:
 	input:
