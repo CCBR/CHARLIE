@@ -20,9 +20,10 @@
         "time": "24:00:00"
     },
     "ciri": {
-        "mem": "200g",
+        "mem": "400g",
         "threads": "56",
-        "time": "24:00:00"
+        "time": "24:00:00",
+        "partition": "largemem"
     },
     "star1p": {
         "mem": "200g",
