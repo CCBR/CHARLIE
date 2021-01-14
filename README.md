@@ -15,3 +15,4 @@ This circularRNA detection pipeline uses CIRCExplorer2 and CIRI2 in parallel to 
 * flowchart added
 * adding slurmjobid to log/err file names
 * v0.3.1 has significant (>10X) performance improvements at BSJ bam creation
+* v0.3.3 splits BSJ bams into human and viral bams, and also converts them to bigwigs
