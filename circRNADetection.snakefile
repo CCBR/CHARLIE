@@ -69,6 +69,9 @@ def check_writeaccess(filename):
 check_readaccess("config/config.yaml")
 configfile: "config/config.yaml"
 
+## set memory limit 
+## used for sambamba sort, etc
+MEMORYG="100G"
 
 #resouce absolute path
 WORKDIR=config['workdir']
@@ -135,6 +138,9 @@ rule all:
 		## circExplorer aggregate count matrix
 		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
 		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
+		## bigwigs
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 
 rule cutadapt:
 	input:
@@ -211,7 +217,7 @@ rule star1p:
 		outdir=join(WORKDIR,"results","{sample}","STAR1p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['hg38_plus_virusus_gtf']
+		gtf=config['hg38_plus_viruses_gtf']
 	envmodules: TOOLS["star"]["version"]
 	threads: 56
 	shell:"""
@@ -308,7 +314,7 @@ rule star2p:
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['hg38_plus_virusus_gtf']
+		gtf=config['hg38_plus_viruses_gtf']
 	envmodules: TOOLS["star"]["version"]
 	threads: 56
 	shell:"""
@@ -394,6 +400,7 @@ rule create_BSJ_bam:
 		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam")
 	params:
 		sample="{sample}",
+		memG=MEMORYG,
 		script1=join(SCRIPTS_DIR,"junctions2readids.py"),
 		script2=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
 		script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py"),
@@ -417,22 +424,61 @@ fi
 ## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
 ## note the argument --readids here is just a list of readids
 python {params.script2} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.chimeric.bam --readids /dev/shm/{params.sample}.readids
-sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.chimeric.sorted.bam /dev/shm/{params.sample}.chimeric.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.chimeric.sorted.bam /dev/shm/{params.sample}.chimeric.bam
 rm -f /dev/shm/{params.sample}.chimeric.bam*
 
 ## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
 ## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
 python {params.script3} --inputBAM /dev/shm/{params.sample}.chimeric.sorted.bam --outputBAM /dev/shm/{params.sample}.BSJs.tmp.bam --readids {output.readids}
-sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.BSJs.tmp.sorted.bam /dev/shm/{params.sample}.BSJs.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.BSJs.tmp.sorted.bam /dev/shm/{params.sample}.BSJs.tmp.bam
 rm -f /dev/shm/{params.sample}.BSJs.tmp.bam*
 
 ## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
 samtools view -H /dev/shm/{params.sample}.BSJs.tmp.sorted.bam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
 samtools view /dev/shm/{params.sample}.BSJs.tmp.sorted.bam | sort | uniq >> /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
 samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
-sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
 rm -f /dev/shm/{params.sample}.BSJs.tmp.dedup.bam*
 """
+
+rule split_BAM_create_BW:
+	input:
+		bam=rules.create_BSJ_bam.output.bam
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw")
+	params:
+		sample="{sample}",
+		workdir=WORKDIR,
+		memG=MEMORYG,
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		regions=config['regions']
+	threads: 2
+	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
+	shell:"""
+cd {params.outdir}
+bam_basename="$(basename {input.bam})"
+while read a b;do
+bam="${{bam_basename%.*}}.${{a}}.bam"
+samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+bw="${{bam%.*}}.bw"
+bdg="${{bam%.*}}.bdg"
+sizes="${{bam%.*}}.sizes"
+bedtools genomecov -bg -ibam $bam > $bdg
+bedSort $bdg $bdg
+if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
+samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+bedGraphToBigWig $bdg $sizes $bw
+else
+touch $bw
+fi
+rm -f $bdg $sizes
+done < {params.regions}
+"""	
+
+
+
 
 rule annotate_circRNA:
 	input:
@@ -445,7 +491,7 @@ rule annotate_circRNA:
 		workdir=WORKDIR,
 		outdir=join(WORKDIR,"results","{sample}","circExplorer"),
 		genepred=config['genepred_w_geneid'],
-		reffa=config['reffa']
+		reffa=config['hg38_plus_viruses_fa']
 	threads: 1
 	envmodules: TOOLS["circexplorer"]["version"]
 	shell:"""
@@ -481,9 +527,9 @@ rule ciri:
 		outdir=join(WORKDIR,"results","{sample}","ciri"),
 		peorse=get_peorse,
 		genepred=config['genepred_w_geneid'],
-		reffa=config['reffa'],
-		bwaindex=config['hg38_plus_virusus_bwa_index'],
-		gtf=config['hg38_plus_virusus_gtf'],
+		reffa=config['hg38_plus_viruses_fa'],
+		bwaindex=config['hg38_plus_viruses_bwa_index'],
+		gtf=config['hg38_plus_viruses_gtf'],
 		ciripl=config['ciri_perl_script']
 	threads: 56
 	envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
