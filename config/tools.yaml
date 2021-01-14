@@ -15,4 +15,8 @@ python37:
  version: "python/3.7"
 sambamba:
  version: "sambamba/0.8.0"
+ucsc:
+ version: "ucsc/407"
+bedtools:
+ version: "bedtools/2.29.2"
 
