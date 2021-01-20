@@ -3,18 +3,30 @@ tools: "config/tools.yaml"
 cluster: "config/cluster.json"
 adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
+# OLD
+#
 # hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
 # hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_gencodeV35_plus_viruses.gtf"
-hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa"
-hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.gtf"
-regions: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa.regions"
 #
-star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/STAR_index_no_GTF_2.7.6a"
+# hg38_plus_viruses
 #
-hg38_plus_viruses_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses"
+# hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa"
+# hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/STAR_index_no_GTF_2.7.6a"
+# hg38_plus_viruses_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.genes.genepred_w_geneid"
+#
+# hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
+#
+hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regionss"
+star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a"
+hg38_plus_viruses_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
 #
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
-genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.genes.genepred_w_geneid"
 #
 ## you probably need to change or comment/uncomment some of these
 #
