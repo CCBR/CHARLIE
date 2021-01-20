@@ -38,4 +38,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-.kopardevn_dir_bash_history
+**/.*
+!.editorconfig
+!.gitignore
+!.gitattributes
