@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+function get_git_commitid_tag() {
+  cd $1
+  gid=$(git rev-parse HEAD)
+  tag=$(git describe --tags $gid)
+  echo -ne "$gid\t$tag"
+}
+
 # ## setting PIPELINE_HOME
 # ## clone the pipeline to a folder
 # ## git clone https://github.com/kopardev/circRNA.git
@@ -16,6 +23,8 @@ a=$b
 done
 # echo $a
 WORKDIR=$(dirname $a)
+GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
+echo "Git Commit/Tag: $GIT_COMMIT_TAG"
 
 function usage() { cat << EOF
 test.sh: test the workflow.
