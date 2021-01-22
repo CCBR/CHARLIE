@@ -141,6 +141,8 @@ rule all:
 		## bigwigs
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
+		## CLEAR quant output
+		expand(join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt"),sample=SAMPLES),
 
 rule cutadapt:
 	input:
@@ -217,7 +219,7 @@ rule star1p:
 		outdir=join(WORKDIR,"results","{sample}","STAR1p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['hg38_plus_viruses_gtf']
+		gtf=config['ref_gtf']
 	envmodules: TOOLS["star"]["version"]
 	threads: 56
 	shell:"""
@@ -314,7 +316,7 @@ rule star2p:
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['hg38_plus_viruses_gtf']
+		gtf=config['ref_gtf']
 	envmodules: TOOLS["star"]["version"]
 	threads: 56
 	shell:"""
@@ -491,7 +493,7 @@ rule annotate_circRNA:
 		workdir=WORKDIR,
 		outdir=join(WORKDIR,"results","{sample}","circExplorer"),
 		genepred=config['genepred_w_geneid'],
-		reffa=config['hg38_plus_viruses_fa']
+		reffa=config['ref_fa']
 	threads: 1
 	envmodules: TOOLS["circexplorer"]["version"]
 	shell:"""
@@ -527,9 +529,9 @@ rule ciri:
 		outdir=join(WORKDIR,"results","{sample}","ciri"),
 		peorse=get_peorse,
 		genepred=config['genepred_w_geneid'],
-		reffa=config['hg38_plus_viruses_fa'],
-		bwaindex=config['hg38_plus_viruses_bwa_index'],
-		gtf=config['hg38_plus_viruses_gtf'],
+		reffa=config['ref_fa'],
+		bwaindex=config['ref_bwa_index'],
+		gtf=config['ref_gtf'],
 		ciripl=config['ciri_perl_script']
 	threads: 56
 	envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
@@ -567,7 +569,7 @@ rule create_ciri_count_matrix:
 		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
 		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
 		outdir=join(WORKDIR,"results")
-	envmodules: "python/3.7"
+	envmodules: TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
 python {params.script} {params.lookup}
@@ -584,11 +586,73 @@ rule create_circexplorer_count_matrix:
 		script2=join(SCRIPTS_DIR,"Create_circExplorer_BSJ_count_matrix.py"),
 		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
 		outdir=join(WORKDIR,"results")
-	envmodules: "python/3.7"
+	envmodules: TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
 python {params.script} {params.lookup}
 python {params.script2} {params.lookup}
 """
 
-# rule clear:
+rule clear:
+	input:
+		ifq1=rules.cutadapt.output.of1,
+		ifq2=rules.cutadapt.output.of2
+	output:
+		outf1=join(WORKDIR,"results","{sample}","CLEAR","circ","bsj.bed"),
+		outf2=join(WORKDIR,"results","{sample}","CLEAR","hisat","sp.txt"),
+		outf3=join(WORKDIR,"results","{sample}","CLEAR","fusion","junctions.bed"),
+		outf4=join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt")
+	params:
+		genome=config["ref_fa"],
+		hisatindex=config["ref_hisat_index"],
+		bowtie1index=config["ref_bowtie1_index"],
+		gtf=config["ref_gtf"],
+		outdir=join(WORKDIR,"results","{sample}","CLEAR")
+	envmodules: TOOLS["circexplorer"]["version"], TOOLS["hisat"]["version"], TOOLS["stringtie"]["version"]
+	conda:
+		"envs/clear.yaml"
+	threads: 56
+	shell:"""
+#usage: clear_quant [-h] -1 M1 [-2 M2] -g GENOME -i HISAT -j BOWTIE1 -G GTF
+#                   [-o OUTPUT] [-p THREAD]
+#
+#optional arguments:
+#  -h, --help            show this help message and exit
+#  -1 M1                 Comma-separated list of read sequence files in FASTQ
+#                        format. When running with pair-end read, this should
+#                        contain #1 mates.
+#  -2 M2                 Comma-separated list of read sequence files in FASTQ
+#                        format. -2 is only used when running with pair-end
+#                        read. This should contain #2 mates.
+#  -g GENOME, --genome GENOME
+#                        Genome FASTA file
+#  -i HISAT, --hisat HISAT
+#                        Index files for HISAT2
+#  -j BOWTIE1, --bowtie1 BOWTIE1
+#                        Index files for TopHat-Fusion
+#  -G GTF, --gtf GTF     Annotation GTF file.
+#  -o OUTPUT, --output OUTPUT
+#                        The output directory
+#  -p THREAD, --thread THREAD
+#                        Running threads. [default: 5]
+genome="{params.genome}"
+hisatindex="{params.hisatindex}"
+bowtie1index="{params.bowtie1index}"
+gtf="{params.gtf}"
+clear_quant \
+-1 {input.ifq1} -2 {input.ifq2} \
+-g $genome \
+-i $hisatindex \
+-j $bowtie1index \
+-G $gtf \
+-o {params.outdir} -p {threads}
+# delete unrequired files
+# rm -rf {params.outdir}/circ/genePred.tmp
+# rm -rf {params.outdir}/circ/annotation.txt
+# rm -rf {params.outdir}/hisat/sp.txt
+# rm -rf {params.outdir}/hisat/align.sam
+# rm -rf {params.outdir}/hisat/unmapped.fq
+# rm -rf {params.outdir}/hisat/tmp.bam
+# rm -rf {params.outdir}/fusion/unmapped.bam
+# rm -rf {params.outdir}/fusion/prep_reads.info
+"""
