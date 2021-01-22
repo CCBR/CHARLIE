@@ -1,3 +1,5 @@
+bedtools:
+ version: "bedtools/2.29.2"
 bwa:
  version: "bwa/0.7.17"
 circexplorer:
@@ -6,17 +8,19 @@ cutadapt:
  version: "cutadapt/1.18"
 fastqc:
  version: "fastqc/0.11.9"
+hisat:
+ version: "hisat/2.2.1.0"
+python37:
+ version: "python/3.7"
+sambamba:
+ version: "sambamba/0.8.0"
 samtools:
  version: "samtools/1.11"
 star:
  version: "STAR/2.7.6a"
  alignTranscriptsPerReadNmax: "20000"
-python37:
- version: "python/3.7"
-sambamba:
- version: "sambamba/0.8.0"
+stringtie:
+ version: "stringtie/2.1.4"
 ucsc:
  version: "ucsc/407"
-bedtools:
- version: "bedtools/2.29.2"
 
