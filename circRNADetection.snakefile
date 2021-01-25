@@ -118,29 +118,29 @@ rule all:
 		## cutadapt
 		expand(join(WORKDIR,"results","{sample}","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
-		## fastqc
-		expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
-		## star1p
-		expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
-		## merge junctions
-		join(WORKDIR,"results","pass1.out.tab"),
-		## star2p
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
-		## BSJ bam
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
-		## circExplorer
-		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
-		## ciri
-		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
-		## ciri aggregate count matrix
-		join(WORKDIR,"results","ciri_count_matrix.txt"),
-		## circExplorer aggregate count matrix
-		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
-		## bigwigs
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
+		# ## fastqc
+		# expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
+		# ## star1p
+		# expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
+		# ## merge junctions
+		# join(WORKDIR,"results","pass1.out.tab"),
+		# ## star2p
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		# ## BSJ bam
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
+		# ## circExplorer
+		# expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
+		# ## ciri
+		# expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+		# ## ciri aggregate count matrix
+		# join(WORKDIR,"results","ciri_count_matrix.txt"),
+		# ## circExplorer aggregate count matrix
+		# join(WORKDIR,"results","circExplorer_count_matrix.txt"),
+		# join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
+		# ## bigwigs
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
 		expand(join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt"),sample=SAMPLES),
 
@@ -608,11 +608,13 @@ rule clear:
 		bowtie1index=config["ref_bowtie1_index"],
 		gtf=config["ref_gtf"],
 		outdir=join(WORKDIR,"results","{sample}","CLEAR")
-	envmodules: TOOLS["circexplorer"]["version"], TOOLS["hisat"]["version"], TOOLS["stringtie"]["version"]
+	# envmodules: TOOLS["circexplorer"]["version"], TOOLS["hisat"]["version"], TOOLS["stringtie"]["version"]
+	container: "docker://nciccbr/ccbr_clear:latest"
 	conda:
 		"envs/clear.yaml"
 	threads: 56
 	shell:"""
+if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
 #usage: clear_quant [-h] -1 M1 [-2 M2] -g GENOME -i HISAT -j BOWTIE1 -G GTF
 #                   [-o OUTPUT] [-p THREAD]
 #

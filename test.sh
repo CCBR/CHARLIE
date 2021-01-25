@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+module purge
 
 function get_git_commitid_tag() {
   cd $1
@@ -79,17 +80,21 @@ function run () {
 
   module load python/3.7
   module load snakemake/5.24.1
-  # module load singularity
+  module load singularity
 
   # --use-singularity \
   # --singularity-args "-B ${WORKDIR}" \
+
+  # --use-conda \
+  # --use-envmodules \
 
 
   if [ "$1" == "local" ];then
 
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
-  --use-envmodules \
+  --use-singularity \
+  --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
   --printshellcmds \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config/config.yaml \
@@ -101,7 +106,8 @@ function run () {
 
   snakemake $1 -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
-  --use-envmodules \
+  --use-singularity \
+  --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
   --printshellcmds \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config/config.yaml \
