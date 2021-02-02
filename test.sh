@@ -83,7 +83,7 @@ function run () {
   module load singularity
 
   # --use-singularity \
-  # --singularity-args "-B ${WORKDIR}" \
+  # --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
 
   # --use-conda \
   # --use-envmodules \
@@ -93,9 +93,10 @@ function run () {
 
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
+  --printshellcmds \
   --use-singularity \
   --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
-  --printshellcmds \
+  --use-envmodules \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config/config.yaml \
   --cores all \
@@ -108,6 +109,7 @@ function run () {
   --directory $WORKDIR \
   --use-singularity \
   --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+  --use-envmodules \
   --printshellcmds \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config/config.yaml \

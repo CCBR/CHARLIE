@@ -610,8 +610,8 @@ rule clear:
 		outdir=join(WORKDIR,"results","{sample}","CLEAR")
 	# envmodules: TOOLS["circexplorer"]["version"], TOOLS["hisat"]["version"], TOOLS["stringtie"]["version"]
 	container: "docker://nciccbr/ccbr_clear:latest"
-	conda:
-		"envs/clear.yaml"
+	# conda:
+	# 	"envs/clear.yaml"
 	threads: 56
 	shell:"""
 if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
