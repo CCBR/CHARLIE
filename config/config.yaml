@@ -1,21 +1,28 @@
+## you probably need to change or comment/uncomment some of these
+#
+# The working dir... output will be in the results subfolder of the workdir
+workdir: "/data/Ziegelbauer_lab/circRNADetection/ccbr983_v4"
+#
+# tab delimited samples file ... should have the following 3 columns
+# sampleName	path_to_R1_fastq	path_to_R2_fastq
+#
+samples: "config/samples.tsv"
+#
+# Should the CLEAR pipeline be run
+run_clear: "False"
+#
+#
+#
+#
+#
+#
+#
 ## you most probably dont need to change these
 tools: "config/tools.yaml"
 cluster: "config/cluster.json"
 adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
-# OLD
-#
-# hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_plus_viruses.fa"
-# hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/circRNADetection/resources/hg38_gencodeV35_plus_viruses.gtf"
-#
-# hg38_plus_viruses
-#
-# hg38_plus_viruses_fa: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa"
-# hg38_plus_viruses_gtf: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.gtf"
-# regions: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses.fa.regions"
-# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/STAR_index_no_GTF_2.7.6a"
-# hg38_plus_viruses_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_plus_viruses"
-# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_plus_viruses/hg38_gencodeV36_plus_viruses.genes.genepred_w_geneid"
+## Resources
 #
 # hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
 #
@@ -30,8 +37,14 @@ genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_p
 #
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 #
-## you probably need to change or comment/uncomment some of these
-#
-workdir: "/data/Ziegelbauer_lab/circRNADetection/ccbr983_v4"
-#
-samples: "config/samples.tsv"
+# 2 separate filters are applied to junctions reported by STAR 1st pass
+# star1passfilter1regions defines regions from the "regions" file to which filter1 will be applied
+# filter2 will be applied to all other regions
+# filter1: generally, remove duplicates, remove non-canonical, remove unannotated --> applied to host
+# filter2: generally, remove duplicates only --> applied to viruses
+# True or False
+star1passfilter1regions: "hg38,rRNA,ERCC"
+star1passfilter1_noncanonical: "True"
+star1passfilter1_unannotated: "True"
+star1passfilter2_noncanonical: "False"
+star1passfilter2_unannotated: "False"

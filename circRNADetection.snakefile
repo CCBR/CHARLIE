@@ -29,6 +29,12 @@ def get_raw_and_trim_fastqs(wildcards):
 	d["R2trim"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R2.trim.fastq.gz")	
 	return d
 
+def get_clear_input_fastqs(wildcards):
+	d=dict()
+	if config['run_clear']=="True":
+		d["R1"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R1.trim.fastq.gz")
+		d["R2"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R2.trim.fastq.gz")
+	return d
 
 def get_peorse(wildcards):
 	return SAMPLESDF["PEorSE"][wildcards.sample]
@@ -296,9 +302,25 @@ rule merge_SJ_tabs:
 		expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"), sample=SAMPLES)
 	output:
 		pass1sjtab=join(WORKDIR,"results","pass1.out.tab")
+	params:
+		script1=join(SCRIPTS_DIR,"apply_junction_filters.py"),
+		regions=config['regions'],
+		filter1regions=config['star1passfilter1regions'],
+		filter1_noncanonical=config['star1passfilter1_non-canonical'],
+		filter1_unannotated=config['star1passfilter1_unannotated'],
+		filter2_noncanonical=config['star1passfilter2_non-canonical'],
+		filter2_unannotated=config['star1passfilter2_unannotated']
 	threads: 1
 	shell:"""
-cat {input} |sort|uniq|awk -F \"\\t\" '{{if ($5>0 && $6==1) {{print}}}}'|cut -f1-4|sort -k1,1 -k2,2n|uniq > {output.pass1sjtab}
+cat {input} | \
+python {params.script1} \
+	--regions {params.regions} \
+	--filter1regions {params.filter1regions} \
+	--filter1_noncanonical {params.fitler1_noncanonical} \
+	--filter1_unannotated {params.fitler1_unannotated} \
+	--filter2_noncanonical {params.fitler2_noncanonical} \
+	--filter2_unannotated {params.fitler1_unannotated} | \
+cut -f1-4 | sort -k1,1 -k2,2n | uniq > {output.pass1sjtab}
 """
 
 rule star2p:
@@ -595,8 +617,7 @@ python {params.script2} {params.lookup}
 
 rule clear:
 	input:
-		ifq1=rules.cutadapt.output.of1,
-		ifq2=rules.cutadapt.output.of2
+		unpack(get_clear_input_fastqs)
 	output:
 		outf1=join(WORKDIR,"results","{sample}","CLEAR","circ","bsj.bed"),
 		outf2=join(WORKDIR,"results","{sample}","CLEAR","hisat","sp.txt"),
@@ -608,10 +629,7 @@ rule clear:
 		bowtie1index=config["ref_bowtie1_index"],
 		gtf=config["ref_gtf"],
 		outdir=join(WORKDIR,"results","{sample}","CLEAR")
-	# envmodules: TOOLS["circexplorer"]["version"], TOOLS["hisat"]["version"], TOOLS["stringtie"]["version"]
 	container: "docker://nciccbr/ccbr_clear:latest"
-	# conda:
-	# 	"envs/clear.yaml"
 	threads: 56
 	shell:"""
 if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
@@ -637,24 +655,20 @@ if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
 #                        The output directory
 #  -p THREAD, --thread THREAD
 #                        Running threads. [default: 5]
-genome="{params.genome}"
-hisatindex="{params.hisatindex}"
-bowtie1index="{params.bowtie1index}"
-gtf="{params.gtf}"
 clear_quant \
--1 {input.ifq1} -2 {input.ifq2} \
--g $genome \
--i $hisatindex \
--j $bowtie1index \
--G $gtf \
+-1 {input.R1} -2 {input.R2} \
+-g {params.genome} \
+-i {params.hisatindex} \
+-j {params.bowtie1index} \
+-G {params.gtf} \
 -o {params.outdir} -p {threads}
 # delete unrequired files
-# rm -rf {params.outdir}/circ/genePred.tmp
-# rm -rf {params.outdir}/circ/annotation.txt
-# rm -rf {params.outdir}/hisat/sp.txt
-# rm -rf {params.outdir}/hisat/align.sam
-# rm -rf {params.outdir}/hisat/unmapped.fq
-# rm -rf {params.outdir}/hisat/tmp.bam
-# rm -rf {params.outdir}/fusion/unmapped.bam
-# rm -rf {params.outdir}/fusion/prep_reads.info
+rm -rf {params.outdir}/circ/genePred.tmp
+rm -rf {params.outdir}/circ/annotation.txt
+rm -rf {params.outdir}/hisat/sp.txt
+rm -rf {params.outdir}/hisat/align.sam
+rm -rf {params.outdir}/hisat/unmapped.fq
+rm -rf {params.outdir}/hisat/tmp.bam
+rm -rf {params.outdir}/fusion/unmapped.bam
+rm -rf {params.outdir}/fusion/prep_reads.info
 """
