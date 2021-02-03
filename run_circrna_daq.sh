@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# cirna_daq
+# d=detection
+# a=annotation
+# q=quantification
 set -euo pipefail
 module purge
 
