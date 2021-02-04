@@ -1,14 +1,14 @@
 ## you probably need to change or comment/uncomment some of these
 #
 # The working dir... output will be in the results subfolder of the workdir
-workdir: "/data/Ziegelbauer_lab/circRNADetection/ccbr983_v4"
+workdir: "WORKDIR"
 #
 # tab delimited samples file ... should have the following 3 columns
 # sampleName	path_to_R1_fastq	path_to_R2_fastq
 #
-samples: "config/samples.tsv"
+samples: "WORKDIR/samples.tsv"
 #
-# Should the CLEAR pipeline be run
+# Should the CLEAR pipeline be run?
 run_clear: "False"
 #
 #
@@ -18,9 +18,11 @@ run_clear: "False"
 #
 #
 ## you most probably dont need to change these
-tools: "config/tools.yaml"
-cluster: "config/cluster.json"
-adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
+scriptsdir: "PIPELINE_HOME/scripts"
+resourcesdir: "PIPELINE_HOME/resources"
+tools: "PIPELINE_HOME/config/tools.yaml"
+cluster: "PIPELINE_HOME/config/cluster.json"
+adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
 ## Resources
 #

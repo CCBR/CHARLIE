@@ -25,15 +25,15 @@ def get_raw_and_trim_fastqs(wildcards):
 	d=dict()
 	d["R1"]=SAMPLESDF["R1"][wildcards.sample]
 	d["R2"]=SAMPLESDF["R2"][wildcards.sample]
-	d["R1trim"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R1.trim.fastq.gz")
-	d["R2trim"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R2.trim.fastq.gz")	
+	d["R1trim"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R1.trim.fastq.gz")
+	d["R2trim"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R2.trim.fastq.gz")	
 	return d
 
 def get_clear_input_fastqs(wildcards):
 	d=dict()
 	if config['run_clear']=="True":
-		d["R1"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R1.trim.fastq.gz")
-		d["R2"]=join(WORKDIR,"results",wildcards.sample,wildcards.sample+".R2.trim.fastq.gz")
+		d["R1"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R1.trim.fastq.gz")
+		d["R2"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R2.trim.fastq.gz")
 	return d
 
 def get_peorse(wildcards):
@@ -72,8 +72,8 @@ def check_writeaccess(filename):
 
 ##### load config and sample sheets #####
 
-check_readaccess("config/config.yaml")
-configfile: "config/config.yaml"
+# check_readaccess("config/config.yaml")
+# configfile: "config/config.yaml"
 
 ## set memory limit 
 ## used for sambamba sort, etc
@@ -81,8 +81,8 @@ MEMORYG="100G"
 
 #resouce absolute path
 WORKDIR=config['workdir']
-SCRIPTS_DIR=join(WORKDIR,"scripts")
-RESOURCES_DIR=join(WORKDIR,"resources")
+SCRIPTS_DIR=config['scriptsdir']
+RESOURCES_DIR=config['resourcesdir']
 if not os.path.exists(join(WORKDIR,"fastqs")):
 	os.mkdir(join(WORKDIR,"fastqs"))
 if not os.path.exists(join(WORKDIR,"results")):
@@ -122,31 +122,31 @@ with open(config["tools"]) as f:
 rule all:
 	input:
 		## cutadapt
-		expand(join(WORKDIR,"results","{sample}","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
-		# ## fastqc
-		# expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
-		# ## star1p
-		# expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
-		# ## merge junctions
-		# join(WORKDIR,"results","pass1.out.tab"),
-		# ## star2p
-		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
-		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
-		# ## BSJ bam
-		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
-		# ## circExplorer
-		# expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
-		# ## ciri
-		# expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
-		# ## ciri aggregate count matrix
-		# join(WORKDIR,"results","ciri_count_matrix.txt"),
-		# ## circExplorer aggregate count matrix
-		# join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-		# join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
-		# ## bigwigs
-		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
-		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
+		## fastqc
+		expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
+		## star1p
+		expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
+		## merge junctions
+		join(WORKDIR,"results","pass1.out.tab"),
+		## star2p
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		## BSJ bam
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
+		## circExplorer
+		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
+		## ciri
+		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+		## ciri aggregate count matrix
+		join(WORKDIR,"results","ciri_count_matrix.txt"),
+		## circExplorer aggregate count matrix
+		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
+		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
+		## bigwigs
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
 		expand(join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt"),sample=SAMPLES),
 
@@ -154,8 +154,8 @@ rule cutadapt:
 	input:
 		unpack(get_fastqs)
 	output:
-		of1=join(WORKDIR,"results","{sample}","{sample}.R1.trim.fastq.gz"),
-		of2=join(WORKDIR,"results","{sample}","{sample}.R2.trim.fastq.gz")
+		of1=join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),
+		of2=join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz")
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
@@ -306,9 +306,9 @@ rule merge_SJ_tabs:
 		script1=join(SCRIPTS_DIR,"apply_junction_filters.py"),
 		regions=config['regions'],
 		filter1regions=config['star1passfilter1regions'],
-		filter1_noncanonical=config['star1passfilter1_non-canonical'],
+		filter1_noncanonical=config['star1passfilter1_noncanonical'],
 		filter1_unannotated=config['star1passfilter1_unannotated'],
-		filter2_noncanonical=config['star1passfilter2_non-canonical'],
+		filter2_noncanonical=config['star1passfilter2_noncanonical'],
 		filter2_unannotated=config['star1passfilter2_unannotated']
 	threads: 1
 	shell:"""
@@ -316,10 +316,10 @@ cat {input} | \
 python {params.script1} \
 	--regions {params.regions} \
 	--filter1regions {params.filter1regions} \
-	--filter1_noncanonical {params.fitler1_noncanonical} \
-	--filter1_unannotated {params.fitler1_unannotated} \
-	--filter2_noncanonical {params.fitler2_noncanonical} \
-	--filter2_unannotated {params.fitler1_unannotated} | \
+	--filter1_noncanonical {params.filter1_noncanonical} \
+	--filter1_unannotated {params.filter1_unannotated} \
+	--filter2_noncanonical {params.filter2_noncanonical} \
+	--filter2_unannotated {params.filter1_unannotated} | \
 cut -f1-4 | sort -k1,1 -k2,2n | uniq > {output.pass1sjtab}
 """
 
@@ -617,21 +617,30 @@ python {params.script2} {params.lookup}
 
 rule clear:
 	input:
-		unpack(get_clear_input_fastqs)
+		R1=rules.cutadapt.output.of1,
+		R2=rules.cutadapt.output.of2
 	output:
 		outf1=join(WORKDIR,"results","{sample}","CLEAR","circ","bsj.bed"),
 		outf2=join(WORKDIR,"results","{sample}","CLEAR","hisat","sp.txt"),
 		outf3=join(WORKDIR,"results","{sample}","CLEAR","fusion","junctions.bed"),
 		outf4=join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt")
 	params:
-		genome=config["ref_fa"],
-		hisatindex=config["ref_hisat_index"],
-		bowtie1index=config["ref_bowtie1_index"],
-		gtf=config["ref_gtf"],
+		runclear=config['run_clear'],
+		genome=config['ref_fa'],
+		hisatindex=config['ref_hisat_index'],
+		bowtie1index=config['ref_bowtie1_index'],
+		gtf=config['ref_gtf'],
 		outdir=join(WORKDIR,"results","{sample}","CLEAR")
 	container: "docker://nciccbr/ccbr_clear:latest"
 	threads: 56
 	shell:"""
+if [ "{params.runclear}" == "False" ];then
+touch {output.outf1}
+touch {output.outf2}
+touch {output.outf3}
+touch {output.outf4}
+else
+
 if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
 #usage: clear_quant [-h] -1 M1 [-2 M2] -g GENOME -i HISAT -j BOWTIE1 -G GTF
 #                   [-o OUTPUT] [-p THREAD]
@@ -671,4 +680,6 @@ rm -rf {params.outdir}/hisat/unmapped.fq
 rm -rf {params.outdir}/hisat/tmp.bam
 rm -rf {params.outdir}/fusion/unmapped.bam
 rm -rf {params.outdir}/fusion/prep_reads.info
+
+fi
 """
