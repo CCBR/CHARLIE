@@ -141,6 +141,7 @@ function run() {
   if [ "$1" == "local" ];then
 
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+  --report ${WORKDIR}/runlocal_snakemake_report.html \
   --directory $WORKDIR \
   --printshellcmds \
   --use-singularity \
@@ -170,6 +171,7 @@ cd \$SLURM_SUBMIT_DIR
 
 snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 --directory $WORKDIR \
+--report ${WORKDIR}/runslurm_snakemake_report.html \
 --use-singularity \
 --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
 --use-envmodules \
