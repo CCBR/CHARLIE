@@ -10,6 +10,13 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
+def get_clear_target_files(SAMPLES,runclear):
+	targetfiles=[]
+	if runclear:
+		for s in SAMPLES:
+			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant","quant.txt"))
+	return targetfiles
+
 def get_file_size(filename):
 	filename=filename.strip()
 	if check_readaccess(filename):
@@ -27,13 +34,6 @@ def get_raw_and_trim_fastqs(wildcards):
 	d["R2"]=SAMPLESDF["R2"][wildcards.sample]
 	d["R1trim"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R1.trim.fastq.gz")
 	d["R2trim"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R2.trim.fastq.gz")	
-	return d
-
-def get_clear_input_fastqs(wildcards):
-	d=dict()
-	if config['run_clear']=="True":
-		d["R1"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R1.trim.fastq.gz")
-		d["R2"]=join(WORKDIR,"results",wildcards.sample,"trim",wildcards.sample+".R2.trim.fastq.gz")
 	return d
 
 def get_peorse(wildcards):
@@ -148,7 +148,7 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
-		expand(join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt"),sample=SAMPLES),
+		get_clear_target_files(SAMPLES,config['run_clear']),
 
 rule cutadapt:
 	input:
@@ -625,7 +625,6 @@ rule clear:
 		outf3=join(WORKDIR,"results","{sample}","CLEAR","fusion","junctions.bed"),
 		outf4=join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt")
 	params:
-		runclear=config['run_clear'],
 		genome=config['ref_fa'],
 		hisatindex=config['ref_hisat_index'],
 		bowtie1index=config['ref_bowtie1_index'],
@@ -634,13 +633,6 @@ rule clear:
 	container: "docker://nciccbr/ccbr_clear:latest"
 	threads: 56
 	shell:"""
-if [ "{params.runclear}" == "False" ];then
-touch {output.outf1}
-touch {output.outf2}
-touch {output.outf3}
-touch {output.outf4}
-else
-
 if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
 #usage: clear_quant [-h] -1 M1 [-2 M2] -g GENOME -i HISAT -j BOWTIE1 -G GTF
 #                   [-o OUTPUT] [-p THREAD]
@@ -680,6 +672,4 @@ rm -rf {params.outdir}/hisat/unmapped.fq
 rm -rf {params.outdir}/hisat/tmp.bam
 rm -rf {params.outdir}/fusion/unmapped.bam
 rm -rf {params.outdir}/fusion/prep_reads.info
-
-fi
 """
