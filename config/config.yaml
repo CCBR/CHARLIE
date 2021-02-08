@@ -8,8 +8,8 @@ workdir: "WORKDIR"
 #
 samples: "WORKDIR/samples.tsv"
 #
-# Should the CLEAR pipeline be run?
-run_clear: "False"
+# Should the CLEAR pipeline be run? True or False WITHOUT quotes
+run_clear: False
 #
 #
 #
@@ -44,7 +44,7 @@ ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 # filter2 will be applied to all other regions
 # filter1: generally, remove duplicates, remove non-canonical, remove unannotated --> applied to host
 # filter2: generally, remove duplicates only --> applied to viruses
-# True or False
+# True or False WITH quotes
 star1passfilter1regions: "hg38,rRNA,ERCC"
 star1passfilter1_noncanonical: "True"
 star1passfilter1_unannotated: "True"
