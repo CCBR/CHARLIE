@@ -1,0 +1,32 @@
+# Project Information
+site_name: ONT RNAseq (cDNA only)
+site_author: Vishal Koparde, Ph.D.
+# Repository
+repo_name: CCBR/ont_rnaseq 
+repo_url: https://github.com/CCBR/ont_rnaseq
+
+# Copyright
+copyright: Copyright &copy; 2020 CCBR
+
+# Configuration
+theme:
+  name: material
+  palette:
+    scheme: default
+
+plugins:
+  - search
+
+# Customization
+extra:
+  social:
+    - icon: fontawesome/solid/users
+      link: http://bioinformatics.cancer.gov
+    - icon: fontawesome/brands/github
+      link: https://github.com/CCBR
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/orgs/nciccbr/repositories
+
+# Page Tree
+nav:
+  - Home: index.md
