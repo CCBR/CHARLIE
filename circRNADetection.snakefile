@@ -12,7 +12,7 @@ pd.set_option('display.max_colwidth', None)
 
 def get_clear_target_files(SAMPLES,runclear):
 	targetfiles=[]
-	if runclear:
+	if runclear==True or runclear=="True":
 		for s in SAMPLES:
 			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant","quant.txt"))
 	return targetfiles
