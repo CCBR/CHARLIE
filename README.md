@@ -20,3 +20,7 @@ This circularRNA detection pipeline uses CIRCExplorer2 and CIRI2 in parallel to 
 * v0.3.1 has significant (>10X) performance improvements at BSJ bam creation
 * v0.3.3 splits BSJ bams into human and viral bams, and also converts them to bigwigs
 * v0.3.4 adds hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC reference (source:Sarah)
+## v0.4.x
+* v0.4.0 
+  * [CLEAR](https://github.com/YangLab/CLEAR) added.
+  * wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
