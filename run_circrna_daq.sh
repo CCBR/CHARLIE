@@ -141,7 +141,6 @@ function run() {
   if [ "$1" == "local" ];then
 
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
-  --report ${WORKDIR}/runlocal_snakemake_report.html \
   --directory $WORKDIR \
   --printshellcmds \
   --use-singularity \
@@ -152,6 +151,13 @@ function run() {
   --cores all \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
+
+  if [ "$?" -eq "0" ];then
+    snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+    --report ${WORKDIR}/runlocal_snakemake_report.html \
+    --directory $WORKDIR \
+    --configfile ${WORKDIR}/config.yaml 
+  fi
 
   elif [ "$1" == "slurm" ];then
 
@@ -171,7 +177,6 @@ cd \$SLURM_SUBMIT_DIR
 
 snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 --directory $WORKDIR \
---report ${WORKDIR}/runslurm_snakemake_report.html \
 --use-singularity \
 --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
 --use-envmodules \
@@ -185,6 +190,15 @@ snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
+
+if [ "$?" -eq "0" ];then
+  snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+  --directory $WORKDIR \
+  --report ${WORKDIR}/runslurm_snakemake_report.html \
+  --configfile ${WORKDIR}/config.yaml \
+  --cluster-config ${PIPELINE_HOME}/config/cluster.json \
+  --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
+fi
 
 fi
 
