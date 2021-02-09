@@ -1,0 +1,505 @@
+% bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.4.0/run_circrna_daq.sh dryrun /scratch/circRNA_daq_test
+Pipeline Dir: /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA
+Git Commit/Tag: b2f387c1b6854646d12974cd16da1168d93bb43b	v0.4.0-14-gb2f387c
+Working Dir: /scratch/circRNA_daq_test
+[+] Loading python 3.7  ...
+[+] Loading snakemake  5.24.1
+Running...
+ls: cannot access /scratch/circRNA_daq_test/slurm-*.out: No such file or directory
+                                                                                            path_to_R1_fastq                                                                                  path_to_R2_fastq                                                  R1                                                                      R2 PEorSE
+sampleName
+GI1_N       /data/Ziegelbauer_lab/circRNADetection/rawdata/ccbr983/fastq2/5_GI112118_norm_S4_R1_001.fastq.gz  /data/Ziegelbauer_lab/circRNADetection/rawdata/ccbr983/fastq2/5_GI112118_norm_S4_R2_001.fastq.gz  /scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz                      /scratch/circRNA_daq_test/fastqs/GI1_N.R2.fastq.gz     PE
+GI1_T        /data/Ziegelbauer_lab/circRNADetection/rawdata/ccbr983/fastq2/6_GI112118_tum_S5_R1_001.fastq.gz                                                                                               NaN  /scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz  /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/dummy     SE
+Building DAG of jobs...
+Job counts:
+	count	jobs
+	1	all
+	2	annotate_circRNA
+	2	ciri
+	2	create_BSJ_bam
+	1	create_circexplorer_count_matrix
+	1	create_ciri_count_matrix
+	2	cutadapt
+	2	fastqc
+	1	merge_SJ_tabs
+	2	split_BAM_create_BW
+	2	star1p
+	2	star2p
+	20
+
+[Mon Feb  8 21:57:27 2021]
+rule cutadapt:
+    input: /scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz, /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/dummy
+    output: /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz
+    jobid: 2
+    wildcards: sample=GI1_T
+    threads: 56
+
+
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_T ];then mkdir /scratch/circRNA_daq_test/results/GI1_T;fi
+if [ "SE" == "PE" ];then
+	## Paired-end
+	cutadapt --pair-filter=any 	--nextseq-trim=2 	--trim-n 	-n 5 -O 5 	-q 10,10 -m 35:35 	-b file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-B file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-j 56 	-o /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz -p /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz 	/scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/dummy
+else
+	## Single-end
+	cutadapt 	--nextseq-trim=2 	--trim-n 	-n 5 -O 5 	-q 10,10 -m 35 	-b file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-j 56 	-o /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz 	/scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz
+	touch /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz
+fi
+
+
+[Mon Feb  8 21:57:27 2021]
+rule cutadapt:
+    input: /scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz, /scratch/circRNA_daq_test/fastqs/GI1_N.R2.fastq.gz
+    output: /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz
+    jobid: 1
+    wildcards: sample=GI1_N
+    threads: 56
+
+
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_N ];then mkdir /scratch/circRNA_daq_test/results/GI1_N;fi
+if [ "PE" == "PE" ];then
+	## Paired-end
+	cutadapt --pair-filter=any 	--nextseq-trim=2 	--trim-n 	-n 5 -O 5 	-q 10,10 -m 35:35 	-b file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-B file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-j 56 	-o /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz -p /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz 	/scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz /scratch/circRNA_daq_test/fastqs/GI1_N.R2.fastq.gz
+else
+	## Single-end
+	cutadapt 	--nextseq-trim=2 	--trim-n 	-n 5 -O 5 	-q 10,10 -m 35 	-b file:/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/TruSeq_and_nextera_adapters.consolidated.fa 	-j 56 	-o /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz 	/scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz
+	touch /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz
+fi
+
+
+[Mon Feb  8 21:57:27 2021]
+rule ciri:
+    input: /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.log, /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.bwa.log, /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.bwa.bam, /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.out
+    jobid: 14
+    wildcards: sample=GI1_N
+    threads: 56
+
+
+cd /scratch/circRNA_daq_test/results/GI1_N/ciri
+if [ "PE" == "PE" ];then
+	## paired-end
+	bwa mem -t 56 -T 19 	/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC 	/scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz 	> GI1_N.bwa.sam 2> /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.bwa.log
+else
+	## single-end
+	bwa mem -t 56 -T 19 	/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC 	/scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz 	> GI1_N.bwa.sam 2> /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.bwa.log
+fi
+perl /data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl -I GI1_N.bwa.sam -O /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.out -F /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa -A /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf -G /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.log -T 56
+samtools view -@56 -bS GI1_N.bwa.sam > /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.bwa.bam
+rm -rf GI1_N.bwa.sam
+
+
+[Mon Feb  8 21:57:27 2021]
+rule fastqc:
+    input: /scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz, /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/dummy, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/qc/fastqc/GI1_T.R1.trim_fastqc.zip
+    jobid: 4
+    wildcards: sample=GI1_T
+    threads: 16
+
+
+files=""
+for f in /scratch/circRNA_daq_test/fastqs/GI1_T.R1.fastq.gz /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/dummy /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz;do
+if [ "$(wc $f|awk '{print $1}')" != "0" ];then
+files=$(echo -ne "$files $f")
+fi
+done
+fastqc $files -t 16 -o /scratch/circRNA_daq_test/qc/fastqc
+
+
+[Mon Feb  8 21:57:27 2021]
+rule star1p:
+    input: /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1.SJ.out.tab
+    jobid: 6
+    wildcards: sample=GI1_T
+    threads: 56
+
+
+if [ -d /dev/shm/GI1_T ];then rm -rf /dev/shm/GI1_T;fi
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_T/STAR1p ];then mkdir /scratch/circRNA_daq_test/results/GI1_T/STAR1p;fi
+if [ "SE" == "PE" ];then
+# paired-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_T/STAR1p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 1000000 	--alignMatesGapMax 1000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz 	--readFilesCommand zcat 	--runThreadN 56 	--outFileNamePrefix GI1_T_p1. 	--chimSegmentMin 20 	--chimMultimapNmax 10 	--chimOutType Junctions 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype None 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_T 	--sjdbOverhang $overhang
+
+else
+
+#single-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_T/STAR1p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 1000000 	--alignMatesGapMax 1000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz 	--readFilesCommand zcat 	--runThreadN 56 	--outFileNamePrefix GI1_T_p1. 	--chimSegmentMin 20 	--chimMultimapNmax 10 	--chimOutType Junctions 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype None 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_T 	--sjdbOverhang $overhang
+
+fi
+rm -rf /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1._STARgenome
+# rm -rf /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1.Aligned.out.bam
+
+
+[Mon Feb  8 21:57:27 2021]
+rule ciri:
+    input: /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.log, /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.bwa.log, /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.bwa.bam, /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.out
+    jobid: 15
+    wildcards: sample=GI1_T
+    threads: 56
+
+
+cd /scratch/circRNA_daq_test/results/GI1_T/ciri
+if [ "SE" == "PE" ];then
+	## paired-end
+	bwa mem -t 56 -T 19 	/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC 	/scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz 	> GI1_T.bwa.sam 2> /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.bwa.log
+else
+	## single-end
+	bwa mem -t 56 -T 19 	/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC 	/scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz 	> GI1_T.bwa.sam 2> /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.bwa.log
+fi
+perl /data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl -I GI1_T.bwa.sam -O /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.out -F /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa -A /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf -G /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.log -T 56
+samtools view -@56 -bS GI1_T.bwa.sam > /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.bwa.bam
+rm -rf GI1_T.bwa.sam
+
+
+[Mon Feb  8 21:57:27 2021]
+rule fastqc:
+    input: /scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz, /scratch/circRNA_daq_test/fastqs/GI1_N.R2.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/qc/fastqc/GI1_N.R1.trim_fastqc.zip
+    jobid: 3
+    wildcards: sample=GI1_N
+    threads: 16
+
+
+files=""
+for f in /scratch/circRNA_daq_test/fastqs/GI1_N.R1.fastq.gz /scratch/circRNA_daq_test/fastqs/GI1_N.R2.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz;do
+if [ "$(wc $f|awk '{print $1}')" != "0" ];then
+files=$(echo -ne "$files $f")
+fi
+done
+fastqc $files -t 16 -o /scratch/circRNA_daq_test/qc/fastqc
+
+
+[Mon Feb  8 21:57:27 2021]
+rule star1p:
+    input: /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz
+    output: /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1.SJ.out.tab
+    jobid: 5
+    wildcards: sample=GI1_N
+    threads: 56
+
+
+if [ -d /dev/shm/GI1_N ];then rm -rf /dev/shm/GI1_N;fi
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_N/STAR1p ];then mkdir /scratch/circRNA_daq_test/results/GI1_N/STAR1p;fi
+if [ "PE" == "PE" ];then
+# paired-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_N/STAR1p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 1000000 	--alignMatesGapMax 1000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz 	--readFilesCommand zcat 	--runThreadN 56 	--outFileNamePrefix GI1_N_p1. 	--chimSegmentMin 20 	--chimMultimapNmax 10 	--chimOutType Junctions 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype None 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_N 	--sjdbOverhang $overhang
+
+else
+
+#single-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_N/STAR1p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 1000000 	--alignMatesGapMax 1000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz 	--readFilesCommand zcat 	--runThreadN 56 	--outFileNamePrefix GI1_N_p1. 	--chimSegmentMin 20 	--chimMultimapNmax 10 	--chimOutType Junctions 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype None 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_N 	--sjdbOverhang $overhang
+
+fi
+rm -rf /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1._STARgenome
+# rm -rf /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1.Aligned.out.bam
+
+
+[Mon Feb  8 21:57:27 2021]
+rule create_ciri_count_matrix:
+    input: /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.out, /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.out
+    output: /scratch/circRNA_daq_test/results/ciri_count_matrix.txt
+    jobid: 16
+
+
+cd /scratch/circRNA_daq_test/results
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/Create_ciri_count_matrix.py /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/hg38_2_hg19_lookup.txt
+
+
+[Mon Feb  8 21:57:27 2021]
+rule merge_SJ_tabs:
+    input: /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1.SJ.out.tab, /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1.SJ.out.tab
+    output: /scratch/circRNA_daq_test/results/pass1.out.tab
+    jobid: 7
+
+
+cat /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1.SJ.out.tab /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1.SJ.out.tab | python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/apply_junction_filters.py 	--regions /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions 	--filter1regions hg38,rRNA,ERCC 	--filter1_noncanonical True 	--filter1_unannotated True 	--filter2_noncanonical False 	--filter2_unannotated True | cut -f1-4 | sort -k1,1 -k2,2n | uniq > /scratch/circRNA_daq_test/results/pass1.out.tab
+
+
+[Mon Feb  8 21:57:27 2021]
+rule star2p:
+    input: /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz, /scratch/circRNA_daq_test/results/pass1.out.tab
+    output: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam
+    jobid: 9
+    wildcards: sample=GI1_T
+    threads: 56
+
+
+if [ -d /dev/shm/GI1_T ];then rm -rf /dev/shm/GI1_T;fi
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_T/STAR2p ];then mkdir /scratch/circRNA_daq_test/results/GI1_T/STAR2p;fi
+limitSjdbInsertNsj=$(wc -l /scratch/circRNA_daq_test/results/pass1.out.tab|awk '{print $1+1}')
+if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
+if [ "SE" == "PE" ];then
+# paired-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_T/STAR2p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterType BySJout 	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 2000000 	--alignMatesGapMax 2000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz 	--readFilesCommand  zcat 	--runThreadN 56 	--outFileNamePrefix GI1_T_p2. 	--sjdbFileChrStartEnd /scratch/circRNA_daq_test/results/pass1.out.tab 	--chimSegmentMin 20 	--chimOutType Junctions WithinBAM 	--chimMultimapNmax 10 	--limitSjdbInsertNsj $limitSjdbInsertNsj 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype BAM SortedByCoordinate 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_T 	--sjdbOverhang $overhang
+
+else
+#single-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_T/STAR2p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterType BySJout 	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 2000000 	--alignMatesGapMax 2000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz 	--readFilesCommand  zcat 	--runThreadN 56 	--outFileNamePrefix GI1_T_p2. 	--sjdbFileChrStartEnd /scratch/circRNA_daq_test/results/pass1.out.tab 	--chimSegmentMin 20 	--chimOutType Junctions WithinBAM 	--chimMultimapNmax 10 	--limitSjdbInsertNsj $limitSjdbInsertNsj 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype BAM SortedByCoordinate 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_T 	--sjdbOverhang $overhang
+fi
+rm -rf /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2._STARgenome
+
+
+[Mon Feb  8 21:57:27 2021]
+rule star2p:
+    input: /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz, /scratch/circRNA_daq_test/results/pass1.out.tab
+    output: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam
+    jobid: 8
+    wildcards: sample=GI1_N
+    threads: 56
+
+
+if [ -d /dev/shm/GI1_N ];then rm -rf /dev/shm/GI1_N;fi
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_N/STAR2p ];then mkdir /scratch/circRNA_daq_test/results/GI1_N/STAR2p;fi
+limitSjdbInsertNsj=$(wc -l /scratch/circRNA_daq_test/results/pass1.out.tab|awk '{print $1+1}')
+if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
+if [ "PE" == "PE" ];then
+# paired-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_N/STAR2p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterType BySJout 	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 2000000 	--alignMatesGapMax 2000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz 	--readFilesCommand  zcat 	--runThreadN 56 	--outFileNamePrefix GI1_N_p2. 	--sjdbFileChrStartEnd /scratch/circRNA_daq_test/results/pass1.out.tab 	--chimSegmentMin 20 	--chimOutType Junctions WithinBAM 	--chimMultimapNmax 10 	--limitSjdbInsertNsj $limitSjdbInsertNsj 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype BAM SortedByCoordinate 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_N 	--sjdbOverhang $overhang
+
+else
+#single-end
+	overhang=$(zcat /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz | awk -v maxlen=100 'NR%4==2 {if (length($1) > maxlen+0) maxlen=length($1)}; END {print maxlen-1}')
+	echo "sjdbOverhang for STAR: ${overhang}"
+	cd /scratch/circRNA_daq_test/results/GI1_N/STAR2p
+	STAR --genomeDir /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a 	--outSAMstrandField None  	--outFilterType BySJout 	--outFilterMultimapNmax 20 	--alignSJoverhangMin 8 	--alignSJDBoverhangMin 1 	--outFilterMismatchNmax 999 	--outFilterMismatchNoverLmax 0.3  	--alignIntronMin 20 	--alignIntronMax 2000000 	--alignMatesGapMax 2000000 	--readFilesIn /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz 	--readFilesCommand  zcat 	--runThreadN 56 	--outFileNamePrefix GI1_N_p2. 	--sjdbFileChrStartEnd /scratch/circRNA_daq_test/results/pass1.out.tab 	--chimSegmentMin 20 	--chimOutType Junctions WithinBAM 	--chimMultimapNmax 10 	--limitSjdbInsertNsj $limitSjdbInsertNsj 	--alignTranscriptsPerReadNmax 20000 	--outSAMtype BAM SortedByCoordinate 	--alignEndsProtrude 10 ConcordantPair 	--outFilterIntronMotifs None 	--sjdbGTFfile /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf 	--outTmpDir=/dev/shm/GI1_N 	--sjdbOverhang $overhang
+fi
+rm -rf /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2._STARgenome
+
+
+[Mon Feb  8 21:57:27 2021]
+rule create_BSJ_bam:
+    input: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam
+    output: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.readids, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam
+    jobid: 11
+    wildcards: sample=GI1_T
+    threads: 4
+
+
+cd /scratch/circRNA_daq_test/results/GI1_T/STAR2p
+
+## get BSJ readids along with chrom,site,cigar etc.
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/junctions2readids.py -j /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction > /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.readids
+
+## extract only the uniq readids
+cut -f1 /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.readids | sort | uniq > /dev/shm/GI1_T.readids
+
+## ensure the star2p file is indexed ... is should already be sorted by STAR
+if [ ! -f /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam.bai ];then
+sambamba index /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam
+fi
+
+## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
+## note the argument --readids here is just a list of readids
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/filter_bam_by_readids.py --inputBAM /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam --outputBAM /dev/shm/GI1_T.chimeric.bam --readids /dev/shm/GI1_T.readids
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/dev/shm/GI1_T.chimeric.sorted.bam /dev/shm/GI1_T.chimeric.bam
+rm -f /dev/shm/GI1_T.chimeric.bam*
+
+## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
+## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/filter_bam_for_BSJs.py --inputBAM /dev/shm/GI1_T.chimeric.sorted.bam --outputBAM /dev/shm/GI1_T.BSJs.tmp.bam --readids /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.readids
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/dev/shm/GI1_T.BSJs.tmp.sorted.bam /dev/shm/GI1_T.BSJs.tmp.bam
+rm -f /dev/shm/GI1_T.BSJs.tmp.bam*
+
+## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
+samtools view -H /dev/shm/GI1_T.BSJs.tmp.sorted.bam > /dev/shm/GI1_T.BSJs.tmp.dedup.sam
+samtools view /dev/shm/GI1_T.BSJs.tmp.sorted.bam | sort | uniq >> /dev/shm/GI1_T.BSJs.tmp.dedup.sam
+samtools view -bS /dev/shm/GI1_T.BSJs.tmp.dedup.sam > /dev/shm/GI1_T.BSJs.tmp.dedup.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam /dev/shm/GI1_T.BSJs.tmp.dedup.bam
+rm -f /dev/shm/GI1_T.BSJs.tmp.dedup.bam*
+
+
+[Mon Feb  8 21:57:27 2021]
+rule annotate_circRNA:
+    input: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction
+    output: /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.back_spliced_junction.bed, /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.circularRNA_known.txt
+    jobid: 12
+    wildcards: sample=GI1_N
+
+
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_N/circExplorer ];then mkdir /scratch/circRNA_daq_test/results/GI1_N/circExplorer;fi
+cd /scratch/circRNA_daq_test/results/GI1_N/circExplorer
+mv /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction.original
+grep -v junction_type /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction.original > /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction
+CIRCexplorer2 parse 	-t STAR 	/scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction > GI1_N_circexplorer_parse.log 2>&1
+mv back_spliced_junction.bed /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.back_spliced_junction.bed
+mv /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction.original /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction
+CIRCexplorer2 annotate -r /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid -g /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa -b /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.back_spliced_junction.bed -o $(basename /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.circularRNA_known.txt) --low-confidence
+
+
+[Mon Feb  8 21:57:27 2021]
+rule create_BSJ_bam:
+    input: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam
+    output: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.readids, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam
+    jobid: 10
+    wildcards: sample=GI1_N
+    threads: 4
+
+
+cd /scratch/circRNA_daq_test/results/GI1_N/STAR2p
+
+## get BSJ readids along with chrom,site,cigar etc.
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/junctions2readids.py -j /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction > /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.readids
+
+## extract only the uniq readids
+cut -f1 /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.readids | sort | uniq > /dev/shm/GI1_N.readids
+
+## ensure the star2p file is indexed ... is should already be sorted by STAR
+if [ ! -f /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam.bai ];then
+sambamba index /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam
+fi
+
+## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
+## note the argument --readids here is just a list of readids
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/filter_bam_by_readids.py --inputBAM /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam --outputBAM /dev/shm/GI1_N.chimeric.bam --readids /dev/shm/GI1_N.readids
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/dev/shm/GI1_N.chimeric.sorted.bam /dev/shm/GI1_N.chimeric.bam
+rm -f /dev/shm/GI1_N.chimeric.bam*
+
+## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
+## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/filter_bam_for_BSJs.py --inputBAM /dev/shm/GI1_N.chimeric.sorted.bam --outputBAM /dev/shm/GI1_N.BSJs.tmp.bam --readids /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.readids
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/dev/shm/GI1_N.BSJs.tmp.sorted.bam /dev/shm/GI1_N.BSJs.tmp.bam
+rm -f /dev/shm/GI1_N.BSJs.tmp.bam*
+
+## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
+samtools view -H /dev/shm/GI1_N.BSJs.tmp.sorted.bam > /dev/shm/GI1_N.BSJs.tmp.dedup.sam
+samtools view /dev/shm/GI1_N.BSJs.tmp.sorted.bam | sort | uniq >> /dev/shm/GI1_N.BSJs.tmp.dedup.sam
+samtools view -bS /dev/shm/GI1_N.BSJs.tmp.dedup.sam > /dev/shm/GI1_N.BSJs.tmp.dedup.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=4 --out=/scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam /dev/shm/GI1_N.BSJs.tmp.dedup.bam
+rm -f /dev/shm/GI1_N.BSJs.tmp.dedup.bam*
+
+
+[Mon Feb  8 21:57:27 2021]
+rule annotate_circRNA:
+    input: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction
+    output: /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.back_spliced_junction.bed, /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.circularRNA_known.txt
+    jobid: 13
+    wildcards: sample=GI1_T
+
+
+if [ ! -d /scratch/circRNA_daq_test/results/GI1_T/circExplorer ];then mkdir /scratch/circRNA_daq_test/results/GI1_T/circExplorer;fi
+cd /scratch/circRNA_daq_test/results/GI1_T/circExplorer
+mv /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction.original
+grep -v junction_type /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction.original > /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction
+CIRCexplorer2 parse 	-t STAR 	/scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction > GI1_T_circexplorer_parse.log 2>&1
+mv back_spliced_junction.bed /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.back_spliced_junction.bed
+mv /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction.original /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction
+CIRCexplorer2 annotate -r /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid -g /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa -b /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.back_spliced_junction.bed -o $(basename /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.circularRNA_known.txt) --low-confidence
+
+
+[Mon Feb  8 21:57:27 2021]
+rule split_BAM_create_BW:
+    input: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam
+    output: /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.hg38.bam, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.hg38.bw
+    jobid: 18
+    wildcards: sample=GI1_N
+    threads: 2
+
+
+cd /scratch/circRNA_daq_test/results/GI1_N/STAR2p
+bam_basename="$(basename /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam)"
+while read a b;do
+bam="${bam_basename%.*}.${a}.bam"
+samtools view /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam $b -b > /dev/shm/${bam%.*}.tmp.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=2 --out=$bam /dev/shm/${bam%.*}.tmp.bam
+bw="${bam%.*}.bw"
+bdg="${bam%.*}.bdg"
+sizes="${bam%.*}.sizes"
+bedtools genomecov -bg -ibam $bam > $bdg
+bedSort $bdg $bdg
+if [ "$(wc -l $bdg|awk '{print $1}')" != "0" ];then
+samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+bedGraphToBigWig $bdg $sizes $bw
+else
+touch $bw
+fi
+rm -f $bdg $sizes
+done < /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions
+
+
+[Mon Feb  8 21:57:27 2021]
+rule create_circexplorer_count_matrix:
+    input: /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.circularRNA_known.txt, /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.circularRNA_known.txt
+    output: /scratch/circRNA_daq_test/results/circExplorer_count_matrix.txt, /scratch/circRNA_daq_test/results/circExplorer_BSJ_count_matrix.txt
+    jobid: 17
+
+
+cd /scratch/circRNA_daq_test/results
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/Create_circExplorer_count_matrix.py /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/hg38_2_hg19_lookup.txt
+python /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/scripts/Create_circExplorer_BSJ_count_matrix.py /data/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources/hg38_2_hg19_lookup.txt
+
+
+[Mon Feb  8 21:57:27 2021]
+rule split_BAM_create_BW:
+    input: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam
+    output: /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.hg38.bam, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.hg38.bw
+    jobid: 19
+    wildcards: sample=GI1_T
+    threads: 2
+
+
+cd /scratch/circRNA_daq_test/results/GI1_T/STAR2p
+bam_basename="$(basename /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam)"
+while read a b;do
+bam="${bam_basename%.*}.${a}.bam"
+samtools view /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam $b -b > /dev/shm/${bam%.*}.tmp.bam
+sambamba sort --memory-limit=100G --tmpdir=/dev/shm --nthreads=2 --out=$bam /dev/shm/${bam%.*}.tmp.bam
+bw="${bam%.*}.bw"
+bdg="${bam%.*}.bdg"
+sizes="${bam%.*}.sizes"
+bedtools genomecov -bg -ibam $bam > $bdg
+bedSort $bdg $bdg
+if [ "$(wc -l $bdg|awk '{print $1}')" != "0" ];then
+samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+bedGraphToBigWig $bdg $sizes $bw
+else
+touch $bw
+fi
+rm -f $bdg $sizes
+done < /data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions
+
+
+[Mon Feb  8 21:57:27 2021]
+localrule all:
+    input: /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R1.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_N/trim/GI1_N.R2.trim.fastq.gz, /scratch/circRNA_daq_test/results/GI1_T/trim/GI1_T.R2.trim.fastq.gz, /scratch/circRNA_daq_test/qc/fastqc/GI1_N.R1.trim_fastqc.zip, /scratch/circRNA_daq_test/qc/fastqc/GI1_T.R1.trim_fastqc.zip, /scratch/circRNA_daq_test/results/GI1_N/STAR1p/GI1_N_p1.SJ.out.tab, /scratch/circRNA_daq_test/results/GI1_T/STAR1p/GI1_T_p1.SJ.out.tab, /scratch/circRNA_daq_test/results/pass1.out.tab, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Chimeric.out.junction, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N_p2.Aligned.sortedByCoord.out.bam, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T_p2.Aligned.sortedByCoord.out.bam, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.bam, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.bam, /scratch/circRNA_daq_test/results/GI1_N/circExplorer/GI1_N.circularRNA_known.txt, /scratch/circRNA_daq_test/results/GI1_T/circExplorer/GI1_T.circularRNA_known.txt, /scratch/circRNA_daq_test/results/GI1_N/ciri/GI1_N.ciri.out, /scratch/circRNA_daq_test/results/GI1_T/ciri/GI1_T.ciri.out, /scratch/circRNA_daq_test/results/ciri_count_matrix.txt, /scratch/circRNA_daq_test/results/circExplorer_count_matrix.txt, /scratch/circRNA_daq_test/results/circExplorer_BSJ_count_matrix.txt, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.hg38.bam, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.hg38.bam, /scratch/circRNA_daq_test/results/GI1_N/STAR2p/GI1_N.BSJ.hg38.bw, /scratch/circRNA_daq_test/results/GI1_T/STAR2p/GI1_T.BSJ.hg38.bw
+    jobid: 0
+
+Job counts:
+	count	jobs
+	1	all
+	2	annotate_circRNA
+	2	ciri
+	2	create_BSJ_bam
+	1	create_circexplorer_count_matrix
+	1	create_ciri_count_matrix
+	2	cutadapt
+	2	fastqc
+	1	merge_SJ_tabs
+	2	split_BAM_create_BW
+	2	star1p
+	2	star2p
+	20
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.

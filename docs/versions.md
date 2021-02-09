@@ -1,4 +1,4 @@
-# circRNA DAQ (Detection Annotation Quantification) Pipeline
+# circRNA DAQ Pipeline
 
 ![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
 

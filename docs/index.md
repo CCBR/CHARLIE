@@ -1,8 +1,10 @@
-## circRNA DAQ (Detection Annotation Quantification) Pipeline
+## circRNA DAQ  Pipeline
 
 ![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
 
-### Description:
+DAQ = **D**etection **A**nnotation **Q**uantification)
+
+### Description
 
 This circularRNA detection pipeline uses the following tools in parallel to detect, annotate and quantify circRNAs:
 
@@ -10,7 +12,7 @@ This circularRNA detection pipeline uses the following tools in parallel to dete
 * [CIRI2](https://sourceforge.net/projects/ciri/files/CIRI2/)<sup>2</sup>
 * [CLEAR](https://github.com/YangLab/CLEAR)<sup>3</sup>
 
-### References:
+### References
 
 <sup>1</sup>Zhang XO*, Dong R*, Zhang Y, Zhang JL, Luo Z, Zhang J, Chen LL, Yang L. Diverse alternative back-splicing and alternative splicing landscape of circular RNAs. *Genome Res*, 2016, 26:1277-1287 doi:10.1101/gr.202895.115
 
