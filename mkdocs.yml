@@ -30,3 +30,5 @@ extra:
 # Page Tree
 nav:
   - Home: index.md
+  - Flowchart: flowchart.md
+  - Versions: versions.md
