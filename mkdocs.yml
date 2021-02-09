@@ -31,4 +31,5 @@ extra:
 nav:
   - Home: index.md
   - Flowchart: flowchart.md
+  - Tutorial: tutorial.md
   - Versions: versions.md
