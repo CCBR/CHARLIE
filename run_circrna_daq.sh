@@ -191,7 +191,7 @@ snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
 
-if [ "$?" -eq "0" ];then
+if [ "\$?" -eq "0" ];then
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
