@@ -1,30 +1,20 @@
-# circRNA
+## circRNA DAQ (Detection Annotation Quantification) Pipeline
 
 ![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
 
-This circularRNA detection pipeline uses the following tools in parallel to detect, annotate and quantify circRNAs:
-* CircExplorer2
-* CIRI2
-* CLEAR
-Here is a flowchart of v0.3.3:
-![img](https://github.com/kopardev/circRNA/blob/master/circRNA_v0.3.3.png)
+### Description:
 
-# Version/Release highlights
-## v0.1.0
-* base version
-* PE only support
-## v0.2.x
-* SE support added .. PE/SE samples handled concurrently
-* `envmodules` used in Snakemake in place of `module load` statements
-## v0.3.x
-* Lookup table for hg38 to hg19 circRNA annotations is updated... this eliminate one-to-many hits from the previous version
-* BSJs extracted as different bam file.
-* flowchart added
-* adding slurmjobid to log/err file names
-* v0.3.1 has significant (>10X) performance improvements at BSJ bam creation
-* v0.3.3 splits BSJ bams into human and viral bams, and also converts them to bigwigs
-* v0.3.4 adds hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC reference (source:Sarah)
-## v0.4.x
-* v0.4.0 
-  * [CLEAR](https://github.com/YangLab/CLEAR) added.
-  * wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
+This circularRNA detection pipeline uses the following tools in parallel to detect, annotate and quantify circRNAs:
+
+* [CircExplorer2](https://github.com/YangLab/CIRCexplorer2)<sup>1</sup>
+* [CIRI2](https://sourceforge.net/projects/ciri/files/CIRI2/)<sup>2</sup>
+* [CLEAR](https://github.com/YangLab/CLEAR)<sup>3</sup>
+
+### References:
+
+<sup>1</sup>Zhang XO*, Dong R*, Zhang Y, Zhang JL, Luo Z, Zhang J, Chen LL, Yang L. Diverse alternative back-splicing and alternative splicing landscape of circular RNAs. *Genome Res*, 2016, 26:1277-1287 doi:10.1101/gr.202895.115
+
+<sup>2</sup>Yuan Gao, Jinyang Zhang and Fangqing Zhao. Circular RNA identification based on multiple seed matching. Briefings in Bioinformatics (2017) doi: 10.1093/bib/bbx014.
+
+<sup>3</sup>Ma XK, Wang MR, Liu CX, Dong R, Carmichael GG, Chen LL and Yang L. A CLEAR pipeline for direct comparison of circular and linear RNA expression. 2019, bioRxiv doi: 10.1101/668657
+
