@@ -40,7 +40,7 @@ lrwxrwxrwx. 1 kopardevn Ziegelbauer_lab   54 Feb  3 14:29 dev -> /data/Ziegelbau
 drwxrws---. 3 kopardevn Ziegelbauer_lab 4096 Jan 12 09:07 v0.1.0
 drwxrws---. 6 kopardevn Ziegelbauer_lab 4096 Jan 12 17:32 v0.2.1
 drwxrws---. 6 kopardevn Ziegelbauer_lab 4096 Jan 14 10:24 v0.3.3
-drwxrws---. 7 kopardevn Ziegelbauer_lab 4096 Feb  4 18:26 v0.4.0=
+drwxrws---. 7 kopardevn Ziegelbauer_lab 4096 Feb  4 18:26 v0.4.0
 ```
 
 The exacts versions listed here may changed as newer versions are added.

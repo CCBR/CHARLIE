@@ -27,5 +27,5 @@
 #### v0.4.x
 
 * v0.4.0 
-  * [CLEAR](https://github.com/YangLab/CLEAR) added.
-  * wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
+	* [CLEAR](https://github.com/YangLab/CLEAR) added.
+	* wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
