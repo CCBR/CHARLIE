@@ -17,6 +17,7 @@ def get_clear_target_files(SAMPLES,runclear):
 			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant","quant.txt"))
 	return targetfiles
 
+
 def get_file_size(filename):
 	filename=filename.strip()
 	if check_readaccess(filename):

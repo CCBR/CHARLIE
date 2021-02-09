@@ -1,12 +1,12 @@
 # Project Information
-site_name: ONT RNAseq (cDNA only)
+site_name: circRNA DAQ (Detection/Annotation/Quantification)
 site_author: Vishal Koparde, Ph.D.
 # Repository
-repo_name: CCBR/ont_rnaseq 
-repo_url: https://github.com/CCBR/ont_rnaseq
+repo_name: kopardev/circRNA
+repo_url: https://github.com/kopardev/circRNA
 
 # Copyright
-copyright: Copyright &copy; 2020 CCBR
+copyright: Copyright &copy; 2021 CCBR
 
 # Configuration
 theme:
