@@ -24,3 +24,5 @@ This circularRNA detection pipeline uses CIRCExplorer2 and CIRI2 in parallel to 
 * v0.4.0 
   * [CLEAR](https://github.com/YangLab/CLEAR) added.
   * wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
+
+For complete documentation with tutorial go [here](https://kopardev.github.io/circRNA/)
