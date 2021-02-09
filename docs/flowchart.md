@@ -4,5 +4,5 @@
 
 Flowchart for v0.3.3:
 
-![img](https://github.com/kopardev/circRNA/blob/master/circRNA_v0.3.3.png)
+![img](circRNA_v0.3.3.png)
 
