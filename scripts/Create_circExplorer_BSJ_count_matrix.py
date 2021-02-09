@@ -49,11 +49,19 @@ def natural_keys(text):
 
 
 # In[3]:
-
+outfilename1="circExplorer_BSJ_count_matrix.txt"
+outfilename="circExplorer_BSJ_count_matrix_with_annotations.txt"
 
 files_circExplorer=list(Path(os.getcwd()).rglob("*.back_spliced_junction.bed"))
 files_circExplorer=list(filter(lambda x:"_only.back" not in str(x),files_circExplorer))
+files_circExplorer=list(filter(lambda x: os.stat(x).st_size !=0, files_circExplorer))
 files_circExplorer.sort(key=natural_keys)
+if len(files_circExplorer)==0:
+    for f in [outfilename1,outfilename]:
+        if os.path.exists(f):
+            os.remove(f)
+        os.mknod(f)
+    exit()
 
 
 # In[35]:
@@ -78,7 +86,7 @@ print(circE_count_matrix.head())
 
 circE_count_matrix.fillna(0,inplace=True)
 circE_count_matrix.head()
-circE_count_matrix.to_csv("circExplorer_BSJ_count_matrix.txt",sep="\t",header=True)
+circE_count_matrix.to_csv(outfilename1,sep="\t",header=True)
 
 
 # In[38]:
@@ -99,7 +107,7 @@ annotations.shape
 
 
 x=circE_count_matrix.join(annotations)
-x.to_csv("circExplorer_BSJ_count_matrix_with_annotations.txt",sep="\t",header=True)
+x.to_csv(outfilename,sep="\t",header=True)
 
 
 # In[14]:

@@ -36,11 +36,20 @@ def natural_keys(text):
 
 # In[3]:
 
+outfilename1="circExplorer_count_matrix.txt"
+outfilename="circExplorer_count_matrix_with_annotations.txt"
 
 files_circExplorer=list(Path(os.getcwd()).rglob("*.circularRNA_known.txt"))
 files_circExplorer=list(filter(lambda x: False if str(x).find("low_conf")!=-1 else True, files_circExplorer))
+files_circExplorer=list(filter(lambda x: os.stat(x).st_size !=0, files_circExplorer))
 files_circExplorer.sort(key=natural_keys)
 print(files_circExplorer)
+if len(files_circExplorer)==0:
+    for f in [outfilename1,outfilename]:
+        if os.path.exists(f):
+            os.remove(f)
+        os.mknod(f)
+    exit()
 
 # In[12]:
 
@@ -94,7 +103,7 @@ for i in range(1,len(files_circExplorer)):
 
 circE_count_matrix.fillna(0,inplace=True)
 print(circE_count_matrix.head())
-circE_count_matrix.to_csv("circExplorer_count_matrix.txt",sep="\t",header=True)
+circE_count_matrix.to_csv(outfilename1,sep="\t",header=True)
 
 
 # In[10]:
@@ -115,7 +124,7 @@ annotations.shape
 
 
 x=circE_count_matrix.join(annotations)
-x.to_csv("circExplorer_count_matrix_with_annotations.txt",sep="\t",header=True)
+x.to_csv(outfilename,sep="\t",header=True)
 
 
 # In[14]:
