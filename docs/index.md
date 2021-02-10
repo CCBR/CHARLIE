@@ -2,7 +2,7 @@
 
 ![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
 
-DAQ = **D**etection **A**nnotation **Q**uantification)
+DAQ = **D**etection **A**nnotation **Q**uantification
 
 ### Description
 
