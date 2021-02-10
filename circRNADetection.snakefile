@@ -145,9 +145,12 @@ rule all:
 		## circExplorer aggregate count matrix
 		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
 		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
-		## bigwigs
+		## BSJ bams and bigwigs
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
+		## Spliced reads bams and bigwigs
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
 
@@ -465,6 +468,63 @@ samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
 rm -f /dev/shm/{params.sample}.BSJs.tmp.dedup.bam*
 """
+
+rule create_spliced_reads_bam:
+	input:
+		bam=rules.star2p.output.bam,
+		tab=rules.merge_SJ_tabs.output.pass1sjtab
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.bam")
+	params:
+		sample="{sample}",
+		memG=MEMORYG,
+		script1=join(SCRIPTS_DIR,"filter_bam_for_splice_reads.py"),
+		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
+	threads : 4
+	shell:"""
+cd {params.outdir}
+python {params.script1} --inbam {input.bam} --outbam /dev/shm/{params.sample}.SR.bam --tab {input.tab}
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.SR.bam
+rm -f /dev/shm/{params.sample}.SR.bam*
+"""
+
+rule split_splice_reads_BAM_create_BW:
+	input:
+		bam=rules.create_spliced_reads_bam.output.bam
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw")
+	params:
+		sample="{sample}",
+		workdir=WORKDIR,
+		memG=MEMORYG,
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		regions=config['regions']
+	threads: 2
+	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
+	shell:"""
+cd {params.outdir}
+bam_basename="$(basename {input.bam})"
+while read a b;do
+bam="${{bam_basename%.*}}.${{a}}.bam"
+samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+bw="${{bam%.*}}.bw"
+bdg="${{bam%.*}}.bdg"
+sizes="${{bam%.*}}.sizes"
+bedtools genomecov -bg -ibam $bam > $bdg
+bedSort $bdg $bdg
+if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
+samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+bedGraphToBigWig $bdg $sizes $bw
+else
+touch $bw
+fi
+rm -f $bdg $sizes
+done < {params.regions}
+"""	
+
 
 rule split_BAM_create_BW:
 	input:
