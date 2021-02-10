@@ -40,6 +40,11 @@
         "threads": "4",
         "time": "24:00:00"
     },
+    "create_spliced_reads_bam": {
+        "mem": "200g",
+        "threads": "4",
+        "time": "24:00:00"
+    },
     "clear": {
         "mem": "120g",
         "threads": "56",
