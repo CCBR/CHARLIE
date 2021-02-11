@@ -197,8 +197,7 @@ if [ "\$?" -eq "0" ];then
   --report ${WORKDIR}/runslurm_snakemake_report.html \
   --configfile ${WORKDIR}/config.yaml \
   --cluster-config ${PIPELINE_HOME}/config/cluster.json \
-  --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
-fi
+  --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" 
 
 fi
 
