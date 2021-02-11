@@ -343,7 +343,7 @@ rule star2p:
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
 		gtf=config['ref_gtf']
-	envmodules: TOOLS["star"]["version"]
+	envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"]
 	threads: 56
 	shell:"""
 if [ -d /dev/shm/{params.sample} ];then rm -rf /dev/shm/{params.sample};fi
@@ -417,6 +417,10 @@ else
 	--sjdbOverhang $overhang
 fi
 rm -rf {params.outdir}/{params.sample}_p2._STARgenome
+## ensure the star2p file is indexed ... is should already be sorted by STAR
+if [ ! -f {output.bam}.bai ];then
+sambamba index {output.bam}
+fi
 """
 
 rule create_BSJ_bam:
@@ -443,11 +447,6 @@ python {params.script1} -j {input.junction} > {output.readids}
 
 ## extract only the uniq readids
 cut -f1 {output.readids} | sort | uniq > /dev/shm/{params.sample}.readids
-
-## ensure the star2p file is indexed ... is should already be sorted by STAR
-if [ ! -f {input.bam}.bai ];then
-sambamba index {input.bam}
-fi
 
 ## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
 ## note the argument --readids here is just a list of readids
