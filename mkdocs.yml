@@ -32,4 +32,5 @@ nav:
   - Home: index.md
   - Flowchart: flowchart.md
   - Tutorial: tutorial.md
+  - References: references.md
   - Versions: versions.md
