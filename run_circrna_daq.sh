@@ -123,11 +123,11 @@ function run() {
   ## Archive previous run files
   if [ -f ${WORKDIR}/snakemake.log ];then 
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
-    mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.log.${modtime} && gzip -n ${WORKDIR}/stats/snakemake.log.${modtime}
+    mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.${modtime}.log
   fi
   if [ -f ${WORKDIR}/snakemake.stats ];then 
     modtime=$(stat ${WORKDIR}/snakemake.stats |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
-    mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.stats.${modtime} && gzip -n ${WORKDIR}/stats/snakemake.stats.${modtime}
+    mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
   fi
   for f in $(ls ${WORKDIR}/slurm-*.out);do gzip -n $f;mv ${f}.gz ${WORKDIR}/logs/;done
 
@@ -195,10 +195,7 @@ if [ "\$?" -eq "0" ];then
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
-  --configfile ${WORKDIR}/config.yaml \
-  --cluster-config ${PIPELINE_HOME}/config/cluster.json \
-  --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" 
-
+  --configfile ${WORKDIR}/config.yaml 
 fi
 
 EOF
