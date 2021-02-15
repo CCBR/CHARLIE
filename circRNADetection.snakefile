@@ -14,7 +14,7 @@ def get_clear_target_files(SAMPLES,runclear):
 	targetfiles=[]
 	if runclear==True or runclear=="True":
 		for s in SAMPLES:
-			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant","quant.txt"))
+			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt"))
 	return targetfiles
 
 
@@ -114,7 +114,7 @@ for sample in SAMPLES:
 		SAMPLESDF.loc[[sample],"R2"]=R2filenewname
 	else:
 		SAMPLESDF.loc[[sample],"PEorSE"]="SE"
-print(SAMPLESDF)
+# print(SAMPLESDF)
 
 ## Load tools from YAML file
 with open(config["tools"]) as f:
@@ -677,59 +677,19 @@ python {params.script2} {params.lookup}
 
 rule clear:
 	input:
-		R1=rules.cutadapt.output.of1,
-		R2=rules.cutadapt.output.of2
+		bam=rules.star2p.output.bam,
+		circexplorerout=rules.annotate_circRNA.output.annotations,
 	output:
-		outf1=join(WORKDIR,"results","{sample}","CLEAR","circ","bsj.bed"),
-		outf2=join(WORKDIR,"results","{sample}","CLEAR","hisat","sp.txt"),
-		outf3=join(WORKDIR,"results","{sample}","CLEAR","fusion","junctions.bed"),
-		outf4=join(WORKDIR,"results","{sample}","CLEAR","quant","quant.txt")
+		outf1=join(WORKDIR,"results","{sample}","CLEAR","quant.txt")
 	params:
-		genome=config['ref_fa'],
-		hisatindex=config['ref_hisat_index'],
-		bowtie1index=config['ref_bowtie1_index'],
-		gtf=config['ref_gtf'],
-		outdir=join(WORKDIR,"results","{sample}","CLEAR")
+		genepred=config['genepred_w_geneid'],
 	container: "docker://nciccbr/ccbr_clear:latest"
-	threads: 56
+	threads: 4
 	shell:"""
-if [ -d {params.outdir} ];then rm -rf {params.outdir};fi
-#usage: clear_quant [-h] -1 M1 [-2 M2] -g GENOME -i HISAT -j BOWTIE1 -G GTF
-#                   [-o OUTPUT] [-p THREAD]
-#
-#optional arguments:
-#  -h, --help            show this help message and exit
-#  -1 M1                 Comma-separated list of read sequence files in FASTQ
-#                        format. When running with pair-end read, this should
-#                        contain #1 mates.
-#  -2 M2                 Comma-separated list of read sequence files in FASTQ
-#                        format. -2 is only used when running with pair-end
-#                        read. This should contain #2 mates.
-#  -g GENOME, --genome GENOME
-#                        Genome FASTA file
-#  -i HISAT, --hisat HISAT
-#                        Index files for HISAT2
-#  -j BOWTIE1, --bowtie1 BOWTIE1
-#                        Index files for TopHat-Fusion
-#  -G GTF, --gtf GTF     Annotation GTF file.
-#  -o OUTPUT, --output OUTPUT
-#                        The output directory
-#  -p THREAD, --thread THREAD
-#                        Running threads. [default: 5]
-clear_quant \
--1 {input.R1} -2 {input.R2} \
--g {params.genome} \
--i {params.hisatindex} \
--j {params.bowtie1index} \
--G {params.gtf} \
--o {params.outdir} -p {threads}
-# delete unrequired files
-rm -rf {params.outdir}/circ/genePred.tmp
-rm -rf {params.outdir}/circ/annotation.txt
-rm -rf {params.outdir}/hisat/sp.txt
-rm -rf {params.outdir}/hisat/align.sam
-rm -rf {params.outdir}/hisat/unmapped.fq
-rm -rf {params.outdir}/hisat/tmp.bam
-rm -rf {params.outdir}/fusion/unmapped.bam
-rm -rf {params.outdir}/fusion/prep_reads.info
+circ_quant \
+-c {input.circexplorerout} \
+-b {input.bam} \
+-t \
+-r {params.genepred} \
+-o {output.outf1}
 """
