@@ -30,3 +30,8 @@
 * wrapper script (`run_circrna_daq.sh`) added for local and cluster execution.
 
 * "spliced reads only" bam created and split by regions
+
+#### v0.5.x
+
+* `run_clear` is now set to True (as default)
+* `circ_quant` replaces `clear_quant` in the CLEAR rule. In order words, we are reusing the STAR alignment file and the circExplorer2 output file for running CLEAR. No need to run HISAT2 and TopHat (fusion-search with Bowtie1). This is much quicker.
