@@ -17,7 +17,8 @@ function get_git_commitid_tag() {
 # ## clone the pipeline to a folder
 # ## git clone https://github.com/kopardev/circRNA.git
 # ## and set that as the pipeline home
-PIPELINE_HOME="/data/Ziegelbauer_lab/circRNADetection/scripts/circRNA"
+# PIPELINE_HOME="/data/Ziegelbauer_lab/circRN ADetection/scripts/circRNA"
+PIPELINE_HOME=$(readlink -f $(dirname "$0"))
 # PIPELINE_HOME="/data/Ziegelbauer_lab/Pipelines/circRNA/dev"
 echo "Pipeline Dir: $PIPELINE_HOME"
 # ## make current folder as working directory
