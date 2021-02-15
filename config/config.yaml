@@ -9,7 +9,7 @@ workdir: "WORKDIR"
 samples: "WORKDIR/samples.tsv"
 #
 # Should the CLEAR pipeline be run? True or False WITHOUT quotes
-run_clear: False
+run_clear: True
 #
 #
 #
