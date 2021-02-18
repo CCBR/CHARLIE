@@ -33,7 +33,7 @@
     "star2p": {
         "mem": "200g",
         "threads": "56",
-        "time": "24:00:00"
+        "time": "96:00:00"
     },
     "create_BSJ_bam": {
         "mem": "512g",
