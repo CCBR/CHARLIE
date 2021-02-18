@@ -161,7 +161,7 @@ function run() {
   fi
 
   elif [ "$1" == "slurm" ];then
-
+  
   cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
 #SBATCH --job-name="circRNA"

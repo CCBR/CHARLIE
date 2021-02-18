@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import yaml
 
+
 # no truncations during print pandas data frames
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -120,6 +121,8 @@ for sample in SAMPLES:
 with open(config["tools"]) as f:
 	TOOLS = yaml.safe_load(f)
 
+localrules: multiqc
+
 rule all:
 	input:
 		## cutadapt
@@ -134,6 +137,8 @@ rule all:
 		## star2p
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		## picard MarkDuplicates metrics
+		expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),
 		## BSJ bam
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
 		## circExplorer
@@ -157,7 +162,9 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","{sample}.venn.png"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES)
+		expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES),
+		## multiqc report
+		join(WORKDIR,"multiqc_report.html")
 
 rule cutadapt:
 	input:
@@ -426,6 +433,19 @@ rm -rf {params.outdir}/{params.sample}_p2._STARgenome
 if [ ! -f {output.bam}.bai ];then
 sambamba index {output.bam}
 fi
+"""
+
+rule estimate_duplication:
+	input:
+		bam=rules.star2p.output.bam
+	output:
+		metrics=join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt")
+	params:
+		sample="{sample}",
+		memG=MEMORYG,
+	envmodules: TOOLS["picard"]["version"]
+	shell:"""
+java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
 """
 
 rule create_BSJ_bam:
@@ -729,3 +749,18 @@ cut -f1-3 {input.circexplorerout}|awk -F"\\t" '{{print $1\":\"$2+1\"|\"$3}}' > /
 	-t {params.sample}
 """
 
+rule multiqc:
+	input:
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),
+		expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES)
+	output:
+		html=join(WORKDIR,"multiqc_report.html")
+	params:
+		outdir=WORKDIR
+	envmodules: TOOLS["multiqc"]["version"]
+	shell:"""
+cd {params.outdir}
+multiqc .
+"""
