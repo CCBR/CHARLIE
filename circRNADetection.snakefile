@@ -153,6 +153,11 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
+		## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
+		expand(join(WORKDIR,"results","{sample}","{sample}.venn.png"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES)
 
 rule cutadapt:
 	input:
@@ -693,3 +698,34 @@ circ_quant \
 -r {params.genepred} \
 -o {output.outf1}
 """
+
+rule venn:
+	input:
+		circexplorerout=rules.annotate_circRNA.output.annotations,
+		ciriout=rules.ciri.output.ciriout
+	output:
+		png=join(WORKDIR,"results","{sample}","{sample}.venn.png"),
+		cirionly=join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),
+		circexploreronly=join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),
+		common=join(WORKDIR,"results","{sample}","{sample}.common.lst")
+	params:
+		script1=join(SCRIPTS_DIR,"venn.R"),
+		sample="{sample}",
+		outdir=join(WORKDIR,"results","{sample}")
+	container: "docker://nciccbr/ccbr_venn:latest"
+	threads: 2
+	shell:"""
+cut -f1 {input.ciriout}|grep -v circRNA_ID > /dev/shm/{params.sample}.ciri.lst
+cut -f1-3 {input.circexplorerout}|awk -F"\\t" '{{print $1\":\"$2+1\"|\"$3}}' > /dev/shm/{params.sample}.circExplorer.lst
+2set_venn.R \
+	-l /dev/shm/{params.sample}.ciri.lst \
+	-r /dev/shm/{params.sample}.circExplorer.lst  \
+	-p {output.png} \
+	-m {output.cirionly} \
+	-s {output.circexploreronly} \
+	-c1 "CIRI2" \
+	-c2 "CircExplorer2" \
+	-c {output.common} \
+	-t {params.sample}
+"""
+
