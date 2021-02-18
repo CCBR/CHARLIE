@@ -20,7 +20,7 @@
         "time": "24:00:00"
     },
     "ciri": {
-        "mem": "400g",
+        "mem": "512g",
         "threads": "56",
         "time": "24:00:00",
         "partition": "largemem"
@@ -31,9 +31,15 @@
         "time": "24:00:00"
     },
     "star2p": {
-        "mem": "200g",
+        "mem": "512g",
         "threads": "56",
-        "time": "96:00:00"
+        "time": "96:00:00",
+        "partition": "largemem"
+    },
+    "estimate_duplication": {
+        "mem": "200g",
+        "threads": "4",
+        "time": "24:00:00"
     },
     "create_BSJ_bam": {
         "mem": "512g",
