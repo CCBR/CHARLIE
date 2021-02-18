@@ -159,7 +159,7 @@ rule all:
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
 		## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
-		expand(join(WORKDIR,"results","{sample}","{sample}.venn.png"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES),
@@ -724,7 +724,7 @@ rule venn:
 		circexplorerout=rules.annotate_circRNA.output.annotations,
 		ciriout=rules.ciri.output.ciriout
 	output:
-		png=join(WORKDIR,"results","{sample}","{sample}.venn.png"),
+		png=join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),
 		cirionly=join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),
 		circexploreronly=join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),
 		common=join(WORKDIR,"results","{sample}","{sample}.common.lst")
