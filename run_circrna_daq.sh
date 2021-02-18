@@ -145,7 +145,7 @@ function run() {
   --directory $WORKDIR \
   --printshellcmds \
   --use-singularity \
-  --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+  --singularity-args " -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
   --use-envmodules \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config.yaml \
@@ -179,7 +179,7 @@ cd \$SLURM_SUBMIT_DIR
 snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 --directory $WORKDIR \
 --use-singularity \
---singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+--singularity-args " -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
