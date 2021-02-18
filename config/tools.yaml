@@ -10,6 +10,10 @@ fastqc:
  version: "fastqc/0.11.9"
 hisat:
  version: "hisat/2.2.1.0"
+multiqc:
+ version: "multiqc/1.9"
+picard:
+ version: "picard/2.25.0"
 python37:
  version: "python/3.7"
 sambamba:
