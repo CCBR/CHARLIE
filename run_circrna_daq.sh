@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Author: Vishal Koparde, Ph.D.
+# CCBR, NCI
+# (c) 2021
+#
+#
 # cirna_daq
 # d=detection
 # a=annotation
@@ -36,7 +41,7 @@ echo "Git Commit/Tag: $GIT_COMMIT_TAG"
 function usage() { cat << EOF
 run_circrna_daq.sh: run the workflow to DAQ (detect, annotate and quantify circRNAs)
 USAGE:
-  bash run_circrna_daq.sh <MODE> 
+  bash run_circrna_daq.sh <MODE>  <path_to_workdir>
 Required Positional Argument:
   MODE: [Type: Str] Valid options:
     a) init <path_to_workdir> : initialize workdir
@@ -116,8 +121,8 @@ function runslurm() {
 
 function run() {
 
-  ## initialize if not already done
   echo "Running..."
+  ## check if initialized
   for f in config.yaml samples.tsv; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";usage && exit 1;fi
   done
@@ -130,7 +135,10 @@ function run() {
     modtime=$(stat ${WORKDIR}/snakemake.stats |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
     mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
   fi
-  for f in $(ls ${WORKDIR}/slurm-*.out);do gzip -n $f;mv ${f}.gz ${WORKDIR}/logs/;done
+  nslurmouts=$(find ${WORKDIR} -maxdepth 1 -name "slurm-*.out" |wc -l)
+  if [ "$nslurmouts" != "0" ];then
+    for f in $(ls ${WORKDIR}/slurm-*.out);do gzip -n $f;mv ${f}.gz ${WORKDIR}/logs/;done
+  fi
 
   # --use-singularity \
   # --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
