@@ -722,7 +722,7 @@ circ_quant \
 
 rule annotate_clear_output:
 	input:
-		quantfile=rules.output.clear.quantfile
+		quantfile=rules.clear.output.quantfile
 	output:
 		annotatedquantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
 	params:
@@ -731,7 +731,7 @@ rule annotate_clear_output:
 		cleardir=join(WORKDIR,"results","{sample}","CLEAR")
 	shell:"""
 ## cleanup quant.txt* dirs before annotation
-find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {} \;
+find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {{}} \;
 python {params.script} {params.lookup} {input.quantfile}
 """		
 
