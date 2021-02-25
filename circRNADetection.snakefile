@@ -16,6 +16,7 @@ def get_clear_target_files(SAMPLES,runclear):
 	if runclear==True or runclear=="True":
 		for s in SAMPLES:
 			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt"))
+			targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt.annotated"))
 	return targetfiles
 
 
@@ -121,7 +122,7 @@ for sample in SAMPLES:
 with open(config["tools"]) as f:
 	TOOLS = yaml.safe_load(f)
 
-localrules: multiqc
+localrules: multiqc, annotate_clear_output
 
 rule all:
 	input:
@@ -705,7 +706,7 @@ rule clear:
 		bam=rules.star2p.output.bam,
 		circexplorerout=rules.annotate_circRNA.output.annotations,
 	output:
-		outf1=join(WORKDIR,"results","{sample}","CLEAR","quant.txt")
+		quantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt")
 	params:
 		genepred=config['genepred_w_geneid'],
 	container: "docker://nciccbr/ccbr_clear:latest"
@@ -716,8 +717,24 @@ circ_quant \
 -b {input.bam} \
 -t \
 -r {params.genepred} \
--o {output.outf1}
+-o {output.quantfile}
 """
+
+rule annotate_clear_output:
+	input:
+		quantfile=rules.output.clear.quantfile
+	output:
+		annotatedquantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
+	params:
+		script=join(SCRIPTS_DIR,"annotate_clear_quant.py"),
+		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
+		cleardir=join(WORKDIR,"results","{sample}","CLEAR")
+	shell:"""
+## cleanup quant.txt* dirs before annotation
+find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {} \;
+python {params.script} {params.lookup} {input.quantfile}
+"""		
+
 
 rule venn:
 	input:
