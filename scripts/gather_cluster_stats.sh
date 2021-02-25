@@ -8,6 +8,7 @@
 ##   > output TSV file
 ##
 
+
 function get_jobid_stats {
 jobid=$1
 declare -A jobdataarray
@@ -39,11 +40,15 @@ echo -ne "${jobdataarray["std_out"]}\t"
 echo -ne "${jobdataarray["std_err"]}\n"
 }
 
-workdir=$(readlink -f $(dirname "$0"))
-find $workdir -maxdepth 1 -name "snakemake*log" -exec grep "with external jobid" {} \; |awk '{print $NF}' |sed "s/['.]//g" |sort|uniq > jobids.lst
-echo -ne "##SubmitTime\tHumanSubmitTime\tJobID:JobState:JobName\tNode\tQueueTime:RunTime:TimeLimit\tAvgCPU:MaxCPU:CPULimit\tAvgMEM:MaxMEM:MEMLimit\tPartition:QOS\tUsername:Group:Account\tWorkdir\tStdOut\tStdErr\n" > HPC_summary.txt
+if [ "$#" != "1" ];then
+	echo " bash $0 <snakemake log file> "
+	exit 1
+fi
+
+snakemakelogfile=$1
+grep "with external jobid" $snakemakelogfile | awk '{print $NF}' | sed "s/['.]//g" | sort | uniq > ${snakemakelogfile}.jobids.lst
+echo -ne "##SubmitTime\tHumanSubmitTime\tJobID:JobState:JobName\tNode\tQueueTime:RunTime:TimeLimit\tAvgCPU:MaxCPU:CPULimit\tAvgMEM:MaxMEM:MEMLimit\tPartition:QOS\tUsername:Group:Account\tWorkdir\tStdOut\tStdErr\n"
 while read jid;do
-get_jobid_stats $jid
-# done < jobids.lst
-done < jobids.lst |sort -k1,1n >> HPC_summary.txt
-rm -f jobids.lst
+	get_jobid_stats $jid
+done < ${snakemakelogfile}.jobids.lst |sort -k1,1n
+rm -f ${snakemakelogfile}.jobids.lst
