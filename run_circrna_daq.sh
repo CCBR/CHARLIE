@@ -119,9 +119,10 @@ function runslurm() {
   run "slurm"
 }
 
-function run() {
-
+function preruncleanup() {
   echo "Running..."
+
+  cd $WORKDIR
   ## check if initialized
   for f in config.yaml samples.tsv; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";usage && exit 1;fi
@@ -130,24 +131,26 @@ function run() {
   if [ -f ${WORKDIR}/snakemake.log ];then 
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
     mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.${modtime}.log
-  fi
-  if [ -f ${WORKDIR}/snakemake.stats ];then 
-    modtime=$(stat ${WORKDIR}/snakemake.stats |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
-    mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
+    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then 
+      mv ${WORKDIR}/snakemake.log.HPC_summary.txt ${WORKDIR}/stats/snakemake.${modtime}.log.HPC_summary.txt
+    fi
+    if [ -f ${WORKDIR}/snakemake.stats ];then 
+      mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
+    fi
   fi
   nslurmouts=$(find ${WORKDIR} -maxdepth 1 -name "slurm-*.out" |wc -l)
   if [ "$nslurmouts" != "0" ];then
     for f in $(ls ${WORKDIR}/slurm-*.out);do gzip -n $f;mv ${f}.gz ${WORKDIR}/logs/;done
   fi
 
-  # --use-singularity \
-  # --singularity-args " -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+}
 
-  # --use-conda \
-  # --use-envmodules \
-  cd $WORKDIR
+function run() {
+
 
   if [ "$1" == "local" ];then
+
+  preruncleanup
 
   snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
   --directory $WORKDIR \
@@ -170,6 +173,8 @@ function run() {
 
   elif [ "$1" == "slurm" ];then
   
+  preruncleanup
+
   cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
 #SBATCH --job-name="circRNA"
