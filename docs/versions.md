@@ -35,3 +35,8 @@
 
 * `run_clear` is now set to True (as default)
 * `circ_quant` replaces `clear_quant` in the CLEAR rule. In order words, we are reusing the STAR alignment file and the circExplorer2 output file for running CLEAR. No need to run HISAT2 and TopHat (fusion-search with Bowtie1). This is much quicker.
+* Using picard to estimate duplicates using[ *MarkDuplicates*](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-)
+* Generating a per-run [multiqc](https://multiqc.info/) HTML report
+* Using [*eulerr*](https://www.rdocumentation.org/packages/eulerr/versions/6.1.0) R package to generate CIRI-CircExplorer circRNA Venn diagrams and include them in the mulitqc report
+* Gather per job cluster metadata like queue time, run time, job state etc. Stats are compiled in **HPC_summary** file
+* CLEAR pipeline *quant.txt* file is annotated for known circRNAs
