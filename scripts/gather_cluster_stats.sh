@@ -40,7 +40,7 @@ echo -ne "${jobdataarray["std_err"]}\n"
 }
 
 workdir=$(readlink -f $(dirname "$0"))
-find $workdir -name "snakemake*log" -exec grep "with external jobid" {} \; |awk '{print $NF}' |sed "s/['.]//g" > jobids.lst
+find $workdir -maxdepth 1 -name "snakemake*log" -exec grep "with external jobid" {} \; |awk '{print $NF}' |sed "s/['.]//g" |sort|uniq > jobids.lst
 echo -ne "##SubmitTime\tHumanSubmitTime\tJobID:JobState:JobName\tNode\tQueueTime:RunTime:TimeLimit\tAvgCPU:MaxCPU:CPULimit\tAvgMEM:MaxMEM:MEMLimit\tPartition:QOS\tUsername:Group:Account\tWorkdir\tStdOut\tStdErr\n" > HPC_summary.txt
 while read jid;do
 get_jobid_stats $jid
