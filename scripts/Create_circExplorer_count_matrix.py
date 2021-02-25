@@ -18,20 +18,20 @@ lookupfile=sys.argv[1]
 
 
 def atof(text):
-    try:
-        retval = float(text)
-    except ValueError:
-        retval = text
-    return retval
+	try:
+		retval = float(text)
+	except ValueError:
+		retval = text
+	return retval
 
 def natural_keys(text):
-    '''
-    alist.sort(key=natural_keys) sorts in human order
-    http://nedbatchelder.com/blog/200712/human_sorting.html
-    (See Toothy's implementation in the comments)
-    float regex comes from https://stackoverflow.com/a/12643073/190597
-    '''
-    return [ atof(c) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', str(text)) ]
+	'''
+	alist.sort(key=natural_keys) sorts in human order
+	http://nedbatchelder.com/blog/200712/human_sorting.html
+	(See Toothy's implementation in the comments)
+	float regex comes from https://stackoverflow.com/a/12643073/190597
+	'''
+	return [ atof(c) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', str(text)) ]
 
 
 # In[3]:
@@ -45,11 +45,11 @@ files_circExplorer=list(filter(lambda x: os.stat(x).st_size !=0, files_circExplo
 files_circExplorer.sort(key=natural_keys)
 print(files_circExplorer)
 if len(files_circExplorer)==0:
-    for f in [outfilename1,outfilename]:
-        if os.path.exists(f):
-            os.remove(f)
-        os.mknod(f)
-    exit()
+	for f in [outfilename1,outfilename]:
+		if os.path.exists(f):
+			os.remove(f)
+		os.mknod(f)
+	exit()
 
 # In[12]:
 
@@ -78,23 +78,30 @@ print(circE_count_matrix.shape)
 
 for i in range(1,len(files_circExplorer)):
 	f=files_circExplorer[i]
-	print(f)
+	print("Currently reading file:"+str(f))
 	x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
+	print("Head of this file looks like this:")
 	print(x.head())
 	sampleName=f.name.replace(".circularRNA_known.txt","")
-	x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
+	# x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
+	print("SampleName is:"+sampleName)
 	x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
 	x[sampleName+"_circE"]=x[12].astype(str)
+	print(x.head())
 	x.drop([0,1,2,12],inplace=True,axis=1)
 	x.set_index(["hg38ID"],inplace=True)
 	print(x.head())
+	print("Before concat")
 	print(circE_count_matrix.head())
 
 
 # In[14]:
 
 
+	circE_count_matrix = circE_count_matrix.loc[~circE_count_matrix.index.duplicated(keep='first')]
+	x = x.loc[~x.index.duplicated(keep='first')]
 	circE_count_matrix=pandas.concat([circE_count_matrix,x],axis=1,join="outer",sort=False)
+	print("After concat")
 	print(circE_count_matrix.head())
 
 
