@@ -145,6 +145,10 @@ function preruncleanup() {
 
 }
 
+function postrun() {
+  bash ${PIPELINE_HOME}/scripts/gather_cluster_stats.sh ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+}
+
 function run() {
 
 
@@ -170,6 +174,8 @@ function run() {
     --directory $WORKDIR \
     --configfile ${WORKDIR}/config.yaml 
   fi
+
+  postrun
 
   elif [ "$1" == "slurm" ];then
   
@@ -215,6 +221,8 @@ fi
 EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
+
+  postrun
 
   else
 
