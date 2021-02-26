@@ -218,11 +218,11 @@ if [ "\$?" -eq "0" ];then
   --configfile ${WORKDIR}/config.yaml 
 fi
 
+bash ${PIPELINE_HOME}/scripts/gather_cluster_stats.sh ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+
 EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
-
-  postrun
 
   else
 
