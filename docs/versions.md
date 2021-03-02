@@ -40,3 +40,5 @@
 * Using [*eulerr*](https://www.rdocumentation.org/packages/eulerr/versions/6.1.0) R package to generate CIRI-CircExplorer circRNA Venn diagrams and include them in the mulitqc report
 * Gather per job cluster metadata like queue time, run time, job state etc. Stats are compiled in **HPC_summary** file
 * CLEAR pipeline *quant.txt* file is annotated for known circRNAs
+* `WORKDIR` can now be a relative path
+* bam2bw conversion fix for BSJ and spliced_reads. [Issue](https://github.com/kopardev/circRNA/issues/17) closed!
