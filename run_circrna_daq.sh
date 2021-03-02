@@ -67,14 +67,16 @@ function check_arguments() {
   if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
   if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
   WORKDIR=$2
+# echo $WORKDIR
 # x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
 # if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
   WORKDIR=$(readlink -f "$WORKDIR")
   echo "Working Dir: $WORKDIR"
+  # exit 1
 }
 
 function init() {
-  check_arguments
+  check_arguments $@
   if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; exit 1; fi
   mkdir -p $WORKDIR
   # copy config.yaml and samples.tsv template files into the working dir
@@ -91,7 +93,7 @@ function init() {
 }
 
 function runcheck(){
-  check_arguments
+  check_arguments $@
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; exit 1; fi
   module load python/3.7
   module load snakemake/5.24.1
