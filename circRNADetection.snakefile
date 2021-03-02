@@ -538,7 +538,7 @@ sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
 sizes="${{bam%.*}}.sizes"
-bedtools genomecov -bg -ibam $bam > $bdg
+bedtools genomecov -bga -split -ibam $bam > $bdg
 bedSort $bdg $bdg
 if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
 samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
@@ -575,7 +575,7 @@ sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
 sizes="${{bam%.*}}.sizes"
-bedtools genomecov -bg -ibam $bam > $bdg
+bedtools genomecov -bga -split -ibam $bam > $bdg
 bedSort $bdg $bdg
 if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
 samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
