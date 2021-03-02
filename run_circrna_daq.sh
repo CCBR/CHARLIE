@@ -63,35 +63,35 @@ function err() { cat <<< "
 #
 " 1>&2; }
 
+function check_arguments() {
+  if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
+  if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
+  WORKDIR=$2
+# x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
+# if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
+  WORKDIR=$(readlink -f "$WORKDIR")
+  echo "Working Dir: $WORKDIR"
+}
+
 function init() {
-if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
-if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
-WORKDIR=$2
-x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
-if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
-echo "Working Dir: $WORKDIR"
-if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; exit 1; fi
-mkdir -p $WORKDIR
-# copy config.yaml and samples.tsv template files into the working dir
-echo ${PIPELINE_HOME}
-echo ${WORKDIR}
-sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
-# cat ${PIPELINE_HOME}/config/config.yaml | sed "s/PIPELINE_HOME/${PIPELINE_HOME}/g" | sed "s/WORKDIR/${WORKDIR}/g" > $WORKDIR/config.yaml
-cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
+  check_arguments
+  if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; exit 1; fi
+  mkdir -p $WORKDIR
+  # copy config.yaml and samples.tsv template files into the working dir
+  sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+  # cat ${PIPELINE_HOME}/config/config.yaml | sed "s/PIPELINE_HOME/${PIPELINE_HOME}/g" | sed "s/WORKDIR/${WORKDIR}/g" > $WORKDIR/config.yaml
+  cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
 
-#create log and stats folders
-if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
-if [ ! -d $WORKDIR/stats ];then mkdir -p $WORKDIR/stats;echo "Stats Dir: $WORKDIR/stats";fi
+  #create log and stats folders
+  if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
+  if [ ! -d $WORKDIR/stats ];then mkdir -p $WORKDIR/stats;echo "Stats Dir: $WORKDIR/stats";fi
 
-echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WORKDIR/samples.tsv"
+  echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WORKDIR/samples.tsv"
 
 }
 
 function runcheck(){
-  if [ "$#" -eq "1" ]; then err "absolute path to the working dir needed"; usage; exit 1; fi
-  if [ "$#" -gt "2" ]; then err "too many arguments"; usage; exit 1; fi
-  WORKDIR=$2
-  echo "Working Dir: $WORKDIR"
+  check_arguments
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; exit 1; fi
   module load python/3.7
   module load snakemake/5.24.1
