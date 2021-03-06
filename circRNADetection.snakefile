@@ -117,6 +117,7 @@ for sample in SAMPLES:
 	else:
 		SAMPLESDF.loc[[sample],"PEorSE"]="SE"
 # print(SAMPLESDF)
+# sys.exit()
 
 ## Load tools from YAML file
 with open(config["tools"]) as f:
