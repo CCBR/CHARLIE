@@ -139,6 +139,7 @@ rule all:
 		## star2p
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab"),sample=SAMPLES),
 		## star gene counts matrix
 		join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),
 		## picard MarkDuplicates metrics
