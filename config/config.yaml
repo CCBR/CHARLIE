@@ -27,15 +27,70 @@ adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 ## Resources
 #
 # hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
+# * hg38 ... rRNA masked
+# * rRNA ... 45S and 5S sequences
+# * ERCC sequences
+# * viruses:
+
+# | RefSeq  Sequence | RefSeq assembly accession | Notes                                                 |
+# | ---------------- | ------------------------- | ----------------------------------------------------- |
+# | NC_007605.1      | GCF_002402265.1           | Human gammaherpesvirus 4 (Epstein-Barr virus)         |
+# | NC_000898.1      | GCF_000846365.1           | Human betaherpesvirus 6B                              |
+# | NC_001664.4      | GCF_000845685.2           | Human betaherpesvirus 6A                              |
+# | NC_001716.2      | GCF_000848125.1           | Human betaherpesvirus 7                               |
+# | NC_006273.2      | GCF_000845245.1           | Human betaherpesvirus 5                               |
+# | NC_009333.1      | GCF_000838265.1           | Human gammaherpesvirus 8                              |
+# | NC_045512.2      | GCF_009858895.2           | Severe acute respiratory syndrome-related coronavirus |
+# | MN485971.1       | xx                        | HIV from Belgium ... GTF is hand curated              |
 #
-ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
-ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
-regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
-star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/STAR_index_no_GTF_2.7.6a"
-ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+
+# ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+# ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/STAR_index_no_GTF_2.7.6a"
+# ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+
+# 
+# Here we are adding the following virus to the reference.
+#
+#   | RefSeq  Sequence | RefSeq assembly accession | Notes                                                        |
+#   | ---------------- | ------------------------- | ------------------------------------------------------------ |
+#   | NC_001806.2      | GCF_000859985.2           | [Human alphaherpesvirus 1 (Herpes simplex virus type 1)](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=10298&lvl=3&lin=f&keep=1&srchmode=1&unlock) (strain 17) |
+#
+
+# ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+# ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/STAR_index_no_GTF_2.7.6a"
+# ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v2/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+
+# 
+# Here we are adding the different strain of HSV-1 virus to the reference. NC_001806.2 is absent from this assembly
+#
+#   | RefSeq  Sequence | RefSeq assembly accession | Notes                                                        |
+#   | ---------------- | ------------------------- | ------------------------------------------------------------ |
+#   | KT899744         | KT899744                  | HSV-1 strain KOS with only 1 copy of repeat sequences
+#
+
+ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
+star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/STAR_index_no_GTF_2.7.6a"
+ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+
+
+
+
+
 #
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 #

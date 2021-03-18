@@ -8,6 +8,17 @@
 ##   > output TSV file
 ##
 
+function node2runpartition {
+	node=$1
+	partitions_requested=$2
+	run_partition=$(for p in `echo $partitions_requested|awk '{print $NF}'|tr "," " "`;do if [ "$(freen -N $node|grep $p|awk '{print $1}'|grep $p|wc -l)" == "1" ]; then echo $p;break 1;fi;done)
+	if [ "$run_partition" == "" ];then
+		echo "unknown"
+	else
+		echo "$run_partition"
+	fi
+}
+
 
 function get_jobid_stats {
 jobid=$1
@@ -25,11 +36,13 @@ else
 	rm -f ${jobid}.data
 	st=${jobdataarray["submit_time"]}
 	jobdataarray["human_submit_time"]=$(date -d @$st|sed "s/ /_/g")
+	jobdataarray["alloc_node_partition"]=$(node2runpartition ${jobdataarray["alloc_node"]} ${jobdataarray["partition"]})
+	jobdataarray["run_node_partition"]=$(node2runpartition ${jobdataarray["node_list"]} ${jobdataarray["partition"]})
 fi
 echo -ne "${jobdataarray["submit_time"]}\t"
 echo -ne "${jobdataarray["human_submit_time"]}\t"
 echo -ne "${jobdataarray["jobid"]}:${jobdataarray["state"]}:${jobdataarray["job_name"]}\t"
-echo -ne "${jobdataarray["alloc_node"]}\t"
+echo -ne "${jobdataarray["alloc_node"]}:${jobdataarray["alloc_node_partition"]}:${jobdataarray["node_list"]}:${jobdataarray["run_node_partition"]}\t"
 echo -ne "${jobdataarray["queued"]}:${jobdataarray["elapsed"]}:${jobdataarray["time_limit"]}\t"
 echo -ne "${jobdataarray["avg_cpus"]}:${jobdataarray["max_cpu_used"]}:${jobdataarray["cpus_per_task"]}\t"
 echo -ne "${jobdataarray["avg_mem"]}:${jobdataarray["max_mem_used"]}:${jobdataarray["total_mem"]}\t"
@@ -47,7 +60,7 @@ fi
 
 snakemakelogfile=$1
 grep "with external jobid" $snakemakelogfile | awk '{print $NF}' | sed "s/['.]//g" | sort | uniq > ${snakemakelogfile}.jobids.lst
-echo -ne "##SubmitTime\tHumanSubmitTime\tJobID:JobState:JobName\tNode\tQueueTime:RunTime:TimeLimit\tAvgCPU:MaxCPU:CPULimit\tAvgMEM:MaxMEM:MEMLimit\tPartition:QOS\tUsername:Group:Account\tWorkdir\tStdOut\tStdErr\n"
+echo -ne "##SubmitTime\tHumanSubmitTime\tJobID:JobState:JobName\tAllocNode:AllocNodePartition:RunNode:RunNodePartition\tQueueTime:RunTime:TimeLimit\tAvgCPU:MaxCPU:CPULimit\tAvgMEM:MaxMEM:MEMLimit\tPartition:QOS\tUsername:Group:Account\tWorkdir\tStdOut\tStdErr\n"
 while read jid;do
 	get_jobid_stats $jid
 done < ${snakemakelogfile}.jobids.lst |sort -k1,1n

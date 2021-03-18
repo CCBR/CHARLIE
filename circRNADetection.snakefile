@@ -143,6 +143,8 @@ rule all:
 		expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),
 		## BSJ bam
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
+		## alignment stats
+		expand(join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt"), sample=SAMPLES),
 		## circExplorer
 		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
 		## ciri
@@ -348,7 +350,8 @@ rule star2p:
 		pass1sjtab=rules.merge_SJ_tabs.output.pass1sjtab
 	output:
 		junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam")
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),
+		genecounts=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab")
 	params:
 		sample="{sample}",
 		peorse=get_peorse,
@@ -394,6 +397,7 @@ if [ "{params.peorse}" == "PE" ];then
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
+	--quantMode GeneCounts \
 	--outTmpDir=/dev/shm/{params.sample} \
 	--sjdbOverhang $overhang
 
@@ -427,6 +431,7 @@ else
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
+	--quantMode GeneCounts \
 	--outTmpDir=/dev/shm/{params.sample} \
 	--sjdbOverhang $overhang
 fi
@@ -782,3 +787,36 @@ rule multiqc:
 cd {params.outdir}
 multiqc .
 """
+
+rule alignment_stats:
+	input:
+		star2pbam=rules.star2p.output.bam,
+		splicedreadsbam=rules.create_spliced_reads_bam.output.bam,
+		BSJbam=rules.create_BSJ_bam.output.bam,
+	output:
+		alignmentstats=join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt")
+	params:
+		regions=config['regions'],
+		bam2nreads_script=join(SCRIPTS_DIR,"bam_get_uniquely_aligned_fragments.bash"),
+		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+	threads: 4
+	envmodules: TOOLS["samtools"]["version"]
+	shell:"""
+while read a b;do echo $a;done < {params.regions} > {params.outdir}/tmp1
+while read a b;do bash {params.bam2nreads_script} {input.star2pbam} "$b";done < {params.regions} > {params.outdir}/tmp2
+while read a b;do bash {params.bam2nreads_script} {input.splicedreadsbam} "$b";done < {params.regions} > {params.outdir}/tmp3
+while read a b;do bash {params.bam2nreads_script} {input.BSJbam} "$b";done < {params.regions} > {params.outdir}/tmp4
+echo -ne "#region\taligned_fragments\tspliced_fragments\tBSJ_fragments\n" > {output.alignmentstats}
+paste {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 >> {output.alignmentstats}
+rm -f {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 
+"""
+
+rule merge_genecounts:
+	input:
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab"),sample=SAMPLES)
+	output:
+		join(WORKDIR,"results","unstranded_STAR_GeneCounts.tsv"),
+		join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),
+		join(WORKDIR,"results","revstranded_STAR_GeneCounts.tsv")
+	
+	
