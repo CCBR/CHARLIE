@@ -27,4 +27,6 @@ stringtie:
  version: "stringtie/2.1.4"
 ucsc:
  version: "ucsc/407"
+R:
+ version: "R/4.0.3"
 

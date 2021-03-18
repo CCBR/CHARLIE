@@ -139,6 +139,8 @@ rule all:
 		## star2p
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),sample=SAMPLES),
+		## star gene counts matrix
+		join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),
 		## picard MarkDuplicates metrics
 		expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),
 		## BSJ bam
@@ -818,5 +820,14 @@ rule merge_genecounts:
 		join(WORKDIR,"results","unstranded_STAR_GeneCounts.tsv"),
 		join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),
 		join(WORKDIR,"results","revstranded_STAR_GeneCounts.tsv")
+	params:
+		outdir=join(WORKDIR,"results"),
+		rscript=join(SCRIPTS_DIR,"merge_ReadsPerGene_counts.R")
+	envmodules: TOOLS["R"]["version"]
+	shell:"""
+cd {params.outdir}
+Rscript {params.rscript}
+"""
+
 	
 	
