@@ -125,6 +125,7 @@ with open(config["tools"]) as f:
 
 localrules: multiqc, annotate_clear_output, merge_genecounts
 
+
 rule all:
 	input:
 		## cutadapt
