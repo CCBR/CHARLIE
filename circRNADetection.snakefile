@@ -123,7 +123,7 @@ for sample in SAMPLES:
 with open(config["tools"]) as f:
 	TOOLS = yaml.safe_load(f)
 
-localrules: multiqc, annotate_clear_output
+localrules: multiqc, annotate_clear_output, merge_genecounts
 
 rule all:
 	input:
