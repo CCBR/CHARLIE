@@ -18,10 +18,10 @@ run_clear: True
 #
 #
 ## you most probably dont need to change these
-scriptsdir: "PIPELINE_HOME/scripts"
+scriptsdir: "PIPELINE_HOME/workflow/scripts"
 resourcesdir: "PIPELINE_HOME/resources"
-tools: "PIPELINE_HOME/config/tools.yaml"
-cluster: "PIPELINE_HOME/config/cluster.json"
+tools: "PIPELINE_HOME/resources/tools.yaml"
+cluster: "PIPELINE_HOME/resources/cluster.json"
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
 ## Resources

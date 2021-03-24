@@ -11,6 +11,19 @@
 set -eo pipefail
 module purge
 
+# you may want to re-set these
+#######
+EXTRA_SINGULARITY_BINDS="-B /data/CCBR_Pipeliner/:/data/CCBR_Pipeliner/ -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/"
+PYTHONVERSION="3.7"
+SNAKEMAKEVERSION="5.24.1"
+#######
+
+
+SCRIPTNAME="$0"
+SCRIPTDIRNAME=$(readlink -f $(dirname $0))
+SCRIPTBASENAME=$(readlink -f $(basename $0))
+
+
 function get_git_commitid_tag() {
   cd $1
   gid=$(git rev-parse HEAD)
@@ -19,37 +32,31 @@ function get_git_commitid_tag() {
 }
 
 # ## setting PIPELINE_HOME
-# ## clone the pipeline to a folder
-# ## git clone https://github.com/kopardev/circRNA.git
-# ## and set that as the pipeline home
-# PIPELINE_HOME="/data/Ziegelbauer_lab/circRN ADetection/scripts/circRNA"
 PIPELINE_HOME=$(readlink -f $(dirname "$0"))
-# PIPELINE_HOME="/data/Ziegelbauer_lab/Pipelines/circRNA/dev"
 echo "Pipeline Dir: $PIPELINE_HOME"
-# ## make current folder as working directory
-# a=$(readlink -f $0)
-# # echo $a
-# for i in `seq 1 20`;do
-# b=$(echo $a|sed "s/\/gpfs\/gsfs${i}\/users/\/data/g")
-# a=$b
-# done
-# echo $a
-# WORKDIR=$(dirname $a)
+# set snakefile
+SNAKEFILE="${PIPELINE_HOME}/workflow/Snakefile"
+
+# get github commit tag
 GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 echo "Git Commit/Tag: $GIT_COMMIT_TAG"
 
 function usage() { cat << EOF
-run_circrna_daq.sh: run the workflow to DAQ (detect, annotate and quantify circRNAs)
+
+${SCRIPTBASENAME}
+--> run circRNA Detection Annotation Quantification Pipeline
+
 USAGE:
-  bash run_circrna_daq.sh <MODE>  <path_to_workdir>
-Required Positional Argument:
-  MODE: [Type: Str] Valid options:
-    a) init <path_to_workdir> : initialize workdir
-    b) run <path_to_workdir>: run with slurm
-    c) reset <path_to_workdir> : DELETE workdir dir and re-init it
-    e) dryrun <path_to_workdir> : dry run snakemake to generate DAG
-    f) unlock <path_to_workdir> : unlock workdir if locked by snakemake
-    g) runlocal <path_to_workdir>: run without submitting to sbatch
+  bash ${SCRIPTNAME} -m/--runmode=<RUNMODE> -w/--workdir=<WORKDIR>
+Required Arguments:
+1.  RUNMODE: [Type: String] Valid options:
+    *) init : initialize workdir
+    *) run : run with slurm
+    *) reset : DELETE workdir dir and re-init it
+    *) dryrun : dry run snakemake to generate DAG
+    *) unlock : unlock workdir if locked by snakemake
+    *) runlocal : run without submitting to sbatch
+2.  WORKDIR: [Type: String]: Absolute or relative path to the output folder with write permissions.
 EOF
 }
 
@@ -61,74 +68,89 @@ function err() { cat <<< "
 #
 #
 #
-" 1>&2; }
+" && usage && exit 1 1>&2; }
 
-function check_arguments() {
-  if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
-  if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
-  WORKDIR=$2
-# echo $WORKDIR
-# x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
-# if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
-  WORKDIR=$(readlink -f "$WORKDIR")
-  echo "Working Dir: $WORKDIR"
-  # exit 1
-}
+# function check_arguments() {
+#   if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
+#   if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
+#   WORKDIR=$2
+# # echo $WORKDIR
+# # x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
+# # if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
+#   WORKDIR=$(readlink -f "$WORKDIR")
+#   echo "Working Dir: $WORKDIR"
+#   # exit 1
+# }
 
 function init() {
-  check_arguments $@
-  if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; exit 1; fi
-  mkdir -p $WORKDIR
-  # copy config.yaml and samples.tsv template files into the working dir
+
+# create output folder
+if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
+mkdir -p $WORKDIR
+
+# copy config and samples files
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
+
+#create log and stats folders
+if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
+if [ ! -d $WORKDIR/stats ];then mkdir -p $WORKDIR/stats;echo "Stats Dir: $WORKDIR/stats";fi
+
+echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WORKDIR/samples.tsv"
+
+}
+
+function check_essential_files() {
+  if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
+  for f in config.yaml samples.tsv; do
+    if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
+  done
+}
+
+function reconfig(){
+  # rebuild config file and replace the config.yaml in the WORKDIR
+  # this is only for dev purposes when new key-value pairs are being added to the config file
+  check_essential_files
   sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
-  # cat ${PIPELINE_HOME}/config/config.yaml | sed "s/PIPELINE_HOME/${PIPELINE_HOME}/g" | sed "s/WORKDIR/${WORKDIR}/g" > $WORKDIR/config.yaml
-  cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
-
-  #create log and stats folders
-  if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
-  if [ ! -d $WORKDIR/stats ];then mkdir -p $WORKDIR/stats;echo "Stats Dir: $WORKDIR/stats";fi
-
-  echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WORKDIR/samples.tsv"
-
+  echo "$WORKDIR/config.yaml has been updated!"
 }
 
 function runcheck(){
-  check_arguments $@
-  if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; exit 1; fi
-  module load python/3.7
-  module load snakemake/5.24.1
+  check_essential_files
+  module load python/$PYTHONVERSION
+  module load snakemake/$SNAKEMAKEVERSION
+  SINGULARITY_BINDS="$EXTRA_SINGULARITY_BINDS -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR}"
 }
 
 function dryrun() {
-  runcheck "$@"
+  runcheck
   run "--dry-run"
 }
 
 function unlock() {
-  runcheck "$@"
+  runcheck
   run "--unlock"  
 }
 
 function runlocal() {
-  runcheck "$@"
+  runcheck
   if [ "$SLURM_JOB_ID" == "" ];then err "runlocal can only be done on an interactive node"; exit 1; fi
   module load singularity
   run "local"
 }
 
 function runslurm() {
-  runcheck "$@"
+  runcheck
   run "slurm"
 }
 
 function preruncleanup() {
   echo "Running..."
 
+  # check initialization
+  check_essential_files 
+
   cd $WORKDIR
-  ## check if initialized
-  for f in config.yaml samples.tsv; do
-    if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";usage && exit 1;fi
-  done
   ## Archive previous run files
   if [ -f ${WORKDIR}/snakemake.log ];then 
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
@@ -142,7 +164,7 @@ function preruncleanup() {
   fi
   nslurmouts=$(find ${WORKDIR} -maxdepth 1 -name "slurm-*.out" |wc -l)
   if [ "$nslurmouts" != "0" ];then
-    for f in $(ls ${WORKDIR}/slurm-*.out);do gzip -n $f;mv ${f}.gz ${WORKDIR}/logs/;done
+    for f in $(ls ${WORKDIR}/slurm-*.out);do mv ${f} ${WORKDIR}/logs/;done
   fi
 
 }
@@ -158,11 +180,11 @@ function run() {
 
   preruncleanup
 
-  snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+  snakemake -s $SNAKEFILE\
   --directory $WORKDIR \
   --printshellcmds \
   --use-singularity \
-  --singularity-args " -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+  --singularity-args "$SINGULARITY_BINDS" \
   --use-envmodules \
   --latency-wait 120 \
   --configfile ${WORKDIR}/config.yaml \
@@ -177,35 +199,33 @@ function run() {
     --configfile ${WORKDIR}/config.yaml 
   fi
 
-  postrun
-
   elif [ "$1" == "slurm" ];then
   
   preruncleanup
 
   cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
-#SBATCH --job-name="circRNA"
+#SBATCH --job-name="circRNA_DAQ"
 #SBATCH --mem=10g
 #SBATCH --partition="ccr,norm"
 #SBATCH --time=96:00:00
 #SBATCH --cpus-per-task=2
 
-module load python/3.7
-module load snakemake/5.24.1
+module load python/$PYTHONVERSION
+module load snakemake/$SNAKEMAKEVERSION
 module load singularity
 
 cd \$SLURM_SUBMIT_DIR
 
-snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+snakemake -s $SNAKEFILE \
 --directory $WORKDIR \
 --use-singularity \
---singularity-args " -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR} -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/" \
+--singularity-args "$SINGULARITY_BINDS" \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
 --configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/config/cluster.json \
+--cluster-config ${PIPELINE_HOME}/resources/cluster.json \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error} --qos {cluster.qos}" \
 -j 500 \
 --rerun-incomplete \
@@ -220,21 +240,21 @@ if [ "\$?" -eq "0" ];then
   --configfile ${WORKDIR}/config.yaml 
 fi
 
-bash ${PIPELINE_HOME}/scripts/gather_cluster_stats.sh ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
 
 EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
 
-  else
+  else # dry-run and unlock
 
-snakemake $1 -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+snakemake $1 -s $SNAKEFILE \
 --directory $WORKDIR \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
 --configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/config/cluster.json \
+--cluster-config ${PIPELINE_HOME}/resources/cluster.json \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
@@ -246,15 +266,13 @@ snakemake $1 -s ${PIPELINE_HOME}/circRNADetection.snakefile \
 }
 
 function reset() {
-if [ "$#" -eq "1" ]; then err "cleanup needs an absolute path to the existing working dir"; usage; fi
-if [ "$#" -gt "2" ]; then err "cleanup takes only one more argument"; usage; fi
-WORKDIR=$2
-echo "Working Dir: $WORKDIR"
-if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!";fi
-echo "Deleting $WORKDIR"
-rm -rf $WORKDIR
-echo "Re-Initializing $WORKDIR"
-init "$@"
+  #delete the workdir and re-initialize it
+  echo "Working Dir: $WORKDIR"
+  if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!";fi
+  echo "Deleting $WORKDIR"
+  rm -rf $WORKDIR
+  echo "Re-Initializing $WORKDIR"
+  init
 }
 
 
@@ -262,18 +280,42 @@ function main(){
 
   if [ $# -eq 0 ]; then usage; exit 1; fi
 
-  case $1 in
-    init) init "$@" && exit 0;;
-    dryrun) dryrun "$@" && exit 0;;
-    unlock) unlock "$@" && exit 0;;
-    run) runslurm "$@" && exit 0;;
-    runlocal) runlocal "$@" && exit 0;;
-    reset) reset "$@" && exit 0;;
-    -h | --help | help) usage && exit 0;;
-    -* | --*) err "Error: Failed to provide mode: <init|run>."; usage && exit 1;;
-    *) err "Error: Failed to provide mode: <init|run>. '${1}' is not supported."; usage && exit 1;;
+  for i in "$@"
+  do
+  case $i in
+      -m=*|--runmode=*)
+        RUNMODE="${i#*=}"
+      ;;
+      -w=*|--workdir=*)
+        WORKDIR="${i#*=}"
+      ;;
+      *)
+        err "Unknown argument!"    # unknown option
+      ;;
+  esac
+  done
+  WORKDIR=$(readlink -f "$WORKDIR")
+  echo "Working Dir: $WORKDIR"
+  # echo SCRIPTNAME = ${SCRIPTNAME}
+  # echo RUNMODE = ${RUNMODE}
+  # echo WORKDIR = ${WORKDIR}
+  # exit;
+
+
+  case $RUNMODE in
+    init) init && exit 0;;
+    dryrun) dryrun && exit 0;;
+    unlock) unlock && exit 0;;
+    run) runslurm && exit 0;;
+    runlocal) runlocal && exit 0;;
+    reset) reset && exit 0;;
+    dry) dryrun && exit 0;;                      # hidden option
+    local) runlocal && exit 0;;                  # hidden option
+    reconfig) reconfig && exit 0;;               # hidden option for debugging
+    *) err "Unknown RUNMODE \"$RUNMODE\"";;
   esac
 }
+
 
 main "$@"
 
