@@ -290,7 +290,7 @@ function main(){
         WORKDIR="${i#*=}"
       ;;
       *)
-        err "Unknown argument!"    # unknown option
+        err "Unknown argument $i!"    # unknown option
       ;;
   esac
   done
