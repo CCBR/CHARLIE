@@ -147,7 +147,7 @@ function runslurm() {
 function create_runinfo {
   if [ -f ${WORKDIR}/runinfo.yaml ];then
     modtime=$(stat ${WORKDIR}/runinfo.yaml|grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
-    mv ${WORKDIR}/runinfo.yaml ${WORKDIR}/runinfo.yaml
+    mv ${WORKDIR}/runinfo.yaml ${WORKDIR}/runinfo.yaml.${modtime}
   fi
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
