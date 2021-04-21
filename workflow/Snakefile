@@ -160,6 +160,11 @@ rule all:
 		## BSJ bams and bigwigs
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bed"),sample=SAMPLES),
 		## Spliced reads bams and bigwigs
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
@@ -565,12 +570,18 @@ rule split_BAM_create_BW:
 		bam=rules.create_BSJ_bam.output.bam
 	output:
 		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw")
+		plusbam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bam"),
+		minusbam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bam"),
+		bed=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bed"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),
+		plusbw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bw"),
+		minusbw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bw"),
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
 		memG=MEMORYG,
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		pythonscript=join(SCRIPTS_DIR,"split_bam_by_strand.py"),
 		regions=config['regions']
 	threads: 2
 	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
@@ -579,20 +590,51 @@ cd {params.outdir}
 bam_basename="$(basename {input.bam})"
 while read a b;do
 bam="${{bam_basename%.*}}.${{a}}.bam"
+plusbam="${{bam_basename%.*}}.${{a}}.plus.bam"
+minusbam="${{bam_basename%.*}}.${{a}}.minus.bam"
+bed="${{bam_basename%.*}}.${{a}}.bed"
 samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
+plusbw="${{bam%.*}}.plus.bw"
+plusbdg="${{bam%.*}}.plus.bdg"
+minusbw="${{bam%.*}}.minus.bw"
+minusbdg="${{bam%.*}}.minus.bdg"
 sizes="${{bam%.*}}.sizes"
+# create strand specific bams
+python {params.pythonscript} \
+-i $bam \
+-p $plusbam \
+-m $minusbam \
+-b $bed
+bedSort $bed $bed
+# create bedgraphs
 bedtools genomecov -bga -split -ibam $bam > $bdg
 bedSort $bdg $bdg
+bedtools genomecov -bga -split -ibam $plusbam > $plusbdg
+bedSort $plusbdg $plusbdg
+bedtools genomecov -bga -split -ibam $minusbam > $minusbdg
+bedSort $minusbdg $minusbdg
+# create bigwigs
 if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
-samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
-bedGraphToBigWig $bdg $sizes $bw
+	samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+	bedGraphToBigWig $bdg $sizes $bw
+	if [ "$(wc -l $plusbdg|awk '{{print $1}}')" != "0" ];then
+		bedGraphToBigWig $plusbdg $sizes $plusbw
+	else
+		touch $plusbw
+	fi
+	if [ "$(wc -l $minusbdg|awk '{{print $1}}')" != "0" ];then
+		bedGraphToBigWig $minusbdg $sizes $minusbw
+	else
+		touch $minusbw
+	fi
 else
-touch $bw
+	touch $bw
 fi
 rm -f $bdg $sizes
+
 done < {params.regions}
 """	
 
