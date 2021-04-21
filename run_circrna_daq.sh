@@ -144,6 +144,23 @@ function runslurm() {
   run "slurm"
 }
 
+function create_runinfo {
+  if [ -f ${WORKDIR}/runinfo.yaml ];then
+    modtime=$(stat ${WORKDIR}/runinfo.yaml|grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
+    mv ${WORKDIR}/runinfo.yaml ${WORKDIR}/runinfo.yaml
+  fi
+  echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
+  echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
+  userlogin=$(whoami)
+  username=$(finger $userlogin|grep ^Login|awk -F"Name: " '{print $2}')
+  echo "Login: $userlogin" >> ${WORKDIR}/runinfo.yaml
+  echo "Name: $username" >> ${WORKDIR}/runinfo.yaml
+  g=$(groups)
+  echo "Groups: $g" >> ${WORKDIR}/runinfo.yaml
+  d=$(date)
+  echo "Date/Time: $d" >> ${WORKDIR}/runinfo.yaml
+}
+
 function preruncleanup() {
   echo "Running..."
 
@@ -167,10 +184,8 @@ function preruncleanup() {
     for f in $(ls ${WORKDIR}/slurm-*.out);do mv ${f} ${WORKDIR}/logs/;done
   fi
 
-}
+  create_runinfo
 
-function postrun() {
-  bash ${PIPELINE_HOME}/scripts/gather_cluster_stats.sh ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
 }
 
 function run() {
@@ -196,7 +211,7 @@ function run() {
     snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
     --report ${WORKDIR}/runlocal_snakemake_report.html \
     --directory $WORKDIR \
-    --configfile ${WORKDIR}/config.yaml 
+    --configfile ${WORKDIR}/config.yaml
   fi
 
   elif [ "$1" == "slurm" ];then
@@ -259,6 +274,7 @@ snakemake $1 -s $SNAKEFILE \
 -j 500 \
 --rerun-incomplete \
 --keep-going \
+--reason \
 --stats ${WORKDIR}/snakemake.stats
 
   fi
