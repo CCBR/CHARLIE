@@ -107,12 +107,14 @@ for sample in SAMPLES:
 	R1filenewname=join(WORKDIR,"fastqs",sample+".R1.fastq.gz")
 	if not os.path.exists(R1filenewname):
 		os.symlink(R1file,R1filenewname)
+		# os.link(R1file,R1filenewname)
 	SAMPLESDF.loc[[sample],"R1"]=R1filenewname
 	if str(R2file)!='nan':
 		check_readaccess(R2file)
 		R2filenewname=join(WORKDIR,"fastqs",sample+".R2.fastq.gz")
 		if not os.path.exists(R2filenewname):
 			os.symlink(R2file,R2filenewname)
+			# os.link(R2file,R2filenewname)
 		SAMPLESDF.loc[[sample],"R2"]=R2filenewname
 	else:
 		SAMPLESDF.loc[[sample],"PEorSE"]="SE"
@@ -446,7 +448,7 @@ fi
 rm -rf {params.outdir}/{params.sample}_p2._STARgenome
 ## ensure the star2p file is indexed ... is should already be sorted by STAR
 if [ ! -f {output.bam}.bai ];then
-sambamba index {output.bam}
+samtools index {output.bam}
 fi
 """
 
@@ -488,6 +490,8 @@ python {params.script1} -j {input.junction} > {output.readids}
 ## extract only the uniq readids
 cut -f1 {output.readids} | sort | uniq > /dev/shm/{params.sample}.readids
 
+# INVALID_INDEX_FILE_POINTER 1 issues give errors hence re-indexing
+samtools index {input.bam}
 ## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
 ## note the argument --readids here is just a list of readids
 python {params.script2} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.chimeric.bam --readids /dev/shm/{params.sample}.readids
