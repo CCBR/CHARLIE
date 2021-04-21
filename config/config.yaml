@@ -78,14 +78,25 @@ adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #   | KT899744         | KT899744                  | HSV-1 strain KOS with only 1 copy of repeat sequences
 #
 
-ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
-ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
-regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
-star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/STAR_index_no_GTF_2.7.6a"
-ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+# ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+# ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/STAR_index_no_GTF_2.7.6a"
+# ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v3/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+
+# replace ERCC with Biotynlated probes
+
+ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot.fa"
+ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot.gtf"
+regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot.fa.regions"
+star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/STAR_index_no_GTF_2.7.6a"
+ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot"
+ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot"
+ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot"
+genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot.genes.genepred_w_geneid"
 
 
 
@@ -105,3 +116,5 @@ star1passfilter1_noncanonical: "True"
 star1passfilter1_unannotated: "True"
 star1passfilter2_noncanonical: "False"
 star1passfilter2_unannotated: "False"
+cutadapt_min_length: 15
+
