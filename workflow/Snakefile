@@ -191,6 +191,7 @@ rule cutadapt:
 		workdir=WORKDIR,
 		outdir=join(WORKDIR,"results","{sample}"),
 		peorse=get_peorse,
+		cutadapt_min_length=config["cutadapt_min_length"],
 		adapters=join(RESOURCES_DIR,"TruSeq_and_nextera_adapters.consolidated.fa")
 	envmodules: TOOLS["cutadapt"]["version"]
 	threads: 56
@@ -202,7 +203,7 @@ if [ "{params.peorse}" == "PE" ];then
 	--nextseq-trim=2 \
 	--trim-n \
 	-n 5 -O 5 \
-	-q 10,10 -m 35:35 \
+	-q 10,10 -m {params.cutadapt_min_length}:{params.cutadapt_min_length} \
 	-b file:{params.adapters} \
 	-B file:{params.adapters} \
 	-j {threads} \
@@ -214,7 +215,7 @@ else
 	--nextseq-trim=2 \
 	--trim-n \
 	-n 5 -O 5 \
-	-q 10,10 -m 35 \
+	-q 10,10 -m {params.cutadapt_min_length} \
 	-b file:{params.adapters} \
 	-j {threads} \
 	-o {output.of1} \
