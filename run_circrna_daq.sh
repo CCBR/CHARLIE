@@ -13,7 +13,7 @@ module purge
 
 # you may want to re-set these
 #######
-EXTRA_SINGULARITY_BINDS="-B /data/CCBR_Pipeliner/:/data/CCBR_Pipeliner/ -B /data/Ziegelbauer_lab/resources/:/data/Ziegelbauer_lab/resources/"
+EXTRA_SINGULARITY_BINDS="/lscratch"
 PYTHONVERSION="3.7"
 SNAKEMAKEVERSION="5.24.1"
 #######
@@ -119,7 +119,6 @@ function runcheck(){
   check_essential_files
   module load python/$PYTHONVERSION
   module load snakemake/$SNAKEMAKEVERSION
-  SINGULARITY_BINDS="$EXTRA_SINGULARITY_BINDS -B ${PIPELINE_HOME}:${PIPELINE_HOME} -B ${WORKDIR}:${WORKDIR}"
 }
 
 function dryrun() {
@@ -132,8 +131,29 @@ function unlock() {
   run "--unlock"  
 }
 
+function set_singularity_binds(){
+# this functions tries find what folders to bind
+# biowulf specific
+  echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
+  echo "$WORKDIR" >> ${WORKDIR}/tmp1
+  grep -o '\/.*' <(cat ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)|tr '\t' '\n'|grep -v ' \|\/\/'|sort|uniq >> ${WORKDIR}/tmp1
+  grep gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3,$4,$5}' |sort|uniq > ${WORKDIR}/tmp2
+  grep -v gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3}'|sort|uniq > ${WORKDIR}/tmp3
+  while read a;do readlink -f $a;done < ${WORKDIR}/tmp3 > ${WORKDIR}/tmp4
+  binds=$(cat ${WORKDIR}/tmp2 ${WORKDIR}/tmp3 ${WORKDIR}/tmp4|sort|uniq |tr '\n' ',')
+  rm -f ${WORKDIR}/tmp?
+  binds=$(echo $binds|awk '{print substr($1,1,length($1)-1)}')
+  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+}
+
+function printbinds(){
+  set_singularity_binds
+  echo $SINGULARITY_BINDS
+}
+
 function runlocal() {
   runcheck
+  set_singularity_binds
   if [ "$SLURM_JOB_ID" == "" ];then err "runlocal can only be done on an interactive node"; exit 1; fi
   module load singularity
   run "local"
@@ -141,6 +161,7 @@ function runlocal() {
 
 function runslurm() {
   runcheck
+  set_singularity_binds
   run "slurm"
 }
 
@@ -328,6 +349,7 @@ function main(){
     dry) dryrun && exit 0;;                      # hidden option
     local) runlocal && exit 0;;                  # hidden option
     reconfig) reconfig && exit 0;;               # hidden option for debugging
+    printbinds) printbinds && exit 0;;           # hidden option
     *) err "Unknown RUNMODE \"$RUNMODE\"";;
   esac
 }
