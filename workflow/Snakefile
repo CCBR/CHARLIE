@@ -835,7 +835,7 @@ rule multiqc:
 	envmodules: TOOLS["multiqc"]["version"]
 	shell:"""
 cd {params.outdir}
-multiqc .
+multiqc --force .
 """
 
 rule alignment_stats:
