@@ -144,6 +144,8 @@ class Readinfo:
 			self.strand="-"
 		elif self.bitid=="256##2304":
 			self.strand="-"
+		elif self.bitid=="153##2201":
+			self.strand="-"
 		else:
 			self.strand="U"
 	
