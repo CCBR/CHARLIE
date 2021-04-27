@@ -1,7 +1,7 @@
 {
     "__default__": {
         "gres": "lscratch:256",
-        "mem": "20g",
+        "mem": "40g",
         "partition": "ccr", "qos": "ccrcore",
         "threads": "2",
         "time": "4:00:00",
