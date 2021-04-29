@@ -160,6 +160,7 @@ rule all:
 		join(WORKDIR,"results","circExplorer_count_matrix.txt"),
 		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 		## BSJ bams and bigwigs
+		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bam"),sample=SAMPLES),
@@ -568,24 +569,42 @@ rm -f $bdg $sizes
 done < {params.regions}
 """	
 
+# rule add_strand_to_circExplorer:
+# 	input:
+# 		backsplicedjunctions=rules.annotate_circRNA.output.backsplicedjunctions,
+# 		bed=rules.split_BAM_create_BW.output.bed
+# 	output:
+# 		backsplicedjunctions=join(WORKDIR,"results","{sample}","circExplorer","{sample}.back_spliced_junction.bed"),
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		pythonscript=join(SCRIPTS_DIR,"copy_strand_info.py"),
+# 	threads: 2
+# 	# envmodules:
+# 	shell:"""
+# 	cp {input.backsplicedjunctions} /dev/shm
+# 	bsj_basename="$(basename {input.backsplicedjunctions})"
+# 	python {params.pythonscript} --from {input.bed} --to /dev/shm/${{bsj_basename}} --output {output.backsplicedjunctions}
+# """
 
-rule split_BAM_create_BW:
+rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
 	input:
-		bam=rules.create_BSJ_bam.output.bam
+		bam=rules.create_BSJ_bam.output.bam,
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),
-		plusbam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bam"),
-		minusbam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bam"),
-		bed=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bed"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),
-		plusbw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bw"),
-		minusbw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.minus.bw"),
+		bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bam"),
+		plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bam"),
+		minusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bam"),
+		bed=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bed"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bw"),
+		plusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bw"),
+		minusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bw"),
+		validBSJbed=join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed")
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
 		memG=MEMORYG,
-		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
-		pythonscript=join(SCRIPTS_DIR,"split_bam_by_strand.py"),
+		outdir=join(WORKDIR,"results","{sample}","STAR2p","BSJs"),
+		pythonscript=join(SCRIPTS_DIR,"validate_BSJ_reads_and_split_BSJ_bam_by_strand.py"),
 		regions=config['regions']
 	threads: 2
 	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
@@ -640,6 +659,9 @@ fi
 rm -f $bdg $sizes
 
 done < {params.regions}
+cat {params.sample}.BSJ.*.bed |cut -f1-6 > /dev/shm/{sample}.tmp.bed
+bedSort /dev/shm/{sample}.tmp.bed /dev/shm/{sample}.tmp.bed
+awk -F"\\t" -v OFS="\\t" '{{$4="S"NR;print}}' /dev/shm/{sample}.tmp.bed > {output.validBSJbed}
 """	
 
 
@@ -834,7 +856,7 @@ rule multiqc:
 	envmodules: TOOLS["multiqc"]["version"]
 	shell:"""
 cd {params.outdir}
-multiqc --force .
+multiqc --force --ignore *.snakemake --ignore *multiqc* --verbose .
 """
 
 rule alignment_stats:
