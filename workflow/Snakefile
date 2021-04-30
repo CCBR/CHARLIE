@@ -161,6 +161,8 @@ rule all:
 		join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
 		## BSJ bams and bigwigs
 		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.hg38.plus.bam"),sample=SAMPLES),
@@ -569,102 +571,6 @@ rm -f $bdg $sizes
 done < {params.regions}
 """	
 
-# rule add_strand_to_circExplorer:
-# 	input:
-# 		backsplicedjunctions=rules.annotate_circRNA.output.backsplicedjunctions,
-# 		bed=rules.split_BAM_create_BW.output.bed
-# 	output:
-# 		backsplicedjunctions=join(WORKDIR,"results","{sample}","circExplorer","{sample}.back_spliced_junction.bed"),
-# 	params:
-# 		sample="{sample}",
-# 		workdir=WORKDIR,
-# 		pythonscript=join(SCRIPTS_DIR,"copy_strand_info.py"),
-# 	threads: 2
-# 	# envmodules:
-# 	shell:"""
-# 	cp {input.backsplicedjunctions} /dev/shm
-# 	bsj_basename="$(basename {input.backsplicedjunctions})"
-# 	python {params.pythonscript} --from {input.bed} --to /dev/shm/${{bsj_basename}} --output {output.backsplicedjunctions}
-# """
-
-rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
-	input:
-		bam=rules.create_BSJ_bam.output.bam,
-	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bam"),
-		plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bam"),
-		minusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bam"),
-		bed=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bed"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bw"),
-		plusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bw"),
-		minusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bw"),
-		validBSJbed=join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed")
-	params:
-		sample="{sample}",
-		workdir=WORKDIR,
-		memG=MEMORYG,
-		outdir=join(WORKDIR,"results","{sample}","STAR2p","BSJs"),
-		pythonscript=join(SCRIPTS_DIR,"validate_BSJ_reads_and_split_BSJ_bam_by_strand.py"),
-		regions=config['regions']
-	threads: 2
-	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
-	shell:"""
-cd {params.outdir}
-bam_basename="$(basename {input.bam})"
-while read a b;do
-bam="${{bam_basename%.*}}.${{a}}.bam"
-plusbam="${{bam_basename%.*}}.${{a}}.plus.bam"
-minusbam="${{bam_basename%.*}}.${{a}}.minus.bam"
-bed="${{bam_basename%.*}}.${{a}}.bed"
-samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
-bw="${{bam%.*}}.bw"
-bdg="${{bam%.*}}.bdg"
-plusbw="${{bam%.*}}.plus.bw"
-plusbdg="${{bam%.*}}.plus.bdg"
-minusbw="${{bam%.*}}.minus.bw"
-minusbdg="${{bam%.*}}.minus.bdg"
-sizes="${{bam%.*}}.sizes"
-# create strand specific bams
-python {params.pythonscript} \
--i $bam \
--p $plusbam \
--m $minusbam \
--b $bed
-bedSort $bed $bed
-# create bedgraphs
-bedtools genomecov -bga -split -ibam $bam > $bdg
-bedSort $bdg $bdg
-bedtools genomecov -bga -split -ibam $plusbam > $plusbdg
-bedSort $plusbdg $plusbdg
-bedtools genomecov -bga -split -ibam $minusbam > $minusbdg
-bedSort $minusbdg $minusbdg
-# create bigwigs
-if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
-	samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
-	bedGraphToBigWig $bdg $sizes $bw
-	if [ "$(wc -l $plusbdg|awk '{{print $1}}')" != "0" ];then
-		bedGraphToBigWig $plusbdg $sizes $plusbw
-	else
-		touch $plusbw
-	fi
-	if [ "$(wc -l $minusbdg|awk '{{print $1}}')" != "0" ];then
-		bedGraphToBigWig $minusbdg $sizes $minusbw
-	else
-		touch $minusbw
-	fi
-else
-	touch $bw
-fi
-rm -f $bdg $sizes
-
-done < {params.regions}
-cat {params.sample}.BSJ.*.bed |cut -f1-6 > /dev/shm/{sample}.tmp.bed
-bedSort /dev/shm/{sample}.tmp.bed /dev/shm/{sample}.tmp.bed
-awk -F"\\t" -v OFS="\\t" '{{$4="S"NR;print}}' /dev/shm/{sample}.tmp.bed > {output.validBSJbed}
-"""	
-
-
 
 
 rule annotate_circRNA:
@@ -841,6 +747,136 @@ cut -f1-3 {input.circexplorerout}|awk -F"\\t" '{{print $1\":\"$2+1\"|\"$3}}' > /
 	-c2 "CircExplorer2" \
 	-c {output.common} \
 	-t {params.sample}
+"""
+
+
+# rule add_strand_to_circExplorer:
+# 	input:
+# 		backsplicedjunctions=rules.annotate_circRNA.output.backsplicedjunctions,
+# 		bed=rules.split_BAM_create_BW.output.bed
+# 	output:
+# 		backsplicedjunctions=join(WORKDIR,"results","{sample}","circExplorer","{sample}.back_spliced_junction.bed"),
+# 	params:
+# 		sample="{sample}",
+# 		workdir=WORKDIR,
+# 		pythonscript=join(SCRIPTS_DIR,"copy_strand_info.py"),
+# 	threads: 2
+# 	# envmodules:
+# 	shell:"""
+# 	cp {input.backsplicedjunctions} /dev/shm
+# 	bsj_basename="$(basename {input.backsplicedjunctions})"
+# 	python {params.pythonscript} --from {input.bed} --to /dev/shm/${{bsj_basename}} --output {output.backsplicedjunctions}
+# """
+
+rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
+	input:
+		bam=rules.create_BSJ_bam.output.bam,
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bam"),
+		plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bam"),
+		minusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bam"),
+		bed=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bed"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bw"),
+		plusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bw"),
+		minusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bw"),
+		validBSJbed=join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed")
+	params:
+		sample="{sample}",
+		workdir=WORKDIR,
+		memG=MEMORYG,
+		outdir=join(WORKDIR,"results","{sample}","STAR2p","BSJs"),
+		pythonscript=join(SCRIPTS_DIR,"validate_BSJ_reads_and_split_BSJ_bam_by_strand.py"),
+		regions=config['regions']
+	threads: 2
+	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
+	shell:"""
+cd {params.outdir}
+bam_basename="$(basename {input.bam})"
+while read a b;do
+bam="${{bam_basename%.*}}.${{a}}.bam"
+plusbam="${{bam_basename%.*}}.${{a}}.plus.bam"
+minusbam="${{bam_basename%.*}}.${{a}}.minus.bam"
+bed="${{bam_basename%.*}}.${{a}}.bed"
+samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+bw="${{bam%.*}}.bw"
+bdg="${{bam%.*}}.bdg"
+plusbw="${{bam%.*}}.plus.bw"
+plusbdg="${{bam%.*}}.plus.bdg"
+minusbw="${{bam%.*}}.minus.bw"
+minusbdg="${{bam%.*}}.minus.bdg"
+sizes="${{bam%.*}}.sizes"
+# create strand specific bams
+python {params.pythonscript} \
+-i $bam \
+-p $plusbam \
+-m $minusbam \
+-b $bed
+bedSort $bed $bed
+# create bedgraphs
+bedtools genomecov -bga -split -ibam $bam > $bdg
+bedSort $bdg $bdg
+bedtools genomecov -bga -split -ibam $plusbam > $plusbdg
+bedSort $plusbdg $plusbdg
+bedtools genomecov -bga -split -ibam $minusbam > $minusbdg
+bedSort $minusbdg $minusbdg
+# create bigwigs
+if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
+	samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+	bedGraphToBigWig $bdg $sizes $bw
+	if [ "$(wc -l $plusbdg|awk '{{print $1}}')" != "0" ];then
+		bedGraphToBigWig $plusbdg $sizes $plusbw
+	else
+		touch $plusbw
+	fi
+	if [ "$(wc -l $minusbdg|awk '{{print $1}}')" != "0" ];then
+		bedGraphToBigWig $minusbdg $sizes $minusbw
+	else
+		touch $minusbw
+	fi
+else
+	touch $bw
+fi
+rm -f $bdg $sizes
+
+done < {params.regions}
+cat {params.sample}.BSJ.*.bed |cut -f1-6 > /dev/shm/{sample}.tmp.bed
+bedSort /dev/shm/{sample}.tmp.bed /dev/shm/{sample}.tmp.bed
+awk -F"\\t" -v OFS="\\t" '{{$4="S"NR;print}}' /dev/shm/{sample}.tmp.bed > {output.validBSJbed}
+"""	
+
+rule add_novel_ciri_BSJs_to_customBSJ:
+	input:
+		ciriout=rules.ciri.output.ciriout,
+		hg38bed=rules.recall_valid_BSJ_split_BAM_by_strand_create_BW.output.bed,
+		validBSJbed=rules.recall_valid_BSJ_split_BAM_by_strand_create_BW.output.validBSJbed,
+	output:
+		novelBSJ=join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),
+		combinedBSJ=join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed")
+	params:
+		sample="{sample}",
+		outdir=join(WORKDIR,"results","{sample}","customBSJs"),
+		list_compare_script=join(SCRIPTS_DIR,"_compare_lists.py")
+	envmodules: TOOLS["ucsc"]["version"]
+	shell:"""
+cd {params.outdir}
+grep -v junction_reads_ID {input.ciriout}|awk -F"\\t" '{{print substr($NF,1,length($NF)-1)}}'|tr ',' '\\n'|sort|uniq > {params.sample}.ciri.readids
+stardir=$(dirname {input.hg38bed})
+cat ${{stardir}}/{params.sample}.BSJ.*.bed|awk -F"\\t" '{{print $NF}}'|tr ',' '\\n'|awk -F"##" '{{print $1}}'|sort|uniq > {params.sample}.circExplorer.readids
+python {params.list_compare_script} {params.sample}.ciri.readids {params.sample}.circExplorer.readids 1
+mv a_only.lst {params.sample}.ciri.novel.readids && rm -f a_* b_*
+head -n1 {input.ciriout} > {params.sample}.ciri.novel.out
+while read a;do grep $a {input.ciriout};done < {params.sample}.ciri.novel.readids |sort|uniq >> {params.sample}.ciri.novel.out
+grep -v circRNA_ID {params.sample}.ciri.novel.out | awk -F"\\t" -v OFS="\\t" '{{print $2,$3-1,$4,$2":"$3-1"-"$4,$5,$11}}'  > /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed
+awk -F"\\t" '{{print $4}}' /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed > /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.lst
+awk -F"\\t" '{{print $1":"$2"-"$3}}' {input.validBSJbed} > /dev/shm/{params.sample}.circExplorer.BSJ.lst
+python {params.list_compare_script} /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.lst /dev/shm/{params.sample}.circExplorer.BSJ.lst 1
+mv a_only.lst {params.sample}.ciri.novel.BSJ.lst && rm -f a_* b_*
+while read a;do grep $a /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed;done < {params.sample}.ciri.novel.BSJ.lst > /dev/shm/{params.sample}.ciri.novel.BSJ.bed
+bedSort /dev/shm/{params.sample}.ciri.novel.BSJ.bed /dev/shm/{params.sample}.ciri.novel.BSJ.bed
+awk -F"\\t" -v OFS="\\t" '{{$4="C"NR;print}}' /dev/shm/{params.sample}.ciri.novel.BSJ.bed > {output.novelBSJ}
+cat {input.validBSJbed} {output.novelBSJ} > {output.combinedBSJ}
+bedSort {output.combinedBSJ} {output.combinedBSJ}
 """
 
 rule multiqc:
