@@ -28,6 +28,7 @@ for l in junctions:
         cigar=read.cigarstring
         cigar=cigar.replace("S","H")
         cigart=read.cigartuples
+        # N in CIGAR score is index 3 in tuple represents BAM_CREF_SKIP indicative of spliced read
         if 3 in list(map(lambda z:z[0],cigart)):
             cigart=cigart[list(map(lambda z:z[0],cigart)).index(0):]
             if cigart[0][0]==0 and cigart[1][0]==3:
