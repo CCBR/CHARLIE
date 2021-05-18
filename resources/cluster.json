@@ -25,6 +25,11 @@
         "time": "24:00:00",
         "partition": "largemem",
     },
+    "filter_ciri_bam_for_BSJs": {
+        "mem": "200g",
+        "threads": "4",
+        "time": "24:00:00",
+    },
     "star1p": {
         "mem": "200g",
         "threads": "56",

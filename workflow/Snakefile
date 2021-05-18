@@ -130,8 +130,9 @@ localrules: multiqc, annotate_clear_output, merge_genecounts
 rule all:
 	input:
 		## cutadapt
-		expand(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
+		# cutadapt files are now temp() to save space
+		# expand(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
 		## fastqc
 		expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
 		## star1p
@@ -154,6 +155,8 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),
 		## ciri
 		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+		## ciri BSJ bam
+		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJs.bam"),sample=SAMPLES),
 		## ciri aggregate count matrix
 		join(WORKDIR,"results","ciri_count_matrix.txt"),
 		## circExplorer aggregate count matrix
@@ -187,8 +190,8 @@ rule cutadapt:
 	input:
 		unpack(get_fastqs)
 	output:
-		of1=join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),
-		of2=join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz")
+		of1=temp(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz")),
+		of2=temp(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"))
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
@@ -612,7 +615,7 @@ rule ciri:
 	output:
 		cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
 		bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
-		ciribam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.bam"),
+		ciribam=temp(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.bam")),
 		ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out")
 	params:
 		sample="{sample}",
@@ -852,6 +855,7 @@ rule add_novel_ciri_BSJs_to_customBSJ:
 		validBSJbed=rules.recall_valid_BSJ_split_BAM_by_strand_create_BW.output.validBSJbed,
 	output:
 		novelBSJ=join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),
+		cirireadids=temp(join(WORKDIR,"results","{sample}","customBSJs","{sample}.ciri.readids")),
 		combinedBSJ=join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed")
 	params:
 		sample="{sample}",
@@ -877,7 +881,28 @@ bedSort /dev/shm/{params.sample}.ciri.novel.BSJ.bed /dev/shm/{params.sample}.cir
 awk -F"\\t" -v OFS="\\t" '{{$4="C"NR;print}}' /dev/shm/{params.sample}.ciri.novel.BSJ.bed > {output.novelBSJ}
 cat {input.validBSJbed} {output.novelBSJ} > {output.combinedBSJ}
 bedSort {output.combinedBSJ} {output.combinedBSJ}
+rm -f {params.sample}.circExplorer.readids {params.sample}.ciri.novel.*
 """
+
+rule filter_ciri_bam_for_BSJs:
+	input:
+		bam=rules.ciri.output.bam,
+		ciriout=rules.ciri.output.ciriout,
+		readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
+	output:
+		bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJs.bam")
+	params:
+		sample="{sample}",
+		memG=MEMORYG,
+		script=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
+	threads: 4
+	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"]
+	shell:"""
+python {params.script} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam --readids {input.readids}
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
+rm -f /dev/shm/{params.sample}.tmp.bam*
+"""
+
 
 rule multiqc:
 	input:
