@@ -886,7 +886,7 @@ rm -f {params.sample}.circExplorer.readids {params.sample}.ciri.novel.*
 
 rule filter_ciri_bam_for_BSJs:
 	input:
-		bam=rules.ciri.output.bam,
+		bam=rules.ciri.output.ciribam,
 		ciriout=rules.ciri.output.ciriout,
 		readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
 	output:
