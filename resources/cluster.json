@@ -2,7 +2,7 @@
     "__default__": {
         "gres": "lscratch:256",
         "mem": "40g",
-        "partition": "ccr", "qos": "ccrcore",
+        "partition": "ccr,norm",
         "threads": "2",
         "time": "4:00:00",
         "name"      : "{rule}.{wildcards}",
@@ -23,7 +23,7 @@
         "mem": "512g",
         "threads": "56",
         "time": "24:00:00",
-        "partition": "largemem", "qos": "global"
+        "partition": "largemem",
     },
     "star1p": {
         "mem": "200g",
@@ -34,7 +34,7 @@
         "mem": "512g",
         "threads": "56",
         "time": "96:00:00",
-        "partition": "largemem", "qos": "global"
+        "partition": "largemem",
     },
     "estimate_duplication": {
         "mem": "200g",
@@ -45,7 +45,7 @@
         "mem": "512g",
         "threads": "4",
         "time": "24:00:00",
-        "partition": "largemem", "qos": "global"
+        "partition": "largemem",
     },
     "create_spliced_reads_bam": {
         "mem": "200g",
