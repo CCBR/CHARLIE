@@ -898,7 +898,8 @@ rule filter_ciri_bam_for_BSJs:
 	threads: 4
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"]
 	shell:"""
-python {params.script} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam --readids {input.readids}
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.ciri.sorted.bam {input.bam}
+python {params.script} --inputBAM /dev/shm/{params.sample}.ciri.sorted.bam --outputBAM /dev/shm/{params.sample}.tmp.bam --readids {input.readids}
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
 rm -f /dev/shm/{params.sample}.tmp.bam*
 """
