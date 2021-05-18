@@ -229,7 +229,7 @@ function run() {
   2>&1|tee ${WORKDIR}/snakemake.log
 
   if [ "$?" -eq "0" ];then
-    snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+    snakemake -s $SNAKEFILE \
     --report ${WORKDIR}/runlocal_snakemake_report.html \
     --directory $WORKDIR \
     --configfile ${WORKDIR}/config.yaml
@@ -262,7 +262,7 @@ snakemake -s $SNAKEFILE \
 --latency-wait 120 \
 --configfile ${WORKDIR}/config.yaml \
 --cluster-config ${PIPELINE_HOME}/resources/cluster.json \
---cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error} --qos {cluster.qos}" \
+--cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
 --keep-going \
@@ -270,7 +270,7 @@ snakemake -s $SNAKEFILE \
 2>&1|tee ${WORKDIR}/snakemake.log
 
 if [ "\$?" -eq "0" ];then
-  snakemake -s ${PIPELINE_HOME}/circRNADetection.snakefile \
+  snakemake -s $SNAKEFILE \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
   --configfile ${WORKDIR}/config.yaml 
