@@ -788,7 +788,7 @@ rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
 		pythonscript=join(SCRIPTS_DIR,"validate_BSJ_reads_and_split_BSJ_bam_by_strand.py"),
 		regions=config['regions']
 	threads: 2
-	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
+	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"],TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
 bam_basename="$(basename {input.bam})"
