@@ -37,11 +37,11 @@ for read in inBAM.fetch():
     if is_paired_bam==1:
         if not read.is_proper_pair:
             continue
-	qn=read.query_name
+    qn=read.query_name
     if qn in rids:
         continue
-	if not qn in keep_rids:
-		keep_rids[qn]=dict()
+    if not qn in keep_rids:
+        keep_rids[qn]=dict()
         keep_rids[qn]['read1']=""
         keep_rids[qn]['read2']=""
     if read.is_read1:
