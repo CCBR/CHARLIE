@@ -156,7 +156,7 @@ rule all:
 		## ciri
 		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
 		## ciri BSJ bam
-		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJs.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
 		## ciri aggregate count matrix
 		join(WORKDIR,"results","ciri_count_matrix.txt"),
 		## circExplorer aggregate count matrix
@@ -523,7 +523,7 @@ rule create_spliced_reads_bam:
 		bam=rules.star2p.output.bam,
 		tab=rules.merge_SJ_tabs.output.pass1sjtab
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.bam")
+		bam=temp(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.bam"))
 	params:
 		sample="{sample}",
 		memG=MEMORYG,
@@ -890,7 +890,7 @@ rule filter_ciri_bam_for_BSJs:
 		ciriout=rules.ciri.output.ciriout,
 		readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
 	output:
-		bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJs.bam")
+		bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam")
 	params:
 		sample="{sample}",
 		memG=MEMORYG,
