@@ -176,6 +176,8 @@ rule all:
 		## Spliced reads bams and bigwigs
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
+		## linear reads bams and bigwigs
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
 		## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
@@ -537,6 +539,28 @@ python {params.script1} --inbam {input.bam} --outbam /dev/shm/{params.sample}.SR
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.SR.bam
 rm -f /dev/shm/{params.sample}.SR.bam*
 """
+
+rule create_linear_reads_bam:
+	input:
+		junction=rules.star2p.output.junction,
+		bam=rules.star2p.output.bam
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam")
+	params:
+		sample="{sample}",
+		memG=MEMORYG,
+		script1=join(SCRIPTS_DIR,"filter_bam_for_linear_reads.py"),
+		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
+	threads : 4
+	shell:"""
+cd {params.outdir}
+python {params.script1} --inbam {input.bam} --outbam /dev/shm/{params.sample}.tmp.bam -j {input.junction}
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
+rm -f /dev/shm/{params.sample}.SR.bam*
+"""
+
+
 
 rule split_splice_reads_BAM_create_BW:
 	input:
