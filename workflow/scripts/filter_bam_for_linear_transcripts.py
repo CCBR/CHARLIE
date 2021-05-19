@@ -30,7 +30,7 @@ for read in inBAM.fetch():
         continue
     if read.is_secondary:
         continue
-	count+=1
+    count+=1
     if count==1:
         if read.is_paired:
             is_paired_bam=1
