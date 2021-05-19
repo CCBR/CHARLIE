@@ -555,7 +555,7 @@ rule create_linear_reads_bam:
 	threads : 4
 	shell:"""
 cd {params.outdir}
-python {params.script1} --inbam {input.bam} --outbam /dev/shm/{params.sample}.tmp.bam -j {input.junction}
+python {params.script1} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam -j {input.junction}
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
 rm -f /dev/shm/{params.sample}.SR.bam*
 """
