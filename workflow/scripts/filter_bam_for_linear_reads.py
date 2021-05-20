@@ -2,6 +2,33 @@ import pysam
 import sys
 import argparse
 import os
+from collections import defaultdict
+
+
+def read_pair_generator(bam, rids):
+    """
+    Generate read pairs in a BAM file or within a region string.
+    Reads are added to read_dict until a pair is found.
+    """
+    read_dict = defaultdict(lambda: [None, None])
+    for read in bam.fetch(until_eof=True):
+        if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
+            continue
+        qname = read.query_name
+        if qname in rids:
+            continue
+        if qname not in read_dict:
+            if read.is_read1:
+                read_dict[qname][0] = read
+            elif read.is_read2:
+                read_dict[qname][1] = read
+        else:
+            if read.is_read1:
+                yield read, read_dict[qname][1]
+            else:
+                yield read_dict[qname][0], read
+            del read_dict[qname]
+
 
 parser = argparse.ArgumentParser(description='Filter BAM to exclude BSJs and other chimeric alignments')
 parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
@@ -9,6 +36,7 @@ parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
 parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
                     help='filtered output BAM file')
 parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
+parser.add_argument('-p',dest='paired', help='bam is paired' action='store_true')
 args = parser.parse_args()
 rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
@@ -22,43 +50,18 @@ with open(args.junctions, 'r') as junc_f:
         readid=line.split()[9]
         rids.append(readid)
 
-keep_rids=dict()
-count=0
-is_paired_bam=0
-for read in inBAM.fetch():
-    if read.is_unmapped:
-        continue
-    if read.is_secondary:
-        continue
-    count+=1
-    if count==1:
-        if read.is_paired:
-            is_paired_bam=1
-    if is_paired_bam==1:
-        if not read.is_proper_pair:
+if args.paired:
+    for read1, read2 in read_pair_generator(inBAM,rids):
+        outBAM.write(read1)
+        outBAM.write(read2)
+else:
+    for read in inBAM.fetch():
+        if read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
-    qn=read.query_name
-    if qn in rids:
-        continue
-    if not qn in keep_rids:
-        keep_rids[qn]=dict()
-        keep_rids[qn]['read1']=""
-        keep_rids[qn]['read2']=""
-    if read.is_read1:
-        keep_rids[qn]['read1']=read
-    if read.is_read2:
-        keep_rids[qn]['read2']=read
+        qn=read.query_name
+        if qn in rids:
+            continue
+        outBAM.write(read)
 inBAM.close()
-
-#print(rids["SRR1731877.10077876"].keys())
-#exit()
-
-for rid in keep_rids.keys():
-    if is_paired_bam==1 and keep_rids[rid]['read2']=="":
-        continue
-    outBAM.write(keep_rids[rid]['read1'])
-    if is_paired_bam==1:
-        outBAM.write(keep_rids[rid]['read2'])
-
 outBAM.close()
 
