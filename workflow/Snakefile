@@ -177,7 +177,9 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
 		## linear reads bams and bigwigs
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
+		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bw"),sample=SAMPLES),
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
 		## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
@@ -545,7 +547,7 @@ rule create_linear_reads_bam:
 		junction=rules.star2p.output.junction,
 		bam=rules.star2p.output.bam
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam")
+		bam=temp(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.bam"))
 	params:
 		sample="{sample}",
 		memG=MEMORYG,
@@ -573,6 +575,45 @@ rule split_splice_reads_BAM_create_BW:
 	output:
 		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),
 		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw")
+	params:
+		sample="{sample}",
+		workdir=WORKDIR,
+		memG=MEMORYG,
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		regions=config['regions']
+	threads: 2
+	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
+	shell:"""
+cd {params.outdir}
+bam_basename="$(basename {input.bam})"
+while read a b;do
+bam="${{bam_basename%.*}}.${{a}}.bam"
+samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+bw="${{bam%.*}}.bw"
+bdg="${{bam%.*}}.bdg"
+sizes="${{bam%.*}}.sizes"
+bedtools genomecov -bga -split -ibam $bam > $bdg
+bedSort $bdg $bdg
+if [ "$(wc -l $bdg|awk '{{print $1}}')" != "0" ];then
+samtools view -H $bam|grep ^@SQ|cut -f2,3|sed "s/SN://g"|sed "s/LN://g" > $sizes
+bedGraphToBigWig $bdg $sizes $bw
+else
+touch $bw
+fi
+rm -f $bdg $sizes
+done < {params.regions}
+"""	
+
+rule split_linear_reads_BAM_create_BW:
+"""
+This read is identical to split_splice_reads_BAM_create_BW, "spliced_reads" is replaced by "linear_reads"
+"""
+	input:
+		bam=rules.create_linear_reads_bam.output.bam
+	output:
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bam"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bw")
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
