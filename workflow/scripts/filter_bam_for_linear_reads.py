@@ -55,12 +55,16 @@ if args.paired:
         outBAM.write(read1)
         outBAM.write(read2)
 else:
+    count=0
     for read in inBAM.fetch():
         if read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
         qn=read.query_name
         if qn in rids:
             continue
+        count+=1
+        if count==1 and read.is_paired:
+            exit("BAM file is paired. Use -p option!!")
         outBAM.write(read)
 inBAM.close()
 outBAM.close()
