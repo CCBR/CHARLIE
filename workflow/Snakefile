@@ -549,15 +549,20 @@ rule create_linear_reads_bam:
 	params:
 		sample="{sample}",
 		memG=MEMORYG,
+		peorse=get_peorse,
 		script1=join(SCRIPTS_DIR,"filter_bam_for_linear_reads.py"),
 		outdir=join(WORKDIR,"results","{sample}","STAR2p")
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
 	threads : 4
 	shell:"""
 cd {params.outdir}
+if [ "{params.peorse}" == "PE" ];then
+python {params.script1} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam -j {input.junction} -p
+else 
 python {params.script1} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam -j {input.junction}
+fi
 sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
-rm -f /dev/shm/{params.sample}.SR.bam*
+rm -f /dev/shm/{params.sample}.tmp.bam*
 """
 
 
