@@ -14,12 +14,13 @@
   % groups
   ```
   
+
 output:
-  
+
   ```bash
   CCBR kopardevn Ziegelbauer_lab
   ```
-  
+
   If `Ziegelbauer_lab` is not listed then you can email a request to be added to the groups [here](mailto:staff@hpc.nih.gov)
 
 #### Location
@@ -43,7 +44,7 @@ drwxrws---. 6 kopardevn Ziegelbauer_lab 4096 Jan 14 10:24 v0.3.3
 drwxrws---. 7 kopardevn Ziegelbauer_lab 4096 Feb  4 18:26 v0.4.0
 ```
 
-The exacts versions listed here may changed as newer versions are added.
+The exacts versions listed here may changed as newer versions are added. Also, the `dev` version is pointing to the most recent untagged version of the pipeline (use at own risk!)
 
 #### Init
 
@@ -79,7 +80,17 @@ To initial the working directory run:
 % bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.4.0/run_circrna_daq.sh init /scratch/circRNA_daq_test
 ```
 
-* This assumes that `/scratch/circRNA_daq_test` does not exist before running this command and is at a location where write permissions are available.
+> **NOTE**
+>
+> With version 0.6.0 or newer the arguments to the wrapper script need to be provided with -w/-m prefixes
+>
+> ```bash
+> bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.6.0/run_circrna_daq.sh -m=init -w=/scratch/circRNA_daq_test
+> ```
+>
+> 
+
+This assumes that `/scratch/circRNA_daq_test` does not exist before running this command and is at a location where write permissions are available.
 
 ```bash
 % bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.4.0/run_circrna_daq.sh init /scratch/circRNA_daq_test
@@ -98,7 +109,7 @@ Stats Dir: /scratch/circRNA_daq_test/stats
 Done Initializing /scratch/circRNA_daq_test. You can now edit /scratch/circRNA_daq_test/config.yaml and /scratch/circRNA_daq_test/samples.tsv
 ```
 
-* The above command creates `/scratch/circRNA_daq_test` folder and creates 2 subfolders `logs` and `stats` inside that folder along with `config.yaml` and `samples.tsv` files.
+The above command creates `/scratch/circRNA_daq_test` folder and creates 2 subfolders `logs` and `stats` inside that folder along with `config.yaml` and `samples.tsv` files.
 
 ```bash
 % tree /scratch/circRNA_daq_test
@@ -163,6 +174,16 @@ Upon verifying that dryrun is successful. You can then submit the job to the clu
 ```bash
 % bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.4.0/run_circrna_daq.sh run /scratch/circRNA_daq_test
 ```
+
+> NOTE:
+>
+> With v0.6.0 or later the above command will be:
+>
+> ```bash
+> bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.4.0/run_circrna_daq.sh -m=run -w=/scratch/circRNA_daq_test
+> ```
+>
+> 
 
 output:
 
