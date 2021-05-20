@@ -606,9 +606,7 @@ done < {params.regions}
 """	
 
 rule split_linear_reads_BAM_create_BW:
-"""
-This read is identical to split_splice_reads_BAM_create_BW, "spliced_reads" is replaced by "linear_reads"
-"""
+# This rule is identical to split_splice_reads_BAM_create_BW, "spliced_reads" is replaced by "linear_reads"
 	input:
 		bam=rules.create_linear_reads_bam.output.bam
 	output:
