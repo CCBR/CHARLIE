@@ -36,7 +36,7 @@ parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
 parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
                     help='filtered output BAM file')
 parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
-parser.add_argument('-p',dest='paired', help='bam is paired' action='store_true')
+parser.add_argument('-p',dest='paired', help='bam is paired', action='store_true')
 args = parser.parse_args()
 rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
