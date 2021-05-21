@@ -4,30 +4,24 @@ import argparse
 import os
 from collections import defaultdict
 
-
-def read_pair_generator(bam, rids):
-    """
-    Generate read pairs in a BAM file or within a region string.
-    Reads are added to read_dict until a pair is found.
-    """
-    read_dict = defaultdict(lambda: [None, None])
-    for read in bam.fetch(until_eof=True):
-        if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
-            continue
-        qname = read.query_name
-        if qname in rids:
-            continue
-        if qname not in read_dict:
-            if read.is_read1:
-                read_dict[qname][0] = read
-            elif read.is_read2:
-                read_dict[qname][1] = read
-        else:
-            if read.is_read1:
-                yield read, read_dict[qname][1]
-            else:
-                yield read_dict[qname][0], read
-            del read_dict[qname]
+            
+class Read:
+    def __init__(self,alignments=[],read1exists=False,read2exists=False):
+        self.alignments=alignments
+        self.read1exists=read1exists
+        self.read2exists=read2exists
+        
+    def append_alignment(self,alignment):
+        self.alignments.append(alignment)
+        if alignment.is_read1:
+            self.read1exists=True
+        if alignment.is_read2:
+            self.read2exists=True
+    
+    def is_valid_read(self):
+        return(self.read1exists and self.read2exists)
+        
+        
 
 
 parser = argparse.ArgumentParser(description='Filter BAM to exclude BSJs and other chimeric alignments')
@@ -41,6 +35,7 @@ args = parser.parse_args()
 rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
+reads = defaultdict(lambda: Read())
 
 # get a list of the chimeric readids
 with open(args.junctions, 'r') as junc_f:
@@ -50,22 +45,31 @@ with open(args.junctions, 'r') as junc_f:
         readid=line.split()[9]
         rids.append(readid)
 
+
 if args.paired:
-    for read1, read2 in read_pair_generator(inBAM,rids):
-        outBAM.write(read1)
-        outBAM.write(read2)
+    for read in inBAM.fetch(until_eof=True):
+        if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
+            continue
+        qname = read.query_name
+        reads[qname].append_alignment(read)
+    output_rids=set(reads.keys())-set(rids)
+    for rid in output_rids:
+        if reads[rid].is_valid_read():
+            for r in reads[rid].alignments:
+                outBAM.write(r)
+
 else:
-    count=0
-    for read in inBAM.fetch():
+    for read in inBAM.fetch(until_eof=True):
         if read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
-        qn=read.query_name
-        if qn in rids:
+        qname = read.query_name
+        if qname in rids:
             continue
-        count+=1
-        if count==1 and read.is_paired:
-            exit("BAM file is paired. Use -p option!!")
-        outBAM.write(read)
-inBAM.close()
-outBAM.close()
+        else:
+            outBAM.write(read)
 
+
+
+inBAM.close()
+
+outBAM.close()
