@@ -6,10 +6,10 @@ from collections import defaultdict
 
             
 class Read:
-    def __init__(self,alignments=[],read1exists=False,read2exists=False):
-        self.alignments=alignments
-        self.read1exists=read1exists
-        self.read2exists=read2exists
+    def __init__(self):
+        self.alignments=list()
+        self.read1exists=False
+        self.read2exists=False
         
     def append_alignment(self,alignment):
         self.alignments.append(alignment)
@@ -36,6 +36,7 @@ rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
 reads = defaultdict(lambda: Read())
+# reads = dict()
 
 # get a list of the chimeric readids
 with open(args.junctions, 'r') as junc_f:
@@ -51,7 +52,10 @@ if args.paired:
         if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
         qname = read.query_name
+#        if not qname in reads:
+#            reads[qname]=Read()
         reads[qname].append_alignment(read)
+#        print(qname,len(reads[qname].alignments))
     output_rids=set(reads.keys())-set(rids)
     for rid in output_rids:
         if reads[rid].is_valid_read():
