@@ -929,7 +929,7 @@ rule add_novel_ciri_BSJs_to_customBSJ:
 		sample="{sample}",
 		outdir=join(WORKDIR,"results","{sample}","customBSJs"),
 		list_compare_script=join(SCRIPTS_DIR,"_compare_lists.py")
-	envmodules: TOOLS["ucsc"]["version"]
+	envmodules: TOOLS["ucsc"]["version"],TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
 grep -v junction_reads_ID {input.ciriout}|awk -F"\\t" '{{print substr($NF,1,length($NF)-1)}}'|tr ',' '\\n'|sort|uniq > {params.sample}.ciri.readids
