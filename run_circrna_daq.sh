@@ -21,7 +21,7 @@ SNAKEMAKEVERSION="5.24.1"
 
 SCRIPTNAME="$0"
 SCRIPTDIRNAME=$(readlink -f $(dirname $0))
-SCRIPTBASENAME=$(readlink -f $(basename $0))
+SCRIPTBASENAME=$(basename $0)
 
 
 function get_git_commitid_tag() {
