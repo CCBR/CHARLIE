@@ -335,7 +335,7 @@ else
 	--sjdbOverhang $overhang
 
 fi
-rm -rf {params.outdir}/{params.sample}_p1._STARgenome
+rm -rf {params.outdir}/{params.sample}*
 # rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
 """
 
@@ -457,7 +457,7 @@ else
 	--outTmpDir=/dev/shm/{params.sample} \
 	--sjdbOverhang $overhang
 fi
-rm -rf {params.outdir}/{params.sample}_p2._STARgenome
+rm -rf {params.outdir}/{params.sample}*
 ## ensure the star2p file is indexed ... is should already be sorted by STAR
 sleep 120
 samtools index {output.bam}
@@ -474,6 +474,7 @@ rule estimate_duplication:
 	envmodules: TOOLS["picard"]["version"]
 	shell:"""
 java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
+rm -f /dev/shm/{params.sample}*
 """
 
 rule create_BSJ_bam:
@@ -489,38 +490,45 @@ rule create_BSJ_bam:
 		script1=join(SCRIPTS_DIR,"junctions2readids.py"),
 		script2=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
 		script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py"),
-		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
 	threads : 4
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 
 ## get BSJ readids along with chrom,site,cigar etc.
 python {params.script1} -j {input.junction} > {output.readids}
 
 ## extract only the uniq readids
-cut -f1 {output.readids} | sort | uniq > /dev/shm/{params.sample}.readids
+cut -f1 {output.readids} | sort | uniq > ${{TMPDIR}}/{params.sample}.readids
 
 # INVALID_INDEX_FILE_POINTER 1 issues give errors hence re-indexing
 samtools index {input.bam}
 ## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
 ## note the argument --readids here is just a list of readids
-python {params.script2} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.chimeric.bam --readids /dev/shm/{params.sample}.readids
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.chimeric.sorted.bam /dev/shm/{params.sample}.chimeric.bam
-rm -f /dev/shm/{params.sample}.chimeric.bam*
+python {params.script2} --inputBAM {input.bam} --outputBAM ${{TMPDIR}}/{params.sample}.chimeric.bam --readids ${{TMPDIR}}/{params.sample}.readids
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.chimeric.sorted.bam ${{TMPDIR}}/{params.sample}.chimeric.bam
+rm -f ${{TMPDIR}}/{params.sample}.chimeric.bam*
 
 ## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
 ## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
-python {params.script3} --inputBAM /dev/shm/{params.sample}.chimeric.sorted.bam --outputBAM /dev/shm/{params.sample}.BSJs.tmp.bam --readids {output.readids}
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.BSJs.tmp.sorted.bam /dev/shm/{params.sample}.BSJs.tmp.bam
-rm -f /dev/shm/{params.sample}.BSJs.tmp.bam*
+python {params.script3} --inputBAM ${{TMPDIR}}/{params.sample}.chimeric.sorted.bam --outputBAM ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam --readids {output.readids}
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam
+rm -f ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam*
 
 ## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
-samtools view -H /dev/shm/{params.sample}.BSJs.tmp.sorted.bam > /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
-samtools view /dev/shm/{params.sample}.BSJs.tmp.sorted.bam | sort | uniq >> /dev/shm/{params.sample}.BSJs.tmp.dedup.sam
-samtools view -bS /dev/shm/{params.sample}.BSJs.tmp.dedup.sam > /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.BSJs.tmp.dedup.bam
-rm -f /dev/shm/{params.sample}.BSJs.tmp.dedup.bam*
+samtools view -H ${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam > ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam
+samtools view ${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam | sort | uniq >> ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam
+samtools view -bS ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam > ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.bam
+cd ${{TMPDIR}} && rm -f *
 """
 
 rule create_spliced_reads_bam:
@@ -533,14 +541,21 @@ rule create_spliced_reads_bam:
 		sample="{sample}",
 		memG=MEMORYG,
 		script1=join(SCRIPTS_DIR,"filter_bam_for_splice_reads.py"),
-		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
 	threads : 4
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
-python {params.script1} --inbam {input.bam} --outbam /dev/shm/{params.sample}.SR.bam --tab {input.tab}
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.SR.bam
-rm -f /dev/shm/{params.sample}.SR.bam*
+python {params.script1} --inbam {input.bam} --outbam ${{TMPDIR}}/{params.sample}.SR.bam --tab {input.tab}
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.SR.bam
+cd $TMPDIR && rm -f *
 """
 
 rule create_linear_reads_bam:
@@ -554,18 +569,25 @@ rule create_linear_reads_bam:
 		memG=MEMORYG,
 		peorse=get_peorse,
 		script1=join(SCRIPTS_DIR,"filter_bam_for_linear_reads.py"),
-		outdir=join(WORKDIR,"results","{sample}","STAR2p")
+		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
 	threads : 4
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 if [ "{params.peorse}" == "PE" ];then
-python {params.script1} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam -j {input.junction} -p
+python {params.script1} --inputBAM {input.bam} --outputBAM ${{TMPDIR}}/{params.sample}.tmp.bam -j {input.junction} -p
 else 
-python {params.script1} --inputBAM {input.bam} --outputBAM /dev/shm/{params.sample}.tmp.bam -j {input.junction}
+python {params.script1} --inputBAM {input.bam} --outputBAM ${{TMPDIR}}/{params.sample}.tmp.bam -j {input.junction}
 fi
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
-rm -f /dev/shm/{params.sample}.tmp.bam*
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.tmp.bam
+cd $TMPDIR && rm -f *
 """
 
 
@@ -581,16 +603,23 @@ rule split_splice_reads_BAM_create_BW:
 		workdir=WORKDIR,
 		memG=MEMORYG,
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
-		regions=config['regions']
+		regions=config['regions'],
+		randomstr=str(uuid.uuid4())
 	threads: 2
 	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 bam_basename="$(basename {input.bam})"
 while read a b;do
 bam="${{bam_basename%.*}}.${{a}}.bam"
-samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+samtools view {input.bam} $b -b > ${{TMPDIR}}/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=$bam ${{TMPDIR}}/${{bam%.*}}.tmp.bam
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
 sizes="${{bam%.*}}.sizes"
@@ -604,6 +633,7 @@ touch $bw
 fi
 rm -f $bdg $sizes
 done < {params.regions}
+cd $TMPDIR && rm -f *
 """	
 
 rule split_linear_reads_BAM_create_BW:
@@ -618,16 +648,23 @@ rule split_linear_reads_BAM_create_BW:
 		workdir=WORKDIR,
 		memG=MEMORYG,
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
-		regions=config['regions']
+		regions=config['regions'],
+		randomstr=str(uuid.uuid4())
 	threads: 2
 	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"]
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 bam_basename="$(basename {input.bam})"
 while read a b;do
 bam="${{bam_basename%.*}}.${{a}}.bam"
-samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+samtools view {input.bam} $b -b > ${{TMPDIR}}/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=$bam ${{TMPDIR}}/${{bam%.*}}.tmp.bam
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
 sizes="${{bam%.*}}.sizes"
@@ -641,6 +678,7 @@ touch $bw
 fi
 rm -f $bdg $sizes
 done < {params.regions}
+cd $TMPDIR && rm -f *
 """	
 
 
@@ -819,6 +857,7 @@ cut -f1-3 {input.circexplorerout}|awk -F"\\t" '{{print $1\":\"$2+1\"|\"$3}}' > /
 	-c2 "CircExplorer2" \
 	-c {output.common} \
 	-t {params.sample}
+rm -f /dev/shm{param.sample}*
 """
 
 
@@ -858,10 +897,17 @@ rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
 		memG=MEMORYG,
 		outdir=join(WORKDIR,"results","{sample}","STAR2p","BSJs"),
 		pythonscript=join(SCRIPTS_DIR,"validate_BSJ_reads_and_split_BSJ_bam_by_strand.py"),
-		regions=config['regions']
+		regions=config['regions'],
+		randomstr=str(uuid.uuid4())
 	threads: 2
 	envmodules: TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["sambamba"]["version"],TOOLS["python37"]["version"]
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 bam_basename="$(basename {input.bam})"
 while read a b;do
@@ -869,8 +915,8 @@ bam="${{bam_basename%.*}}.${{a}}.bam"
 plusbam="${{bam_basename%.*}}.${{a}}.plus.bam"
 minusbam="${{bam_basename%.*}}.${{a}}.minus.bam"
 bed="${{bam_basename%.*}}.${{a}}.bed"
-samtools view {input.bam} $b -b > /dev/shm/${{bam%.*}}.tmp.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=$bam /dev/shm/${{bam%.*}}.tmp.bam
+samtools view {input.bam} $b -b > ${{TMPDIR}}/${{bam%.*}}.tmp.bam
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=$bam ${{TMPDIR}}/${{bam%.*}}.tmp.bam
 bw="${{bam%.*}}.bw"
 bdg="${{bam%.*}}.bdg"
 plusbw="${{bam%.*}}.plus.bw"
@@ -912,9 +958,10 @@ fi
 rm -f $bdg $sizes
 
 done < {params.regions}
-cat {params.sample}.BSJ.*.bed |cut -f1-6 > /dev/shm/{sample}.tmp.bed
-bedSort /dev/shm/{sample}.tmp.bed /dev/shm/{sample}.tmp.bed
-awk -F"\\t" -v OFS="\\t" '{{$4="S"NR;print}}' /dev/shm/{sample}.tmp.bed > {output.validBSJbed}
+cat {params.sample}.BSJ.*.bed |cut -f1-6 > ${{TMPDIR}}/{sample}.tmp.bed
+bedSort ${{TMPDIR}}/{sample}.tmp.bed ${{TMPDIR}}/{sample}.tmp.bed
+awk -F"\\t" -v OFS="\\t" '{{$4="S"NR;print}}' ${{TMPDIR}}/{sample}.tmp.bed > {output.validBSJbed}
+cd $TMPDIR && rm -f *
 """	
 
 rule add_novel_ciri_BSJs_to_customBSJ:
@@ -929,9 +976,16 @@ rule add_novel_ciri_BSJs_to_customBSJ:
 	params:
 		sample="{sample}",
 		outdir=join(WORKDIR,"results","{sample}","customBSJs"),
-		list_compare_script=join(SCRIPTS_DIR,"_compare_lists.py")
+		list_compare_script=join(SCRIPTS_DIR,"_compare_lists.py"),
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["ucsc"]["version"],TOOLS["python37"]["version"]
 	shell:"""
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+	mkdir -p $TMPDIR
+fi
 cd {params.outdir}
 grep -v junction_reads_ID {input.ciriout}|awk -F"\\t" '{{print substr($NF,1,length($NF)-1)}}'|tr ',' '\\n'|sort|uniq > {params.sample}.ciri.readids
 stardir=$(dirname {input.hg38bed})
@@ -940,17 +994,18 @@ python {params.list_compare_script} {params.sample}.ciri.readids {params.sample}
 mv a_only.lst {params.sample}.ciri.novel.readids && rm -f a_* b_*
 head -n1 {input.ciriout} > {params.sample}.ciri.novel.out
 while read a;do grep $a {input.ciriout};done < {params.sample}.ciri.novel.readids |sort|uniq >> {params.sample}.ciri.novel.out
-grep -v circRNA_ID {params.sample}.ciri.novel.out | awk -F"\\t" -v OFS="\\t" '{{print $2,$3-1,$4,$2":"$3-1"-"$4,$5,$11}}'  > /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed
-awk -F"\\t" '{{print $4}}' /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed > /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.lst
-awk -F"\\t" '{{print $1":"$2"-"$3}}' {input.validBSJbed} > /dev/shm/{params.sample}.circExplorer.BSJ.lst
-python {params.list_compare_script} /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.lst /dev/shm/{params.sample}.circExplorer.BSJ.lst 1
+grep -v circRNA_ID {params.sample}.ciri.novel.out | awk -F"\\t" -v OFS="\\t" '{{print $2,$3-1,$4,$2":"$3-1"-"$4,$5,$11}}'  > ${{TMPDIR}}/{params.sample}.novel_CIRI_BSJ.tmp.bed
+awk -F"\\t" '{{print $4}}' ${{TMPDIR}}/{params.sample}.novel_CIRI_BSJ.tmp.bed > ${{TMPDIR}}/{params.sample}.novel_CIRI_BSJ.tmp.lst
+awk -F"\\t" '{{print $1":"$2"-"$3}}' {input.validBSJbed} > ${{TMPDIR}}/{params.sample}.circExplorer.BSJ.lst
+python {params.list_compare_script} ${{TMPDIR}}/{params.sample}.novel_CIRI_BSJ.tmp.lst ${{TMPDIR}}/{params.sample}.circExplorer.BSJ.lst 1
 mv a_only.lst {params.sample}.ciri.novel.BSJ.lst && rm -f a_* b_*
-while read a;do grep $a /dev/shm/{params.sample}.novel_CIRI_BSJ.tmp.bed;done < {params.sample}.ciri.novel.BSJ.lst > /dev/shm/{params.sample}.ciri.novel.BSJ.bed
-bedSort /dev/shm/{params.sample}.ciri.novel.BSJ.bed /dev/shm/{params.sample}.ciri.novel.BSJ.bed
-awk -F"\\t" -v OFS="\\t" '{{$4="C"NR;print}}' /dev/shm/{params.sample}.ciri.novel.BSJ.bed > {output.novelBSJ}
+while read a;do grep $a ${{TMPDIR}}/{params.sample}.novel_CIRI_BSJ.tmp.bed;done < {params.sample}.ciri.novel.BSJ.lst > ${{TMPDIR}}/{params.sample}.ciri.novel.BSJ.bed
+bedSort ${{TMPDIR}}/{params.sample}.ciri.novel.BSJ.bed ${{TMPDIR}}/{params.sample}.ciri.novel.BSJ.bed
+awk -F"\\t" -v OFS="\\t" '{{$4="C"NR;print}}' ${{TMPDIR}}/{params.sample}.ciri.novel.BSJ.bed > {output.novelBSJ}
 cat {input.validBSJbed} {output.novelBSJ} > {output.combinedBSJ}
 bedSort {output.combinedBSJ} {output.combinedBSJ}
 rm -f {params.sample}.circExplorer.readids {params.sample}.ciri.novel.*
+cd $TMPDIR && rm -f *
 """
 
 rule filter_ciri_bam_for_BSJs:
