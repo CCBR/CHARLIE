@@ -857,7 +857,7 @@ cut -f1-3 {input.circexplorerout}|awk -F"\\t" '{{print $1\":\"$2+1\"|\"$3}}' > /
 	-c2 "CircExplorer2" \
 	-c {output.common} \
 	-t {params.sample}
-rm -f /dev/shm{param.sample}*
+rm -f /dev/shm{params.sample}*
 """
 
 
