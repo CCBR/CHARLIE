@@ -3,6 +3,7 @@ import sys
 import os
 import pandas as pd
 import yaml
+import uuid
 
 
 # no truncations during print pandas data frames
@@ -963,13 +964,19 @@ rule filter_ciri_bam_for_BSJs:
 		sample="{sample}",
 		memG=MEMORYG,
 		script=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
+		randomstr=str(uuid.uuid4())
 	threads: 4
 	envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"]
 	shell:"""
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out=/dev/shm/{params.sample}.ciri.sorted.bam {input.bam}
-python {params.script} --inputBAM /dev/shm/{params.sample}.ciri.sorted.bam --outputBAM /dev/shm/{params.sample}.tmp.bam --readids {input.readids}
-sambamba sort --memory-limit={params.memG} --tmpdir=/dev/shm --nthreads={threads} --out={output.bam} /dev/shm/{params.sample}.tmp.bam
-rm -f /dev/shm/{params.sample}.tmp.bam*
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+fi
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.ciri.sorted.bam {input.bam}
+python {params.script} --inputBAM ${{TMPDIR}}/{params.sample}.ciri.sorted.bam --outputBAM ${{TMPDIR}}/{params.sample}.tmp.bam --readids {input.readids}
+sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.tmp.bam
+cd $TMPDIR && rm -f *
 """
 
 
