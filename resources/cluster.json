@@ -23,12 +23,13 @@
         "mem": "512g",
         "threads": "56",
         "time": "24:00:00",
-        "partition": "largemem",
+        "partition": "largemem"
     },
     "filter_ciri_bam_for_BSJs": {
-        "mem": "200g",
+        "mem": "512g",
         "threads": "4",
         "time": "24:00:00",
+        "partition": "largemem"
     },
     "star1p": {
         "mem": "200g",
@@ -39,7 +40,7 @@
         "mem": "512g",
         "threads": "56",
         "time": "96:00:00",
-        "partition": "largemem",
+        "partition": "largemem"
     },
     "estimate_duplication": {
         "mem": "200g",
@@ -50,7 +51,7 @@
         "mem": "512g",
         "threads": "4",
         "time": "24:00:00",
-        "partition": "largemem",
+        "partition": "largemem"
     },
     "create_spliced_reads_bam": {
         "mem": "200g",
