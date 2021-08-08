@@ -39,7 +39,7 @@
     "star2p": {
         "mem": "512g",
         "threads": "56",
-        "time": "96:00:00",
+        "time": "24:00:00",
         "partition": "largemem"
     },
     "estimate_duplication": {
