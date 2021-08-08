@@ -335,8 +335,7 @@ else
 	--sjdbOverhang $overhang
 
 fi
-rm -rf {params.outdir}/{params.sample}*
-# rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
+rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
 """
 
 rule merge_SJ_tabs:
@@ -457,7 +456,6 @@ else
 	--outTmpDir=/dev/shm/{params.sample} \
 	--sjdbOverhang $overhang
 fi
-rm -rf {params.outdir}/{params.sample}*
 ## ensure the star2p file is indexed ... is should already be sorted by STAR
 sleep 120
 samtools index {output.bam}
