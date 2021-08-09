@@ -267,11 +267,17 @@ rule star1p:
 		outdir=join(WORKDIR,"results","{sample}","STAR1p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['ref_gtf']
+		gtf=config['ref_gtf'],
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["star"]["version"]
 	threads: 56
 	shell:"""
-if [ -d /dev/shm/{params.sample} ];then rm -rf /dev/shm/{params.sample};fi
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 if [ "{params.peorse}" == "PE" ];then
 # paired-end
@@ -300,7 +306,7 @@ if [ "{params.peorse}" == "PE" ];then
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
-	--outTmpDir=/dev/shm/{params.sample} \
+	--outTmpDir=${{TMPDIR}} \
 	--sjdbOverhang $overhang
 
 else
@@ -331,7 +337,7 @@ else
 	--alignEndsProtrude 10 ConcordantPair \
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
-	--outTmpDir=/dev/shm/{params.sample} \
+	--outTmpDir=${{TMPDIR}} \
 	--sjdbOverhang $overhang
 
 fi
@@ -380,11 +386,17 @@ rule star2p:
 		outdir=join(WORKDIR,"results","{sample}","STAR2p"),
 		starindexdir=config['star_index_dir'],
 		alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-		gtf=config['ref_gtf']
+		gtf=config['ref_gtf'],
+		randomstr=str(uuid.uuid4())
 	envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
 	threads: 56
 	shell:"""
-if [ -d /dev/shm/{params.sample} ];then rm -rf /dev/shm/{params.sample};fi
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 limitSjdbInsertNsj=$(wc -l {input.pass1sjtab}|awk '{{print $1+1}}')
 if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
@@ -419,7 +431,7 @@ if [ "{params.peorse}" == "PE" ];then
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
 	--quantMode GeneCounts \
-	--outTmpDir=/dev/shm/{params.sample} \
+	--outTmpDir=${{TMPDIR}} \
 	--sjdbOverhang $overhang
 
 else
@@ -453,7 +465,7 @@ else
 	--outFilterIntronMotifs None \
 	--sjdbGTFfile {params.gtf} \
 	--quantMode GeneCounts \
-	--outTmpDir=/dev/shm/{params.sample} \
+	--outTmpDir=${{TMPDIR}} \
 	--sjdbOverhang $overhang
 fi
 ## ensure the star2p file is indexed ... is should already be sorted by STAR
