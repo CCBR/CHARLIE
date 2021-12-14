@@ -26,6 +26,17 @@ adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #
 ## Resources
 #
+## hg38 vanilla --> hg38 rRNA masked + rRNA appended
+##
+#ref_fa: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa"
+#ref_gtf: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.gtf"
+#regions: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa.regions"
+#start_index_dir: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/STAR_index_no_GTF_2.7.6a"
+#ref_bwa_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
+#ref_hisat_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
+#ref_bowtie1_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
+#genepred_w_geneid: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.genes.genepred_w_geneid"
+#
 # hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
 # * hg38 ... rRNA masked
 # * rRNA ... 45S and 5S sequences
