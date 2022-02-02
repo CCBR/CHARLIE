@@ -106,15 +106,27 @@ adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 #   | KT899744         | KT899744                  | HSV-1 strain KOS with only 1 copy of repeat sequences
 #
 
-ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
-ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
-regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
-star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/STAR_index_no_GTF_2.7.6a"
-ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
-genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
+# ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa"
+# ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/STAR_index_no_GTF_2.7.6a"
+# ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v4/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.genes.genepred_w_geneid"
 
+# Adding BAC16Insert to v4 from above
+# BAC16Insert.fa and BAC16Insert.gtf provided by Sara
+
+ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa"
+ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.gtf"
+regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa.regions"
+star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/STAR_index_no_GTF_2.7.6a"
+ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.genes.genepred_w_geneid"
+ 
 
 # replace ERCC with Biotynlated probes
 
