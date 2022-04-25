@@ -46,30 +46,48 @@ with open(args.junctions, 'r') as junc_f:
         readid=line.split()[9]
         rids.append(readid)
 
+rids=list(set(rids))
+rids_dict=dict()
+for rid in rids:
+    rids_dict[rid]=1
+
+print(f"Total chimeric readids:{len(rids)}")
 
 if args.paired:
     for read in inBAM.fetch(until_eof=True):
         if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
         qname = read.query_name
-#        if not qname in reads:
-#            reads[qname]=Read()
-        reads[qname].append_alignment(read)
-#        print(qname,len(reads[qname].alignments))
-    output_rids=set(reads.keys())-set(rids)
-    for rid in output_rids:
-        if reads[rid].is_valid_read():
-            for r in reads[rid].alignments:
-                outBAM.write(r)
-
-else:
-    for read in inBAM.fetch(until_eof=True):
-        if read.is_secondary or read.is_supplementary or read.is_unmapped:
-            continue
-        qname = read.query_name
         if qname in rids:
             continue
         else:
+            outBAM.write(read)
+
+#        if not qname in reads:
+#            reads[qname]=Read()
+#        reads[qname].append_alignment(read)
+#        print(qname,len(reads[qname].alignments))
+#    output_rids=set(reads.keys())-set(rids)
+#    for rid in output_rids:
+#        if reads[rid].is_valid_read():
+#            for r in reads[rid].alignments:
+#                outBAM.write(r)
+
+else:
+    incount=0
+    outcount=0
+    for read in inBAM.fetch(until_eof=True):
+        incount+=1
+        if incount%1000==0:
+            print(f"{incount/1000000:.4f}m reads read in")
+            print(f"{outcount/1000000:.4f}m reads written out")
+        if read.is_secondary or read.is_supplementary or read.is_unmapped:
+            continue
+        qname = read.query_name
+        if qname in rids_dict:
+            continue
+        else:
+            outcount+=1
             outBAM.write(read)
 
 
