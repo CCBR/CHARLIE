@@ -11,6 +11,10 @@ parser.add_argument('--readids', dest='readids', type=str, required=True,
                     help='file with readids to keep (one readid per line)')
 args = parser.parse_args()
 rids = list(map(lambda x:x.strip(),open(args.readids,'r').readlines()))
+rids=list(set(rids))
+rids_dict=dict()
+for rid in rids:
+    rids_dict[rid]=1
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
 bigdict = dict()
@@ -26,7 +30,7 @@ for read in inBAM.fetch():
 	bigdict[qn].append(read)
 inBAM.close()
 
-for r in rids:
+for r in rids_dict:
 	for read in bigdict[r]:
 		outBAM.write(read)
 outBAM.close()
