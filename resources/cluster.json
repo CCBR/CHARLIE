@@ -59,10 +59,9 @@
         "time": "24:00:00"
     },
     "create_linear_reads_bam":{
-        "mem": "512g",
+        "mem": "200g",
         "threads": "4",
-        "time": "24:00:00",
-        "partition": "largemem"
+        "time": "24:00:00"
     },
     "clear": {
         "mem": "120g",
