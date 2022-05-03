@@ -58,7 +58,7 @@ if args.paired:
         if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
             continue
         qname = read.query_name
-        if qname in rids:
+        if qname in rids_dict:
             continue
         else:
             outBAM.write(read)
