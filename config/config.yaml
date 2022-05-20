@@ -23,6 +23,12 @@ resourcesdir: "PIPELINE_HOME/resources"
 tools: "PIPELINE_HOME/resources/tools.yaml"
 cluster: "PIPELINE_HOME/resources/cluster.json"
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
+# hg38 lookup
+# host: "hg38"
+# annotation_lookup_table: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt" 
+# mm39 lookup
+host: "mm39"
+annotation_lookup_table: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt" 
 #
 ## Resources
 #
