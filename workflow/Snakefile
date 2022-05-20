@@ -87,6 +87,8 @@ MEMORYG="100G"
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
 RESOURCES_DIR=config['resourcesdir']
+HOST=config['host'] # hg38 or mm39
+ANNOTATION_LOOKUP=config['annotation_lookup_table']
 if not os.path.exists(join(WORKDIR,"fastqs")):
 	os.mkdir(join(WORKDIR,"fastqs"))
 if not os.path.exists(join(WORKDIR,"results")):
@@ -167,20 +169,20 @@ rule all:
 		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),sample=SAMPLES),
 		expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bw"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bw"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bw"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bed"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bed"),sample=SAMPLES),
 		## Spliced reads bams and bigwigs
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bw"),sample=SAMPLES),
 		## linear reads bams and bigwigs
 		# expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bam"),sample=SAMPLES),
-		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bw"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
+		expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
 		## CLEAR quant output
 		get_clear_target_files(SAMPLES,config['run_clear']),
 		## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
@@ -606,8 +608,8 @@ rule split_splice_reads_BAM_create_BW:
 	input:
 		bam=rules.create_spliced_reads_bam.output.bam
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bam"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.hg38.bw")
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bam"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bw")
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
@@ -651,8 +653,8 @@ rule split_linear_reads_BAM_create_BW:
 	input:
 		bam=rules.create_linear_reads_bam.output.bam
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bam"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads.hg38.bw")
+		bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw")
 	params:
 		sample="{sample}",
 		workdir=WORKDIR,
@@ -778,12 +780,13 @@ rule create_ciri_count_matrix:
 		matrix=join(WORKDIR,"results","ciri_count_matrix.txt")
 	params:
 		script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
-		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
-		outdir=join(WORKDIR,"results")
+		lookup=ANNOTATION_LOOKUP,
+		outdir=join(WORKDIR,"results"),
+		hostID=HOST+"ID"
 	envmodules: TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
-python {params.script} {params.lookup}
+python {params.script} {params.lookup} {params.hostID}
 """
 
 rule create_circexplorer_count_matrix:
@@ -795,13 +798,14 @@ rule create_circexplorer_count_matrix:
 	params:
 		script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
 		script2=join(SCRIPTS_DIR,"Create_circExplorer_BSJ_count_matrix.py"),
-		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
-		outdir=join(WORKDIR,"results")
+		lookup=ANNOTATION_LOOKUP,
+		outdir=join(WORKDIR,"results"),
+		hostID=HOST+"ID"
 	envmodules: TOOLS["python37"]["version"]
 	shell:"""
 cd {params.outdir}
-python {params.script} {params.lookup}
-python {params.script2} {params.lookup}
+python {params.script} {params.lookup} {params.hostID}
+python {params.script2} {params.lookup} {params.hostID}
 """
 
 rule clear:
@@ -830,14 +834,15 @@ rule annotate_clear_output:
 		annotatedquantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
 	params:
 		script=join(SCRIPTS_DIR,"annotate_clear_quant.py"),
-		lookup=join(RESOURCES_DIR,"hg38_2_hg19_lookup.txt"),
-		cleardir=join(WORKDIR,"results","{sample}","CLEAR")
+		lookup=ANNOTATION_LOOKUP,
+		cleardir=join(WORKDIR,"results","{sample}","CLEAR"),
+		hostID=HOST+"ID"
 	shell:"""
 ## cleanup quant.txt* dirs before annotation
 find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {{}} \;
 if [[ "$(cat {input.quantfile} | wc -l)" != "0" ]]
 then
-python {params.script} {params.lookup} {input.quantfile}
+python {params.script} {params.lookup} {input.quantfile} {params.hostID}
 else
 touch {output.annotatedquantfile}
 fi
@@ -907,13 +912,13 @@ rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
 	input:
 		bam=rules.create_BSJ_bam.output.bam,
 	output:
-		bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bam"),
-		plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bam"),
-		minusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bam"),
-		bed=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bed"),
-		bw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.bw"),
-		plusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.plus.bw"),
-		minusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ.hg38.minus.bw"),
+		bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),
+		plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),
+		minusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bam"),
+		bed=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bed"),
+		bw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bw"),
+		plusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bw"),
+		minusbw=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bw"),
 		validBSJbed=join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed")
 	params:
 		sample="{sample}",
