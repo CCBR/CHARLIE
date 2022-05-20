@@ -14,7 +14,7 @@ import sys
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
 lookupfile=sys.argv[1]
-
+hostID=sys.argv[2]
 # In[2]:
 
 
@@ -55,10 +55,10 @@ sampleName=f.name.replace(".ciri.out","")
 x=pandas.read_csv(f,sep="\t",header=0,usecols=["chr","circRNA_start","circRNA_end","#junction_reads"])
 print(x.head())
 x["circRNA_start"]=x["circRNA_start"].astype(int)-1
-x["hg38ID"]=x["chr"].astype(str)+":"+x["circRNA_start"].astype(str)+"-"+x["circRNA_end"].astype(str)
+x[hostID]=x["chr"].astype(str)+":"+x["circRNA_start"].astype(str)+"-"+x["circRNA_end"].astype(str)
 x[sampleName+"_ciri"]=x["#junction_reads"].astype(str)
 x.drop(["chr","circRNA_start","circRNA_end","#junction_reads"],inplace=True,axis=1)
-x.set_index(["hg38ID"],inplace=True)
+x.set_index([hostID],inplace=True)
 ciri_count_matrix=x
 print(ciri_count_matrix.head())
 
@@ -71,10 +71,10 @@ for f in files_ciri[1:]:
     print(f,sampleName)
     x=pandas.read_csv(f,sep="\t",header=0,usecols=["chr","circRNA_start","circRNA_end","#junction_reads"])
     x["circRNA_start"]=x["circRNA_start"].astype(int)-1
-    x["hg38ID"]=x["chr"].astype(str)+":"+x["circRNA_start"].astype(str)+"-"+x["circRNA_end"].astype(str)
+    x[hostID]=x["chr"].astype(str)+":"+x["circRNA_start"].astype(str)+"-"+x["circRNA_end"].astype(str)
     x[sampleName+"_ciri"]=x["#junction_reads"].astype(str)
     x.drop(["chr","circRNA_start","circRNA_end","#junction_reads"],inplace=True,axis=1)
-    x.set_index(["hg38ID"],inplace=True)
+    x.set_index([hostID],inplace=True)
     ciri_count_matrix=pandas.concat([ciri_count_matrix,x],axis=1,join="outer",sort=False)
 ciri_count_matrix.head()
 
@@ -91,7 +91,7 @@ ciri_count_matrix.to_csv("ciri_count_matrix.txt",sep="\t",header=True)
 
 
 annotations=pandas.read_csv(lookupfile,sep="\t",header=0)
-annotations.set_index(["hg38ID"],inplace=True)
+annotations.set_index([hostID],inplace=True)
 annotations.head()
 
 

@@ -12,7 +12,7 @@ import os
 import matplotlib.pyplot as plt
 import sys
 lookupfile=sys.argv[1]
-
+hostID=sys.argv[2]
 # In[27]:
 
 
@@ -93,7 +93,7 @@ circE_count_matrix.to_csv(outfilename1,sep="\t",header=True)
 
 
 annotations=pandas.read_csv(lookupfile,sep="\t",header=0)
-annotations.set_index(["hg38ID"],inplace=True)
+annotations.set_index([hostID],inplace=True)
 annotations.head()
 
 

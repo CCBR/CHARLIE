@@ -14,6 +14,7 @@ import sys
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
 lookupfile=sys.argv[1]
+hostID=sys.argv[2]
 # In[2]:
 
 
@@ -59,10 +60,10 @@ sampleName=f.name.replace(".circularRNA_known.txt","")
 print("Reading file:",f)
 print("Sample Name:",sampleName)
 x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
-x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
+x[hostID]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
 x[sampleName+"_circE"]=x[12].astype(str)
 x.drop([0,1,2,12],inplace=True,axis=1)
-x.set_index(["hg38ID"],inplace=True)
+x.set_index([hostID],inplace=True)
 circE_count_matrix=x
 
 
@@ -85,11 +86,11 @@ for i in range(1,len(files_circExplorer)):
 	sampleName=f.name.replace(".circularRNA_known.txt","")
 	# x=pandas.read_csv(f,sep="\t",header=None,usecols=[0,1,2,12])
 	print("SampleName is:"+sampleName)
-	x["hg38ID"]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
+	x[hostID]=x[0].astype(str)+":"+x[1].astype(str)+"-"+x[2].astype(str)
 	x[sampleName+"_circE"]=x[12].astype(str)
 	print(x.head())
 	x.drop([0,1,2,12],inplace=True,axis=1)
-	x.set_index(["hg38ID"],inplace=True)
+	x.set_index([hostID],inplace=True)
 	print(x.head())
 	print("Before concat")
 	print(circE_count_matrix.head())
@@ -117,7 +118,7 @@ circE_count_matrix.to_csv(outfilename1,sep="\t",header=True)
 
 
 annotations=pandas.read_csv(lookupfile,sep="\t",header=0)
-annotations.set_index(["hg38ID"],inplace=True)
+annotations.set_index([hostID],inplace=True)
 annotations.head()
 
 
