@@ -123,15 +123,15 @@ annotation_lookup_table: "PIPELINE_HOME/resources/mm39_circBase_annotation_looku
 
 # Adding BAC16Insert to v4 from above
 # BAC16Insert.fa and BAC16Insert.gtf provided by Sara
-
-ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa"
-ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.gtf"
-regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa.regions"
-star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/STAR_index_no_GTF_2.7.6a"
-ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
-ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
-ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
-genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.genes.genepred_w_geneid"
+#
+# ref_fa: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa"
+# ref_gtf: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.gtf"
+# regions: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.fa.regions"
+# star_index_dir: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/STAR_index_no_GTF_2.7.6a"
+# ref_bwa_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+# ref_hisat_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert"
+# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC.v5/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC_BAC16Insert.genes.genepred_w_geneid"
  
 
 # replace ERCC with Biotynlated probes
@@ -145,8 +145,17 @@ genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_p
 # ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot"
 # genepred_w_geneid: "/data/Ziegelbauer_lab/resources/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot/hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_Biot.genes.genepred_w_geneid"
 
+# Adding mm39 masked + rRNA + ERCC + HSV1 virus
+# fasta and GTF provided by Sara
 
-
+ref_fa: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.fa"
+ref_gtf: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.gtf"
+regions: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.regions"
+star_index_dir: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/STAR_index_no_GTF_2.7.6a"
+ref_bwa_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
+ref_hisat_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
+ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
+genepred_w_geneid: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.genes.genepred_w_geneid"
 
 
 #
@@ -164,4 +173,5 @@ star1passfilter1_unannotated: "True"
 star1passfilter2_noncanonical: "False"
 star1passfilter2_unannotated: "False"
 cutadapt_min_length: 15
+
 
