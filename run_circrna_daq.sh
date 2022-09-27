@@ -15,7 +15,7 @@ module purge
 #######
 EXTRA_SINGULARITY_BINDS="/lscratch"
 PYTHONVERSION="3.7"
-SNAKEMAKEVERSION="5.24.1"
+SNAKEMAKEVERSION="7.3.7"
 #######
 
 
