@@ -31,6 +31,11 @@
         "time": "24:00:00",
         "partition": "largemem"
     },
+    "create_index": {
+        "mem": "200g",
+        "threads": "56",
+        "time": "24:00:00"
+    },
     "star1p": {
         "mem": "200g",
         "threads": "56",
