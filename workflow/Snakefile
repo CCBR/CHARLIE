@@ -35,8 +35,12 @@ rule all:
         expand(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
         ## fastqc
         expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
-        # ## star1p
+        ## star1p
         expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
+        ## star 1p outputs required for DCC
+        expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),sample=SAMPLES),
         ## merge junctions
         join(WORKDIR,"results","pass1.out.tab"),
         # ## star2p
@@ -51,8 +55,10 @@ rule all:
         # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
         ## alignment stats
         expand(join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt"), sample=SAMPLES),
-        ## circExplorer
+        ## circExplorer --> we run circExplorer2
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES), # annotations with "known" GENCODE genes and NOT "known" circRNAs!
+        ## CLEAR quant output --> CLEAR is nothing but circExplorer3
+        get_clear_target_files(SAMPLES,config['run_clear']),
         ## ciri
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
         ## merged counts
@@ -84,8 +90,7 @@ rule all:
         # # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
-        # ## CLEAR quant output
-        # get_clear_target_files(SAMPLES,config['run_clear']),
+
         # ## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
         # expand(join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),

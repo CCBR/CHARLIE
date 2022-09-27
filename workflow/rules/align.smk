@@ -1,9 +1,37 @@
+## functions
+def get_mate_outputs(wildcards):
+	d=dict()
+	d['junction']=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab")
+	d['chimeric_junctions']=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction")
+	if SAMPLESDF["PEorSE"][wildcards.sample]=="SE":
+		return d
+	else:
+		d['mate1_chimeric_junctions']=join(WORKDIR,"results",wildcards.sample,"STAR1p","mate1",wildcards.sample+"_p1.Chimeric.out.junction")
+		d['mate2_chimeric_junctions']=join(WORKDIR,"results",wildcards.sample,"STAR1p","mate2",wildcards.sample+"_p1.Chimeric.out.junction")
+		return d
+
+## rules
+#  --outSJfilterOverhangMin 15 15 15 15
+#  --alignSJoverhangMin 15
+#  --alignSJDBoverhangMin 15
+#  --outFilterScoreMin 1
+#  --outFilterMatchNmin 1
+#  --outFilterMismatchNmax 2
+#  --chimSegmentMin 15 
+#  --chimScoreMin 15
+#  --chimJunctionOverhangMin 15 --> --alignSJoverhangMin and --chimJunctionOverhangMin should use the same value to make the circRNA expression and linear gene expression level comparable.
+#  --seedSearchStartLmax 30 ... for SE only
+#  ref: https://github.com/dieterich-lab/DCC
 rule star1p:
 	input:
 		R1=rules.cutadapt.output.of1,
 		R2=rules.cutadapt.output.of2
 	output:
-		junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab")
+		junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),
+		chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
+		mate1_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),
+		mate2_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),
+		# get_mate_outputs
 	params:
 		sample="{sample}",
 		peorse=get_peorse,
@@ -32,9 +60,12 @@ if [ "{params.peorse}" == "PE" ];then
 	STAR --genomeDir {params.starindexdir} \\
 	--outSAMstrandField None  \\
 	--outFilterMultimapNmax 20 \\
-	--alignSJoverhangMin 8 \\
-	--alignSJDBoverhangMin 1 \\
-	--outFilterMismatchNmax 999 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
 	--outFilterMismatchNoverLmax 0.3  \\
 	--alignIntronMin 20 \\
 	--alignIntronMax 1000000 \\
@@ -43,7 +74,75 @@ if [ "{params.peorse}" == "PE" ];then
 	--readFilesCommand zcat \\
 	--runThreadN {threads} \\
 	--outFileNamePrefix {params.sample}_p1. \\
-	--chimSegmentMin 20 \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
+	--chimMultimapNmax 10 \\
+	--chimOutType Junctions \\
+	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
+	--outSAMtype None \\
+	--alignEndsProtrude 10 ConcordantPair \\
+	--outFilterIntronMotifs None \\
+	--sjdbGTFfile {params.gtf} \\
+	--outTmpDir=${{TMPDIR}} \\
+	--sjdbOverhang $overhang
+
+	# mate1
+	mkdir -p "{params.outdir}/mate1" && cd {params.outdir}/mate1
+	STAR --genomeDir {params.starindexdir} \\
+	--outSAMstrandField None  \\
+	--outFilterMultimapNmax 20 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--seedSearchStartLmax 30 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
+	--outFilterMismatchNoverLmax 0.3  \\
+	--alignIntronMin 20 \\
+	--alignIntronMax 1000000 \\
+	--alignMatesGapMax 1000000 \\
+	--readFilesIn {input.R1} \\
+	--readFilesCommand zcat \\
+	--runThreadN {threads} \\
+	--outFileNamePrefix {params.sample}_mate1. \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
+	--chimMultimapNmax 10 \\
+	--chimOutType Junctions \\
+	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
+	--outSAMtype None \\
+	--alignEndsProtrude 10 ConcordantPair \\
+	--outFilterIntronMotifs None \\
+	--sjdbGTFfile {params.gtf} \\
+	--outTmpDir=${{TMPDIR}} \\
+	--sjdbOverhang $overhang
+
+	# mate2
+	mkdir -p "{params.outdir}/mate2" && cd {params.outdir}/mate2
+	STAR --genomeDir {params.starindexdir} \\
+	--outSAMstrandField None  \\
+	--outFilterMultimapNmax 20 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--seedSearchStartLmax 30 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
+	--outFilterMismatchNoverLmax 0.3  \\
+	--alignIntronMin 20 \\
+	--alignIntronMax 1000000 \\
+	--alignMatesGapMax 1000000 \\
+	--readFilesIn {input.R2} \\
+	--readFilesCommand zcat \\
+	--runThreadN {threads} \\
+	--outFileNamePrefix {params.sample}_mate2. \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
 	--chimMultimapNmax 10 \\
 	--chimOutType Junctions \\
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -63,9 +162,13 @@ else
 	STAR --genomeDir {params.starindexdir} \\
 	--outSAMstrandField None  \\
 	--outFilterMultimapNmax 20 \\
-	--alignSJoverhangMin 8 \\
-	--alignSJDBoverhangMin 1 \\
-	--outFilterMismatchNmax 999 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--seedSearchStartLmax 30 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
 	--outFilterMismatchNoverLmax 0.3  \\
 	--alignIntronMin 20 \\
 	--alignIntronMax 1000000 \\
@@ -74,7 +177,9 @@ else
 	--readFilesCommand zcat \\
 	--runThreadN {threads} \\
 	--outFileNamePrefix {params.sample}_p1. \\
-	--chimSegmentMin 20 \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
 	--chimMultimapNmax 10 \\
 	--chimOutType Junctions \\
 	--alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -84,7 +189,10 @@ else
 	--sjdbGTFfile {params.gtf} \\
 	--outTmpDir=${{TMPDIR}} \\
 	--sjdbOverhang $overhang
-
+	mkdir -p $(dirname {output.mate1_chimeric_junctions})
+	touch {output.mate1_chimeric_junctions}
+	mkdir -p $(dirname {output.mate2_chimeric_junctions})
+	touch {output.mate2_chimeric_junctions}
 fi
 rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
 """
@@ -156,19 +264,24 @@ if [ "{params.peorse}" == "PE" ];then
 	--outSAMstrandField None  \\
 	--outFilterType BySJout \\
 	--outFilterMultimapNmax 20 \\
-	--alignSJoverhangMin 8 \\
-	--alignSJDBoverhangMin 1 \\
-	--outFilterMismatchNmax 999 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
 	--outFilterMismatchNoverLmax 0.3  \\
 	--alignIntronMin 20 \\
 	--alignIntronMax 2000000 \\
 	--alignMatesGapMax 2000000 \\
 	--readFilesIn {input.R1} {input.R2} \\
 	--readFilesCommand  zcat \\
-	--runThreadN 56 \\
+	--runThreadN {threads} \\
 	--outFileNamePrefix {params.sample}_p2. \\
 	--sjdbFileChrStartEnd {input.pass1sjtab} \\
-	--chimSegmentMin 20 \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
 	--chimOutType Junctions WithinBAM \\
 	--chimMultimapNmax 10 \\
 	--limitSjdbInsertNsj $limitSjdbInsertNsj \\
@@ -190,19 +303,25 @@ else
 	--outSAMstrandField None  \\
 	--outFilterType BySJout \\
 	--outFilterMultimapNmax 20 \\
-	--alignSJoverhangMin 8 \\
-	--alignSJDBoverhangMin 1 \\
-	--outFilterMismatchNmax 999 \\
+	--outSJfilterOverhangMin 15 15 15 15 \\
+	--alignSJoverhangMin 15 \\
+	--alignSJDBoverhangMin 15 \\
+	--seedSearchStartLmax 30 \\
+	--outFilterScoreMin 1 \\
+	--outFilterMatchNmin 1 \\
+	--outFilterMismatchNmax 2 \\
 	--outFilterMismatchNoverLmax 0.3  \\
 	--alignIntronMin 20 \\
 	--alignIntronMax 2000000 \\
 	--alignMatesGapMax 2000000 \\
 	--readFilesIn {input.R1} \\
 	--readFilesCommand  zcat \\
-	--runThreadN 56 \\
+	--runThreadN {threads} \\
 	--outFileNamePrefix {params.sample}_p2. \\
 	--sjdbFileChrStartEnd {input.pass1sjtab} \\
-	--chimSegmentMin 20 \\
+	--chimSegmentMin 15 \\
+	--chimScoreMin 15 \\
+	--chimJunctionOverhangMin 15 \\
 	--chimOutType Junctions WithinBAM \\
 	--chimMultimapNmax 10 \\
 	--limitSjdbInsertNsj $limitSjdbInsertNsj \\
