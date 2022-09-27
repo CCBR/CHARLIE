@@ -23,7 +23,7 @@ for i in open(gtffile).readlines():
 #	print("%s\t%s"%(tid,gid))
 	transcript2gene[tid]=gid
 
-for i in open("genes.genepred").readlines():
+for i in open(sys.argv[2]).readlines():
 	j=i.strip().split("\t")
 	x=[]
 	tid=j.pop(0)
