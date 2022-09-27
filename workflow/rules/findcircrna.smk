@@ -269,6 +269,39 @@ python {params.script} {params.lookup} {params.hostID}
 python {params.script2} {params.lookup} {params.hostID}
 """
 
+# rule clear:
+# quantify circRNAs using CLEAR
+# This uses the "known" circRNAs from circExplorer2
+# Hence, not considered as a separate method for detecting circRNAs
+# CLEAR (aka. CircExplorer3) is run for completeness of the circExplorer pipeline
+# and to extract "Relative expression of circRNA" for downstream purposes
+# CLEAR does not quantify "Relative expression of circRNA" for novel circRNA, ie., 
+# circRNAs not labeled as "known" possible due to poor genome annotation.
+# circRNA is labled as "known" if its coordinates match with exons of known genes! 
+# quant.txt is a TSV with the following columns:
+# | #  | ColName     | Description                         |
+# |----|-------------|-------------------------------------|
+# | 1  | chrom       | Chromosome                          |
+# | 2  | start       | Start of circular RNA               |
+# | 3  | end         | End of circular RNA                 |
+# | 4  | name        | Circular RNA/Junction reads         |
+# | 5  | score       | Flag of fusion junction realignment |
+# | 6  | strand      | + or - for strand                   |
+# | 7  | thickStart  | No meaning                          |
+# | 8  | thickEnd    | No meaning                          |
+# | 9  | itemRgb     | 0,0,0                               |
+# | 10 | exonCount   | Number of exons                     |
+# | 11 | exonSizes   | Exon sizes                          |
+# | 12 | exonOffsets | Exon offsets                        |
+# | 13 | readNumber  | Number of junction reads            |
+# | 14 | circType    | Type of circular RNA                |
+# | 15 | geneName    | Name of gene                        |
+# | 16 | isoformName | Name of isoform                     |
+# | 17 | index       | Index of exon or intron             |
+# | 18 | flankIntron | Left intron/Right intron            |
+# | 19 | FPBcirc     | Expression of circRNA               |
+# | 20 | FPBlinear   | Expression of cognate linear RNA    |
+# | 21 | CIRCscore   | Relative expression of circRNA      |
 rule clear:
     input:
         bam=rules.star2p.output.bam,
@@ -289,6 +322,44 @@ circ_quant \\
 -o {output.quantfile}
 """
 
+# rule annotate_clear_output:
+# annotate CLEAR output with circRNA databases
+# the ".annotated" file columns are:
+# | #  | ColName            |
+# |----|--------------------|
+# | 1  | hg38ID             |
+# | 2  | quant_chrom        |
+# | 3  | quant_start        |
+# | 4  | quant_end          |
+# | 5  | quant_name         |
+# | 6  | quant_score        |
+# | 7  | quant_quant_strand |
+# | 8  | quant_thickStart   |
+# | 9  | quant_thickEnd     |
+# | 10 | quant_itemRgb      |
+# | 11 | quant_exonCount    |
+# | 12 | quant_exonSizes    |
+# | 13 | quant_exonOffsets  |
+# | 14 | quant_readNumber   |
+# | 15 | quant_circType     |
+# | 16 | quant_geneName     |
+# | 17 | quant_isoformName  |
+# | 18 | quant_index        |
+# | 19 | quant_flankIntron  |
+# | 20 | quant_FPBcirc      |
+# | 21 | quant_FPBlinear    |
+# | 22 | quant_CIRCscore    |
+# | 23 | hg19ID             |
+# | 24 | strand             |
+# | 25 | circRNA.ID         |
+# | 26 | genomic.length     |
+# | 27 | spliced.seq.length |
+# | 28 | samples            |
+# | 29 | repeats            |
+# | 30 | annotation         |
+# | 31 | best.transcript    |
+# | 32 | gene.symbol        |
+# | 33 | circRNA.study      |
 localrules: annotate_clear_output
 rule annotate_clear_output:
     input:
