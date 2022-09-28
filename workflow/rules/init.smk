@@ -68,6 +68,9 @@ if not os.path.exists(REF_DIR):
 STAR_INDEX_DIR=join(REF_DIR,"STAR_no_GTF")
 if not os.path.exists(STAR_INDEX_DIR):
     os.mkdir(STAR_INDEX_DIR)
+# strip trailing slashes if any
+for d in [WORKDIR,SCRIPTS_DIR,RESOURCES_DIR,FASTAS_GTFS_DIR,STAR_INDEX_DIR,REF_DIR]:
+    d=d.strip('r\/')
 BWA_INDEX=join(REF_DIR,"ref")
 
 HOST=config['host'] # hg38 or mm39
