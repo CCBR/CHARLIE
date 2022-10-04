@@ -13,7 +13,7 @@ class BSJ:
         # id="##".join([self.chrom,str(self.start),str(self.end),self.strand])
         return "%s\t%d\t%d\t%s\t%d\t%s\n"%(self.chrom,self.start,self.end,self.strand,self.read_count,self.known_novel)
 
-def read_BSJs(filename,known_novel="novel",counted=-1):
+def read_BSJs(filename,known_novel="novel",counted=-1,threshold=0):
     infile=open(filename,'r')
     BSJdict=dict()
     for l in infile.readlines():
@@ -24,12 +24,16 @@ def read_BSJs(filename,known_novel="novel",counted=-1):
         strand=l[5]
         id="##".join([chrom,str(start),str(end)])
         count=int(l[3].split("/")[1])
+        if count<=threshold:
+            continue
         BSJdict[id]=BSJ(chrom=chrom,start=start,end=end,strand=strand,known_novel=known_novel,read_count=count,counted=counted)
     return(BSJdict)
 
 parser = argparse.ArgumentParser(description='Create CircExplorer2 Per Sample Counts Table')
 parser.add_argument('--back_spliced_bed', dest='bsb', type=str, required=True,
                     help='back_spliced.bed')
+parser.add_argument('--back_spliced_min_reads', dest='back_spliced_min_reads', type=int, required=True,
+                    help='back_spliced minimum read threshold') # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 parser.add_argument('--circularRNA_known', dest='ck', type=str, required=True,
                     help='circularRNA_known.txt')
 parser.add_argument('--low_conf', dest='lc', type=str, required=False,
@@ -39,7 +43,7 @@ args = parser.parse_args()
 
 o=open(args.outfile,'w')
 o.write("chrom\tstart\tend\tstrand\tread_count\tknown_novel\n")
-all_BSJs=read_BSJs(args.bsb,counted=0)
+all_BSJs=read_BSJs(args.bsb,counted=0,threshold=args.back_spliced_min_reads)
 known_BSJs=read_BSJs(args.ck,known_novel="known",counted=0)
 if args.lc:
     low_conf_BSJs=read_BSJs(args.lc,known_novel="known",counted=0)

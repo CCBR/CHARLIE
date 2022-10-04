@@ -61,6 +61,8 @@ rule all:
         get_clear_target_files(SAMPLES,config['run_clear']),
         ## ciri
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
+        ## DCC
+        expand(join(WORKDIR,"results","{sample}","DCC","CircRNACount"),sample=SAMPLES),
         ## merged counts
         expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
         ## aggregated counts matrix

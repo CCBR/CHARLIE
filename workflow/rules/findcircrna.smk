@@ -5,7 +5,16 @@
 # and annotate them
 
 
+## function
+def get_dcc_inputs(wildcards):
+    filelist=[]
+    for s in SAMPLES:
+        filelist.append(join(WORKDIR,"results",s,"STAR1p",s+"_p1.Chimeric.out.junction"))
+        filelist.append(join(WORKDIR,"results",s,"STAR1p","mate1",s+"_mate1.Chimeric.out.junction"))
+        filelist.append(join(WORKDIR,"results",s,"STAR1p","mate2",s+"_mate2.Chimeric.out.junction"))
+    return filelist
 
+## rules
 # rule circExplorer:
 # find circRNAs using circExplorer2 and then annotate it with known gene-annotations
 # "annotate" requires GENCODE genes in the following columns:
@@ -87,6 +96,7 @@ rule circExplorer:
         counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
     params:
         sample="{sample}",
+        bsj_min_nreads=config['circexplorer_bsj_circRNA_min_reads'], # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
@@ -113,6 +123,7 @@ CIRCexplorer2 annotate \\
 
 python {params.script} \
     --back_spliced_bed {output.backsplicedjunctions} \
+    --back_spliced_min_reads {params.bsj_min_nreads} \
     --circularRNA_known {output.annotations} \
     --low_conf low_conf_$(basename {output.annotations}) \
     -o {output.counts_table}
@@ -382,3 +393,97 @@ else
 touch {output.annotatedquantfile}
 fi
 """		
+
+localrules: dcc_create_samplesheets
+rule dcc_create_samplesheets:
+    input:
+        f1=join(WORKDIR,"results","{sample}","STAR1p","{sample}"+"_p1.Chimeric.out.junction"),
+        f2=join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),
+        f3=join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),
+    output:
+        ss=join(WORKDIR,"results","{sample}","DCC","samplesheet.txt"),
+        m1=join(WORKDIR,"results","{sample}","DCC","mate1.txt"),
+        m2=join(WORKDIR,"results","{sample}","DCC","mate2.txt"),
+    shell:"""
+set -exo pipefail
+outdir=$(dirname {output.ss})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
+echo "{input.f1}" > {output.ss}
+echo "{input.f2}" > {output.m1}
+echo "{input.f3}" > {output.m2}
+"""
+
+# rule dcc:
+# output files
+# CircCoordinates columns are:
+# | # | ColName                        |
+# |---|--------------------------------|
+# | 1 | Chr                            |
+# | 2 | Start                          |
+# | 3 | End                            |
+# | 4 | Strand                         |
+# | 5 | <sample_junction_filename>     |
+#
+# CircRNACount columns are:
+# | # | ColName       |
+# |---|---------------|
+# | 1 | Chr           |
+# | 2 | Start         |
+# | 3 | End           |
+# | 4 | Gene          |
+# | 5 | JunctionType  |
+# | 6 | Strand        |
+# | 7 | Start-End     |
+# | 8 | OverallRegion |
+rule dcc:
+    input:
+        ss=rules.dcc_create_samplesheets.output.ss,
+        m1=rules.dcc_create_samplesheets.output.m1,
+        m2=rules.dcc_create_samplesheets.output.m2,
+    output:
+        join(WORKDIR,"results","{sample}","DCC","CircRNACount")
+    threads: getthreads("dcc")
+    params:
+        peorse=get_peorse,
+        dcc_strandedness=config['dcc_strandedness'],
+        gtf=REF_GTF,
+        rep=REPEATS_GTF,
+        fa=REF_FA,
+        randomstr=str(uuid.uuid4())
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+	TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+	TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
+conda activate DCC
+cd $(dirname {output})
+if [ "{params.peorse}" == "PE" ];then
+DCC @{input.ss} \
+    --temp $TMPDIR \
+    --threads {threads} \
+    --detect \
+    {params.dcc_strandedness} \
+    --annotation {params.gtf} \
+    --chrM \
+    --rep_file {params.rep} \
+    --refseq {params.fa} \
+    --PE-independent \
+    -mt1 @{input.m1} \
+    -mt2 @{input.m2}
+else
+DCC @{input.ss} \
+    --temp $TMPDIR \
+    --threads {threads} \
+    --detect \
+    {params.dcc_strandedness} \
+    --annotation {params.gtf} \
+    --chrM \
+    --rep_file {params.rep} \
+    --refseq {params.fa} 
+fi
+
+"""

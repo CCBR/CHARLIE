@@ -14,6 +14,11 @@
         "threads": "56",
         "time": "24:00:00"
     },
+    "dcc": {
+        "mem": "120g",
+        "threads": "32",
+        "time": "24:00:00"
+    },
     "fastqc": {
         "mem": "40g",
         "threads": "16",

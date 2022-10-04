@@ -1,15 +1,3 @@
-## functions
-def get_mate_outputs(wildcards):
-	d=dict()
-	d['junction']=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab")
-	d['chimeric_junctions']=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction")
-	if SAMPLESDF["PEorSE"][wildcards.sample]=="SE":
-		return d
-	else:
-		d['mate1_chimeric_junctions']=join(WORKDIR,"results",wildcards.sample,"STAR1p","mate1",wildcards.sample+"_p1.Chimeric.out.junction")
-		d['mate2_chimeric_junctions']=join(WORKDIR,"results",wildcards.sample,"STAR1p","mate2",wildcards.sample+"_p1.Chimeric.out.junction")
-		return d
-
 ## rules
 #  --outSJfilterOverhangMin 15 15 15 15
 #  --alignSJoverhangMin 15
