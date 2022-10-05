@@ -2,6 +2,7 @@
 # circExplorer2
 # ciri2
 # CLEAR
+# DCC
 # and annotate them
 
 
@@ -415,33 +416,35 @@ echo "{input.f3}" > {output.m2}
 
 # rule dcc:
 # output files
-# CircCoordinates columns are:
+# CircRNACount columns are:
 # | # | ColName                        |
 # |---|--------------------------------|
 # | 1 | Chr                            |
 # | 2 | Start                          |
 # | 3 | End                            |
 # | 4 | Strand                         |
-# | 5 | <sample_junction_filename>     |
+# | 5 | <sample_junction_filename>     | <-- circRNA read counts for this sample
 #
-# CircRNACount columns are:
-# | # | ColName       |
-# |---|---------------|
-# | 1 | Chr           |
-# | 2 | Start         |
-# | 3 | End           |
-# | 4 | Gene          |
-# | 5 | JunctionType  |
-# | 6 | Strand        |
-# | 7 | Start-End     |
-# | 8 | OverallRegion |
+# CircCoordinates columns are:
+# | # | ColName          | Description                                                                  |
+# |---|------------------|------------------------------------------------------------------------------|
+# | 1 | Chr              |                                                                              |
+# | 2 | Start            |                                                                              |
+# | 3 | End              |                                                                              |
+# | 4 | Gene             |                                                                              |
+# | 5 | JunctionType     | 0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5: AT/AC, 6: GT/AT |
+# | 6 | Strand           |                                                                              |
+# | 7 | Start-End Region | eg. intron-intergenic, exon-exon, intergenic-intron, etc.                    |
+# | 8 | OverallRegion    | the genomic features circRNA coordinates interval covers                     |
 rule dcc:
     input:
         ss=rules.dcc_create_samplesheets.output.ss,
         m1=rules.dcc_create_samplesheets.output.m1,
         m2=rules.dcc_create_samplesheets.output.m2,
     output:
-        join(WORKDIR,"results","{sample}","DCC","CircRNACount")
+        cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
+        cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
+        ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
     threads: getthreads("dcc")
     params:
         peorse=get_peorse,
@@ -449,7 +452,8 @@ rule dcc:
         gtf=REF_GTF,
         rep=REPEATS_GTF,
         fa=REF_FA,
-        randomstr=str(uuid.uuid4())
+        randomstr=str(uuid.uuid4()),
+        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -460,7 +464,7 @@ fi
 
 . "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
 conda activate DCC
-cd $(dirname {output})
+cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
 DCC @{input.ss} \
     --temp $TMPDIR \
@@ -486,4 +490,6 @@ DCC @{input.ss} \
     --refseq {params.fa} 
 fi
 
+python {params.script} \
+  --CircCoordinates {output.cc} --CircRNACount {output.cr} -o {output.ct}
 """
