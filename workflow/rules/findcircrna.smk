@@ -194,56 +194,7 @@ samtools view -@{threads} -bS {params.sample}.bwa.sam > {output.ciribam}
 rm -rf {params.sample}.bwa.sam
 """
 
-localrules: merge_per_sample_circRNA_counts
-# rule merge_per_sample_circRNA_counts:
-# merges counts from circExplorer2 and CIRI2 for all identified circRNAs. 
-# The output file columns are:
-# | # | ColName                               |
-# |---|---------------------------------------|
-# | 1 | circRNA_id                            |
-# | 2 | strand                                |
-# | 3 | <samplename>_circExplorer_read_count  |
-# | 4 | <samplename>_ciri_read_count          |
-# | 5 | <samplename>_circExplorer_known_novel | --> options are known, low_conf, novel
-# | 6 | <samplename>_circRNA_type             | --> options are exon, intron, intergenic_region
-# | 7 | <samplename>_ntools                   | --> number of tools calling this BSJ/circRNA
-rule merge_per_sample_circRNA_counts:
-    input:
-        circExplorer_table=rules.circExplorer.output.counts_table,
-        ciri_table=rules.ciri.output.ciriout
-    output:
-        merged_counts=join(WORKDIR,"results","{sample}","circRNA_counts.txt")
-    params:
-        script=join(SCRIPTS_DIR,"merge_per_sample_counts_table.py"),
-        samplename="{sample}"
-    shell:"""
-set -exo pipefail
-python {params.script} \
-    --circExplorer {input.circExplorer_table} \
-    --ciri {input.ciri_table} \
-    --samplename {params.samplename} \
-    -o {output.merged_counts}
-"""
 
-localrules: create_counts_matrix
-# rule create_counts_matrix:
-# merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
-rule create_counts_matrix:
-    input:
-        expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
-    output:
-        matrix=join(WORKDIR,"results","circRNA_counts_matrix.tsv")
-    params:
-        script=join(SCRIPTS_DIR,"merge_counts_tables_2_counts_matrix.py"),
-        resultsdir=join(WORKDIR,"results"),
-        lookup_table=ANNOTATION_LOOKUP
-    shell:"""
-set -exo pipefail
-python {params.script} \
-    --results_folder {params.resultsdir} \
-    --lookup_table {params.lookup_table} \
-    -o {output.matrix}
-"""
 
 rule create_ciri_count_matrix:
     input:
@@ -436,6 +387,16 @@ echo "{input.f3}" > {output.m2}
 # | 6 | Strand           |                                                                              |
 # | 7 | Start-End Region | eg. intron-intergenic, exon-exon, intergenic-intron, etc.                    |
 # | 8 | OverallRegion    | the genomic features circRNA coordinates interval covers                     |
+
+# output dcc.counts_table.tsv has the following columns:
+# | # | ColName        |
+# |---|----------------|
+# | 1 | chr            |
+# | 2 | start          |
+# | 3 | end            |
+# | 4 | strand         |
+# | 5 | read_count     |
+# | 6 | dcc_annotation | --> this is JunctionType##Start-End Region from CircCoordinates file
 rule dcc:
     input:
         ss=rules.dcc_create_samplesheets.output.ss,
@@ -446,6 +407,7 @@ rule dcc:
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
         ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
     threads: getthreads("dcc")
+    envmodules: TOOLS["python27"]["version"]
     params:
         peorse=get_peorse,
         dcc_strandedness=config['dcc_strandedness'],
@@ -457,9 +419,9 @@ rule dcc:
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-	TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
 else
-	TMPDIR="/dev/shm/{params.randomstr}"
+    TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
 . "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
@@ -492,4 +454,256 @@ fi
 
 python {params.script} \
   --CircCoordinates {output.cc} --CircRNACount {output.cr} -o {output.ct}
+"""
+
+
+# rule mapsplice:
+# output "circular_RNA.txt" has following columns
+# ref: https://github.com/Aufiero/circRNAprofiler/blob/master/R/importFilesPredictionTool.R
+# | #  | ColName                         | Example                   |
+# |----|---------------------------------|---------------------------|
+# | 1  | chrom                           | chr1~chr1                 |
+# | 2  | doner_end                       | 1223244                   |
+# | 3  | acceptor_start                  | 1223968                   |
+# | 4  | id                              | FUSIONJUNC_427            |
+# | 5  | coverage                        | 26                        |
+# | 6  | strand                          | --                        |
+# | 7  | rgb                             | 255,0,0                   |
+# | 8  | block_count                     | 2                         |
+# | 9  | block_size                      | 147,130,147,138,          |
+# | 10 | block_distance                  | 0,855,                    |
+# | 11 | entropy                         | 2.811419                  |
+# | 12 | flank_case                      | 5                         |
+# | 13 | flank_string                    | GTAG                      |
+# | 14 | min_mismatch                    | 1                         |
+# | 15 | max_mismatch                    | 2                         |
+# | 16 | ave_mismatch                    | 1.038462                  |
+# | 17 | max_min_suffix                  | 72                        |
+# | 18 | max_min_prefix                  | 71                        |
+# | 19 | min_anchor_difference           | 7                         |
+# | 20 | unique_read_count               | 26                        |
+# | 21 | multi_read_count                | 0                         |
+# | 22 | paired_read_count               | 6                         |
+# | 23 | left_paired_read_count          | 3                         |
+# | 24 | right_paired_read_count         | 3                         |
+# | 25 | multiple_paired_read_count      | 0                         |
+# | 26 | unique_paired_read_count        | 6                         |
+# | 27 | single_read_count               | 20                        |
+# | 28 | encompassing_read               | 0                         |
+# | 29 | doner_start                     | 1223391                   |
+# | 30 | acceptor_end                    | 1223838                   |
+# | 31 | doner_iosforms                  | 1223244,114M474N113M|     |
+# | 32 | acceptor_isoforms               | 1223246,112M474N137M|     |
+# | 33 | obsolete1                       | 0                         |
+# | 34 | obsolete2                       | 0                         |
+# | 35 | obsolete3                       | 0.404444                  |
+# | 36 | obsolete4                       | 0.455556                  |
+# | 37 | minimal_doner_isoform_length    | 227                       |
+# | 38 | maximal_doner_isoform_length    | 227                       |
+# | 39 | minimal_acceptor_isoform_length | 249                       |
+# | 40 | maximal_acceptor_isoform_length | 249                       |
+# | 41 | paired_reads_entropy            | 1.56071                   |
+# | 42 | mismatch_per_bp                 | 0.00687723                |
+# | 43 | anchor_score                    | 1                         |
+# | 44 | max_doner_fragment              | 227                       |
+# | 45 | max_acceptor_fragment           | 249                       |
+# | 46 | max_cur_fragment                | 396                       |
+# | 47 | min_cur_fragment                | 323                       |
+# | 48 | ave_cur_fragment                | 348.167                   |
+# | 49 | doner_encompass_unique          | 0                         |
+# | 50 | doner_encompass_multiple        | 0                         |
+# | 51 | acceptor_encompass_unique       | 0                         |
+# | 52 | acceptor_encompass_multiple     | 0                         |
+# | 53 | doner_match_to_normal           | doner_exact_matched       |
+# | 54 | acceptor_match_to_normal        | acceptor_exact_matched    |
+# | 55 | doner_seq                       | GAGGAACTCAAAGTGGATGAGGAAA |
+# | 56 | acceptor_seq                    | CTTCCGGTCAGTGTTCACATCCACC |
+# | 57 | match_gene_strand               | 0                         |
+# | 58 | annotated_type                  | from_fusion               |
+# | 59 | fusion_type                     | normal                    |
+# | 60 | gene_strand                     | *                         |
+# | 61 | annotated_gene_donor            | SDF4,                     |
+# | 62 | annotated_gene_acceptor         | SDF4,                     |
+# the above file is filtered to only include the following columns:
+# | # | ColName              | Eg.              |
+# |---|----------------------|------------------|
+# | 1 | chrom                | chr1             |
+# | 2 | start                | 1223244          |
+# | 3 | end                  | 1223968          |
+# | 4 | strand               | -                |
+# | 5 | read_count           | 26               |
+# | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
+# "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
+rule mapsplice:
+    input:
+        R1=rules.cutadapt.output.of1,
+        R2=rules.cutadapt.output.of2,
+    output:
+        # rev1ebwt=join(REF_DIR,"separate_fastas_index.rev.1.ebwt"),
+        sam=temp(join(WORKDIR,"results","{sample}","MapSplice","alignments.sam")),
+        circRNAs=join(WORKDIR,"results","{sample}","MapSplice","circular_RNAs.txt"),
+    params:
+        peorse=get_peorse,
+        separate_fastas=join(REF_DIR,"separate_fastas"),
+        ebwt=join(REF_DIR,"separate_fastas_index"),
+        outdir=join(WORKDIR,"results","{sample}","MapSplice"),
+        gtf=REF_GTF,
+        randomstr=str(uuid.uuid4()),
+    threads: getthreads("mapsplice")
+    container: "docker://cgrlab/mapsplice2:latest"
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+MSHOME="/opt/MapSplice2"
+# singularity exec -B /data/Ziegelbauer_lab,/data/kopardevn \
+#     /data/kopardevn/SandBox/MapSplice/mapsplice2.sif \
+if [ "{params.peorse}" == "PE" ];then
+python $MSHOME/mapsplice.py \
+ -1 {input.R1} \
+ -2 {input.R2} \
+ -c {params.separate_fastas} \
+ -p {threads} \
+ -x {params.ebwt} \
+ --non-canonical-double-anchor \
+ --non-canonical-single-anchor \
+ --filtering 1 \
+ --fusion-non-canonical --min-fusion-distance 200 \
+ --gene-gtf {params.gtf} \
+ -o {params.outdir}
+else
+python $MSHOME/mapsplice.py \
+ -1 {input.R1} \
+ -c {params.separate_fastas} \
+ -p {threads} \
+ -x {params.ebwt} \
+ --non-canonical-double-anchor \
+ --non-canonical-single-anchor \
+ --filtering 1 \
+ --fusion-non-canonical --min-fusion-distance 200 \
+ --gene-gtf {params.gtf} \
+ -o {params.outdir}
+fi
+"""
+
+# rule mapsplice_postprocess:
+# mapslice output contains an alignment.sam file which can be really large. Hence converting it to a sorted bam
+# to save space
+rule mapsplice_postprocess:
+    input:
+        sam=rules.mapsplice.output.sam,
+        circRNAs=rules.mapsplice.output.circRNAs
+    output:
+        ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv"),
+        bam=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam"),
+        bai=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam.bai"),
+    envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
+    params:
+        script=join(SCRIPTS_DIR,"create_mapslice_per_sample_counts_table.py"),
+        randomstr=str(uuid.uuid4()),
+    threads: getthreads("mapsplice_postprocess")
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+python {params.script} \
+  --circularRNAstxt {input.circRNAs} -o {output.ct}
+cd $TMPDIR
+samtools view -@{threads} -bS {input.sam} |samtools sort -@{threads} -o alignments.bam -
+samtools index -@{threads} alignment.bam
+rsync -az --progress alignment.bam {output.bam}
+rsync -az --progress alignment.bam.bai {output.bai}
+"""
+
+
+rule nclscan:
+    input:
+        R1=rules.cutadapt.output.of1,
+        R2=rules.cutadapt.output.of2,
+    output:
+        result=join(WORKDIR,"results","{sample}","NCLscan","{sample}.result"),
+        ct=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"),
+    envmodules:
+        TOOLS["ncl_required_modules"]
+    threads: getthreads("nclscan")
+    params:
+        workdir=WORKDIR,
+        sample="{sample}",
+        peorse=get_peorse,
+        nclscan_dir=config['nclscan_dir'],
+        nclscan_config=config['nclscan_config'],
+        script=join(SCRIPTS_DIR,"create_nclscan_per_sample_counts_table.py"),
+        randomstr=str(uuid.uuid4()),
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+outdir=$(dirname {output.result})
+
+{params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
+python {params.script} \
+  --result {output.result} -o {output.ct}
+"""
+
+
+localrules: merge_per_sample_circRNA_counts
+# rule merge_per_sample_circRNA_counts:
+# merges counts from circExplorer2 and CIRI2 for all identified circRNAs. 
+# The output file columns are:
+# | # | ColName                               |
+# |---|---------------------------------------|
+# | 1 | circRNA_id                            |
+# | 2 | strand                                |
+# | 3 | <samplename>_circExplorer_read_count  |
+# | 4 | <samplename>_ciri_read_count          |
+# | 5 | <samplename>_circExplorer_known_novel | --> options are known, low_conf, novel
+# | 6 | <samplename>_circRNA_type             | --> options are exon, intron, intergenic_region
+# | 7 | <samplename>_ntools                   | --> number of tools calling this BSJ/circRNA
+rule merge_per_sample_circRNA_counts:
+    input:
+        circExplorer_table=rules.circExplorer.output.counts_table,
+        ciri_table=rules.ciri.output.ciriout,
+        dcc_table=rules.dcc.output.ct, #join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
+    output:
+        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt")
+    params:
+        script=join(SCRIPTS_DIR,"merge_per_sample_counts_table.py"),
+        samplename="{sample}"
+    shell:"""
+set -exo pipefail
+python {params.script} \
+    --circExplorer {input.circExplorer_table} \
+    --ciri {input.ciri_table} \
+    --samplename {params.samplename} \
+    -o {output.merged_counts}
+"""
+
+localrules: create_counts_matrix
+# rule create_counts_matrix:
+# merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
+rule create_counts_matrix:
+    input:
+        expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
+    output:
+        matrix=join(WORKDIR,"results","circRNA_counts_matrix.tsv")
+    params:
+        script=join(SCRIPTS_DIR,"merge_counts_tables_2_counts_matrix.py"),
+        resultsdir=join(WORKDIR,"results"),
+        lookup_table=ANNOTATION_LOOKUP
+    shell:"""
+set -exo pipefail
+python {params.script} \
+    --results_folder {params.resultsdir} \
+    --lookup_table {params.lookup_table} \
+    -o {output.matrix}
 """
