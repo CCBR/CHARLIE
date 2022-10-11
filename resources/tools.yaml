@@ -4,6 +4,8 @@ bwa:
  version: "bwa/0.7.17"
 circexplorer:
  version: "circexplorer2/2.3.5"
+cufflinks:
+ version: "2.2.1"
 cutadapt:
  version: "cutadapt/1.18"
 fastqc:
@@ -14,6 +16,8 @@ multiqc:
  version: "multiqc/1.9"
 picard:
  version: "picard/2.25.0"
+python27:
+ version: "python/2.7"
 python37:
  version: "python/3.7"
 sambamba:
@@ -29,4 +33,5 @@ ucsc:
  version: "ucsc/407"
 R:
  version: "R/4.0.3"
+ncl_required_modules: "python/2.7 bedtools/2.29.0 blat/3.5 bwa/0.7.17 samtools/1.15.1 novocraft/4.03.05"
 
