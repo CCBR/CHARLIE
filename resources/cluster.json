@@ -19,6 +19,21 @@
         "threads": "32",
         "time": "24:00:00"
     },
+    "mapslice": {
+        "mem": "200g",
+        "threads": "56",
+        "time": "48:00:00"
+    },
+    "mapsplice_postprocess": {
+        "mem": "120g",
+        "threads": "16",
+        "time": "12:00:00"
+    },
+    "nclscan": {
+        "mem": "200g",
+        "threads": "56",
+        "time": "48:00:00"
+    },
     "fastqc": {
         "mem": "40g",
         "threads": "16",
