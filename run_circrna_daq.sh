@@ -90,6 +90,7 @@ mkdir -p $WORKDIR
 
 # copy config and samples files
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
 
 #create log and stats folders
@@ -102,7 +103,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv; do
+  for f in config.yaml samples.tsv nclscan.config; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -123,7 +124,8 @@ function runcheck(){
 
 function dryrun() {
   runcheck
-  run "--dry-run"
+  timestamp=$(date +"%y%m%d%H%M%S")
+  run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
 function unlock() {
