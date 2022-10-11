@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import yaml
 import uuid
+from pathlib import Path
 
 # no truncations during print pandas data frames
 pd.set_option('display.max_rows', None)
@@ -13,12 +14,42 @@ pd.set_option('display.max_colwidth', None)
 
 include: "rules/init.smk"
 
-def get_clear_target_files(SAMPLES,runclear):
+def get_clear_target_files(runclear):
     targetfiles=[]
-    if runclear==True or runclear=="True":
+    if runclear==True or runclear=="True" or runclear=="TRUE":
         for s in SAMPLES:
             targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt"))
             targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt.annotated"))
+    return targetfiles
+
+def get_dcc_target_files(rundcc):
+    targetfiles=[]
+    if rundcc==True or rundcc=="True" or rundcc=="TRUE":
+        for s in SAMPLES:
+            targetfiles.append(join(WORKDIR,"results",s,"DCC",s+".dcc.counts_table.tsv"))
+    return targetfiles
+
+def get_mapsplice_target_files(runmapslice):
+    targetfiles=[]
+    if runmapslice==True or runmapslice=="True" or runmapslice=="TRUE":
+        for s in SAMPLES:
+            targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt"))
+            targetfiles.append(join(WORKDIR,"results",s,"MapSplice","alignments.bam"))
+    return targetfiles
+
+def get_nclscan_target_files(runnclscan):
+    targetfiles=[]
+    if not os.path.exists(join(WORKDIR,"results")): os.mkdir(join(WORKDIR,"results"))
+    if runnclscan==True or runnclscan=="True" or runnclscan=="TRUE":
+        for s in SAMPLES:
+            if not os.path.exists(join(WORKDIR,"results",s)): os.mkdir(join(WORKDIR,"results",s))
+            if not os.path.exists(join(WORKDIR,"results",s,"NCLscan")): os.mkdir(join(WORKDIR,"results",s,"NCLscan"))
+            if SAMPLESDF.loc[[s],"PEorSE"][0]=="SE":
+                Path(join(WORKDIR,"results",s,"NCLscan",s+".result")).touch() # nclscan cannot run for se 
+                with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv"),'w') as f:
+                    f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
+            else:
+                targetfiles.append(join(WORKDIR,"results",s,"NCLscan",s+".result"))
     return targetfiles
 
 localrules: multiqc, annotate_clear_output, merge_genecounts
@@ -58,15 +89,20 @@ rule all:
         ## circExplorer --> we run circExplorer2
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES), # annotations with "known" GENCODE genes and NOT "known" circRNAs!
         ## CLEAR quant output --> CLEAR is nothing but circExplorer3
-        get_clear_target_files(SAMPLES,config['run_clear']),
+        get_clear_target_files(config['run_clear']),
         ## ciri
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
         ## DCC
-        expand(join(WORKDIR,"results","{sample}","DCC","CircRNACount"),sample=SAMPLES),
-        ## merged counts
-        expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),sample=SAMPLES),
+        get_dcc_target_files(config['run_dcc']),
+        ## MapSplice
+        get_mapsplice_target_files(config['run_mapslice']),
+        ## NCLscan
+        get_nclscan_target_files(config['run_nclscan']),
+        ## merged counts per sample table of all counts/annotations from all circRNA callers
+        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
         ## aggregated counts matrix
-        join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
+        # join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # ## ciri BSJ bam
         # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
         # ## ciri aggregate count matrix
