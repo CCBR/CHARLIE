@@ -150,6 +150,7 @@ python {params.script} \
 # ref: https://ciri-cookbook.readthedocs.io/en/latest/CIRI2.html#an-example-of-running-ciri2
 rule ciri:
     input:
+        bwt=rules.create_index.output.bwt,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2
     output:
@@ -524,18 +525,9 @@ python {params.script} \
 # | 60 | gene_strand                     | *                         |
 # | 61 | annotated_gene_donor            | SDF4,                     |
 # | 62 | annotated_gene_acceptor         | SDF4,                     |
-# the above file is filtered to only include the following columns:
-# | # | ColName              | Eg.              |
-# |---|----------------------|------------------|
-# | 1 | chrom                | chr1             |
-# | 2 | start                | 1223244          |
-# | 3 | end                  | 1223968          |
-# | 4 | strand               | -                |
-# | 5 | read_count           | 26               |
-# | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
-# "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
 rule mapsplice:
     input:
+        bwt=rules.create_index.output.bwt, # place holder for completion of the create_index rule
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
     output:
@@ -591,6 +583,16 @@ fi
 """
 
 # rule mapsplice_postprocess:
+# the above file is filtered to only include the following columns:
+# | # | ColName              | Eg.              |
+# |---|----------------------|------------------|
+# | 1 | chrom                | chr1             |
+# | 2 | start                | 1223244          |
+# | 3 | end                  | 1223968          |
+# | 4 | strand               | -                |
+# | 5 | read_count           | 26               |
+# | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
+# "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
 # mapslice output contains an alignment.sam file which can be really large. Hence converting it to a sorted bam
 # to save space
 rule mapsplice_postprocess:
@@ -623,8 +625,35 @@ rsync -az --progress alignment.bam.bai {output.bai}
 """
 
 
+# rule nclscan:
+# result.txt output file has the following columns:
+# ref: https://github.com/TreesLab/NCLscan
+# | #  | Description                                | ColName
+# |----|--------------------------------------------|------------ 
+# | 1  | Chromosome name of the donor side (5'ss)   | chrd
+# | 2  | Junction coordinate of the donor side      | coordd
+# | 3  | Strand of the donor side                   | strandd
+# | 4  | Chromosome name of the acceptor side (3'ss)| chra
+# | 5  | Junction coordinate of the acceptor side   | coorda
+# | 6  | Strand of the acceptor side                | stranda
+# | 7  | Gene name of the donor side                | gened
+# | 8  | Gene name of the acceptor side             | genea
+# | 9  | Intragenic (1) or intergenic (0) case      | case
+# | 10 | Total number of all supporting reads       | reads
+# | 11 | Total number of junc-reads                 | jreads
+# | 12 | Total number of span-reads                 | sreads
+# the above file is filtered to only include the following columns:
+# | # | ColName              | Eg.              |
+# |---|----------------------|------------------|
+# | 1 | chrom                | chr1             |
+# | 2 | start                | 1223244          |
+# | 3 | end                  | 1223968          |
+# | 4 | strand               | -                |
+# | 5 | read_count           | 26               |
+# | 6 | nclscan_annotation   | normal##2.811419 | <--1 for intragenic 0 for intergenic
 rule nclscan:
     input:
+        fixed_gtf=rules.create_index.output.fixed_gtf,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
     output:

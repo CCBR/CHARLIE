@@ -13,7 +13,8 @@
 rule star1p:
     input:
         R1=rules.cutadapt.output.of1,
-        R2=rules.cutadapt.output.of2
+        R2=rules.cutadapt.output.of2,
+        sa=rules.create_index.output.sa
     output:
         junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),
         chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
