@@ -5,7 +5,7 @@ bwa:
 circexplorer:
  version: "circexplorer2/2.3.5"
 cufflinks:
- version: "2.2.1"
+ version: "cufflinks/2.2.1"
 cutadapt:
  version: "cutadapt/1.18"
 fastqc:
