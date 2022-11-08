@@ -20,3 +20,4 @@ resources/mmu_mm9_circRNA.bed
 resources/mmu_mm9_circRNA.txt
 resources/mouse_mm9_circRNAs_putative_spliced_sequence.fa.gz
 workflow/scripts/copy_strand_info.py
+**/tmp*
