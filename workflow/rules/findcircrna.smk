@@ -424,6 +424,7 @@ if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
 else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
 . "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
 conda activate DCC
@@ -527,7 +528,7 @@ python {params.script} \
 # | 62 | annotated_gene_acceptor         | SDF4,                     |
 rule mapsplice:
     input:
-        bwt=rules.create_index.output.bwt, # place holder for completion of the create_index rule
+        bwt=rules.create_mapsplice_index.output.rev1ebwt, 
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
     output:
@@ -550,14 +551,22 @@ if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
 else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
 MSHOME="/opt/MapSplice2"
 # singularity exec -B /data/Ziegelbauer_lab,/data/kopardevn \
 #     /data/kopardevn/SandBox/MapSplice/mapsplice2.sif \
+
 if [ "{params.peorse}" == "PE" ];then
+
+R1fn=$(basename {input.R1})
+R2fn=$(basename {input.R2})
+zcat {input.R1} > ${{TMPDIR}}/${{R1fn%.*}}
+zcat {input.R2} > ${{TMPDIR}}/${{R2fn%.*}}
+
 python $MSHOME/mapsplice.py \
- -1 {input.R1} \
- -2 {input.R2} \
+ -1 ${{TMPDIR}}/${{R1fn%.*}} \
+ -2 ${{TMPDIR}}/${{R2fn%.*}} \
  -c {params.separate_fastas} \
  -p {threads} \
  -x {params.ebwt} \
@@ -567,9 +576,14 @@ python $MSHOME/mapsplice.py \
  --fusion-non-canonical --min-fusion-distance 200 \
  --gene-gtf {params.gtf} \
  -o {params.outdir}
+
 else
+
+R1fn=$(basename {input.R1})
+zcat {input.R1} > ${{TMPDIR}}/${{R1fn%.*}}
+
 python $MSHOME/mapsplice.py \
- -1 {input.R1} \
+ -1 ${{TMPDIR}}/${{R1fn%.*}} \
  -c {params.separate_fastas} \
  -p {threads} \
  -x {params.ebwt} \
@@ -579,6 +593,7 @@ python $MSHOME/mapsplice.py \
  --fusion-non-canonical --min-fusion-distance 200 \
  --gene-gtf {params.gtf} \
  -o {params.outdir}
+
 fi
 """
 
@@ -615,13 +630,14 @@ if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
 else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 python {params.script} \
   --circularRNAstxt {input.circRNAs} -o {output.ct}
 cd $TMPDIR
 samtools view -@{threads} -bS {input.sam} |samtools sort -@{threads} -o alignments.bam -
-samtools index -@{threads} alignment.bam
-rsync -az --progress alignment.bam {output.bam}
-rsync -az --progress alignment.bam.bai {output.bai}
+samtools index -@{threads} alignments.bam
+rsync -az --progress alignments.bam {output.bam}
+rsync -az --progress alignments.bam.bai {output.bai}
 """
 
 
@@ -654,6 +670,7 @@ rsync -az --progress alignment.bam.bai {output.bai}
 rule nclscan:
     input:
         fixed_gtf=rules.create_index.output.fixed_gtf,
+        ndx=rules.create_index.output.ndx,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
     output:
@@ -677,6 +694,7 @@ if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
 else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 outdir=$(dirname {output.result})
 
 {params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
