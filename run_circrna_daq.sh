@@ -125,6 +125,9 @@ function runcheck(){
 function dryrun() {
   runcheck
   timestamp=$(date +"%y%m%d%H%M%S")
+  for f in $(ls ${WORKDIR}/dryrun.*.log);do
+    mv $f ${WORKDIR}/stats
+  done
   run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
@@ -168,9 +171,12 @@ function runslurm() {
 }
 
 function create_runinfo {
+  modtime=$1
+  if [ "$modtime" == "" ];then
+   modtime=$(stat ${WORKDIR}/runinfo.yaml|grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
+  fi
   if [ -f ${WORKDIR}/runinfo.yaml ];then
-    modtime=$(stat ${WORKDIR}/runinfo.yaml|grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
-    mv ${WORKDIR}/runinfo.yaml ${WORKDIR}/runinfo.yaml.${modtime}
+    mv ${WORKDIR}/runinfo.yaml ${WORKDIR}/stats/runinfo.${modtime}.yaml
   fi
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
@@ -191,6 +197,7 @@ function preruncleanup() {
   check_essential_files 
 
   cd $WORKDIR
+  modtime=""
   ## Archive previous run files
   if [ -f ${WORKDIR}/snakemake.log ];then 
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
@@ -201,13 +208,16 @@ function preruncleanup() {
     if [ -f ${WORKDIR}/snakemake.stats ];then 
       mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
     fi
+    if [ -f ${WORKDIR}/snakemake.log.jobinfo ];then 
+      mv ${WORKDIR}/snakemake.log.jobinfo ${WORKDIR}/stats/snakemake.${modtime}.log.jobinfo
+    fi
   fi
   nslurmouts=$(find ${WORKDIR} -maxdepth 1 -name "slurm-*.out" |wc -l)
   if [ "$nslurmouts" != "0" ];then
     for f in $(ls ${WORKDIR}/slurm-*.out);do mv ${f} ${WORKDIR}/logs/;done
   fi
 
-  create_runinfo
+  create_runinfo modtime
 
 }
 
@@ -278,7 +288,9 @@ if [ "\$?" -eq "0" ];then
   --configfile ${WORKDIR}/config.yaml 
 fi
 
-bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+# bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+
+/data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
 
 EOF
 
