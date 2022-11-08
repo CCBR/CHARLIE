@@ -12,9 +12,9 @@
 #  ref: https://github.com/dieterich-lab/DCC
 rule star1p:
     input:
+        sa=rules.create_index.output.sa,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
-        sa=rules.create_index.output.sa
     output:
         junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),
         chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
@@ -43,7 +43,7 @@ fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 if [ "{params.peorse}" == "PE" ];then
 # paired-end
-    overhang=$(zcat {input} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
+    overhang=$(zcat {input.R1} {input.R2} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
     echo "sjdbOverhang for STAR: ${{overhang}}"
     cd {params.outdir}
     STAR --genomeDir {params.starindexdir} \\
