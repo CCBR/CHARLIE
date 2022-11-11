@@ -3,7 +3,7 @@ bedtools:
 bwa:
  version: "bwa/0.7.17"
 circexplorer:
- version: "circexplorer2/2.3.5"
+ version: "circexplorer2/2.3.8"
 cufflinks:
  version: "cufflinks/2.2.1"
 cutadapt:
