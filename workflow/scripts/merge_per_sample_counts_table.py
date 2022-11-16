@@ -10,6 +10,8 @@ parser.add_argument('--dcc', dest='dcc', type=str, required=False,
                     help='dcc per-sample counts table')
 parser.add_argument('--mapsplice', dest='mapsplice', type=str, required=False,
                     help='mapsplice per-sample counts table')
+parser.add_argument('--nclscan', dest='nclscan', type=str, required=False,
+                    help='nclscan per-sample counts table')
 parser.add_argument('--samplename', dest='samplename', type=str, required=True,
                     help='Sample Name')
 parser.add_argument('--min_read_count_reqd', dest='minreads', type=int, required=False, default=2,
