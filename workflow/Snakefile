@@ -16,7 +16,7 @@ include: "rules/init.smk"
 
 def get_clear_target_files(runclear):
     targetfiles=[]
-    if runclear==True or runclear=="True" or runclear=="TRUE":
+    if runclear:
         for s in SAMPLES:
             targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt"))
             targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt.annotated"))
@@ -24,14 +24,14 @@ def get_clear_target_files(runclear):
 
 def get_dcc_target_files(rundcc):
     targetfiles=[]
-    if rundcc==True or rundcc=="True" or rundcc=="TRUE":
+    if rundcc:
         for s in SAMPLES:
             targetfiles.append(join(WORKDIR,"results",s,"DCC",s+".dcc.counts_table.tsv"))
     return targetfiles
 
 def get_mapsplice_target_files(runmapslice):
     targetfiles=[]
-    if runmapslice==True or runmapslice=="True" or runmapslice=="TRUE":
+    if runmapslice:
         for s in SAMPLES:
             targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt"))
             targetfiles.append(join(WORKDIR,"results",s,"MapSplice","alignments.bam"))
@@ -89,18 +89,18 @@ rule all:
         ## circExplorer --> we run circExplorer2
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES), # annotations with "known" GENCODE genes and NOT "known" circRNAs!
         ## CLEAR quant output --> CLEAR is nothing but circExplorer3
-        get_clear_target_files(config['run_clear']),
+        get_clear_target_files(RUN_CLEAR),
         ## ciri
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES),
         ## DCC
         # expand(join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),sample=SAMPLES),
-        get_dcc_target_files(config['run_dcc']),
+        get_dcc_target_files(RUN_DCC),
         ## MapSplice
-        get_mapsplice_target_files(config['run_mapslice']),
+        get_mapsplice_target_files(RUN_MAPSPLICE),
         ## NCLscan
-        get_nclscan_target_files(config['run_nclscan']),
+        get_nclscan_target_files(RUN_NCLSCAN),
         ## merged counts per sample table of all counts/annotations from all circRNA callers
-        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
         ## aggregated counts matrix
         # join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # ## ciri BSJ bam
