@@ -719,9 +719,18 @@ fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 outdir=$(dirname {output.result})
 
+if [ "{params.peorse}" == "PE" ];then
 {params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
 python {params.script} \
   --result {output.result} -o {output.ct}
+else
+    outdir=$(dirname {output.result})
+    if [ ! -d $outdir ];then
+        mkdir -p $outdir
+    fi
+    touch {output.result}
+    touch {output.ct}
+fi
 """
 
 def _boolean2str(x): # "1" for True and "0" for False
