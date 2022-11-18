@@ -99,32 +99,66 @@ if [args.mapsplice]:
     # | 5 | read_count           | 26               |
     # | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
     # "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
-    # mapsplice["start"]=mapsplice["start"].astype(int)-1
+    mapsplice["start"]=mapsplice["start"].astype(int)-1
     mapsplice['circRNA_id']=mapsplice['chrom'].astype(str)+"##"+mapsplice['start'].astype(str)+"##"+mapsplice['end'].astype(str)+"##"+mapsplice['strand'].astype(str)
     mapsplice.rename({'read_count': sn+'_mapsplice_read_count'}, axis=1, inplace=True)
     mapsplice.drop(['chrom','start', 'end','strand'], axis = 1,inplace=True)
     mapsplice.set_index(['circRNA_id'],inplace=True)
     dfs.append(mapsplice)
 
+# load nclscan
+if [args.nclscan]:
+    nclscan=pandas.read_csv(args.nclscan,sep="\t",header=0)
+    # output .mapslice.counts_table.tsv has the following columns:
+    # | # | ColName              | Eg.              |
+    # |---|----------------------|------------------|
+    # | 1 | chrom                | chr1             |
+    # | 2 | start                | 1223244          |
+    # | 3 | end                  | 1223968          |
+    # | 4 | strand               | -                |
+    # | 5 | read_count           | 26               |
+    # | 6 | nclscan_annotation   | 1                | <--1 for intragenic 0 for intergenic
+    nclscan["start"]=nclscan["start"].astype(int)-1
+    nclscan['circRNA_id']=nclscan['chrom'].astype(str)+"##"+nclscan['start'].astype(str)+"##"+nclscan['end'].astype(str)+"##"+nclscan['strand'].astype(str)
+    nclscan.rename({'read_count': sn+'_nclscan_read_count'}, axis=1, inplace=True)
+    nclscan.drop(['chrom','start', 'end','strand'], axis = 1,inplace=True)
+    nclscan.set_index(['circRNA_id'],inplace=True)
+    dfs.append(nclscan)
+
 
 
 merged_counts=pandas.concat(dfs,axis=1,join="outer",sort=False)
 merged_counts['circRNA_id']=merged_counts.index
 merged_counts.fillna(0,inplace=True)
-merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_dcc_read_count': int,'circExplorer_annotation' : str,'ciri_annotation' : str, 'dcc_annotation' : str})
 merged_counts[ sn+'_ntools'] = 0
+if [args.dcc] and not [args.mapsplice] and not [args.nclscan]:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_dcc_read_count': int,'circExplorer_annotation' : str,'ciri_annotation' : str, 'dcc_annotation' : str})
+elif [args.dcc] and [args.mapsplice] and not [args.nclscan]:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_dcc_read_count': int, sn+'_mapsplice_read_count': int, 'circExplorer_annotation' : str,'ciri_annotation' : str, 'dcc_annotation' : str, 'mapsplice_annotation' : str})
+elif [args.dcc] and [args.mapsplice] and [args.nclscan]:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_dcc_read_count': int, sn+'_mapsplice_read_count': int, sn+'_nclscan_read_count': int, 'circExplorer_annotation' : str,'ciri_annotation' : str, 'dcc_annotation' : str, 'mapsplice_annotation' : str, 'nclscan_annotation' : int})
+elif [args.dcc] and not [args.mapsplice] and [args.nclscan]:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_dcc_read_count': int, sn+'_nclscan_read_count': int, 'circExplorer_annotation' : str,'ciri_annotation' : str, 'dcc_annotation' : str, 'nclscan_annotation' : int})
+elif not [args.dcc] and [args.mapsplice] and [args.nclscan]:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, sn+'_mapsplice_read_count': int, sn+'_nclscan_read_count': int, 'circExplorer_annotation' : str,'ciri_annotation' : str, 'mapsplice_annotation' : str, 'nclscan_annotation' : int})
+else:
+    merged_counts = merged_counts.astype({'circRNA_id': 'str', sn+'_ntools' : int, sn+'_circExplorer_read_count': int, sn+'_ciri_read_count': int, 'circExplorer_annotation' : str,'ciri_annotation' : str})
+
 merged_counts.loc[merged_counts[sn+'_circExplorer_read_count'] > args.minreads, sn+'_ntools'] += 1
 merged_counts.loc[merged_counts[sn+'_ciri_read_count'] > args.minreads, sn+'_ntools'] += 1
 if [args.dcc]: merged_counts.loc[merged_counts[sn+'_dcc_read_count'] > args.minreads, sn+'_ntools'] += 1
 if [args.mapsplice]: merged_counts.loc[merged_counts[sn+'_mapsplice_read_count'] > args.minreads, sn+'_ntools'] += 1
+if [args.nclscan]: merged_counts.loc[merged_counts[sn+'_nclscan_read_count'] > args.minreads, sn+'_ntools'] += 1
 merged_counts[['chrom', 'start', 'end', 'strand']] = merged_counts['circRNA_id'].str.split('##', expand=True)
 merged_counts.drop(['circRNA_id'],axis=1,inplace=True)
 merged_counts['circRNA_id']=merged_counts['chrom'].astype(str)+":"+merged_counts['start'].astype(str)+"-"+merged_counts['end'].astype(str)
 outcols=['circRNA_id', 'strand', sn+'_ntools', sn+'_circExplorer_read_count', sn+'_ciri_read_count']
 if [args.dcc]: outcols.append(sn+'_dcc_read_count')
 if [args.mapsplice]: outcols.append(sn+'_mapsplice_read_count')
+if [args.nclscan]: outcols.append(sn+'_nclscan_read_count')
 outcols.extend(['circExplorer_annotation', 'ciri_annotation'])
 if [args.dcc]: outcols.append('dcc_annotation')
 if [args.mapsplice]: outcols.append('mapsplice_annotation')
+if [args.nclscan]: outcols.append('nclscan_annotation')
 merged_counts = merged_counts[outcols]
 merged_counts.to_csv(args.outfile,sep="\t",header=True,index=False)
