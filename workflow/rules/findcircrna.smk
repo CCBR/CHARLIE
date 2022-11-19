@@ -815,10 +815,12 @@ rule create_counts_matrix:
         script=join(SCRIPTS_DIR,"merge_counts_tables_2_counts_matrix.py"),
         resultsdir=join(WORKDIR,"results"),
         lookup_table=ANNOTATION_LOOKUP
+    envmodules:
+        TOOLS['python37']['version']
     shell:"""
 set -exo pipefail
 python {params.script} \
-    --results_folder {params.resultsdir} \
+    --per_sample_tables {input} \
     --lookup_table {params.lookup_table} \
     -o {output.matrix}
 """

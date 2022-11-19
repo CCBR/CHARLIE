@@ -102,7 +102,7 @@ rule all:
         ## merged counts per sample table of all counts/annotations from all circRNA callers
         expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
         ## aggregated counts matrix
-        # join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
+        join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # ## ciri BSJ bam
         # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
         # ## ciri aggregate count matrix
