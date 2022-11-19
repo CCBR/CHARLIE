@@ -808,7 +808,7 @@ python {params.script} $parameters
 # merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
 rule create_counts_matrix:
     input:
-        expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
     output:
         matrix=join(WORKDIR,"results","circRNA_counts_matrix.tsv")
     params:
