@@ -45,9 +45,13 @@ def get_nclscan_target_files(runnclscan):
             if not os.path.exists(join(WORKDIR,"results",s)): os.mkdir(join(WORKDIR,"results",s))
             if not os.path.exists(join(WORKDIR,"results",s,"NCLscan")): os.mkdir(join(WORKDIR,"results",s,"NCLscan"))
             if SAMPLESDF.loc[[s],"PEorSE"][0]=="SE":
-                Path(join(WORKDIR,"results",s,"NCLscan",s+".result")).touch() # nclscan cannot run for se 
-                with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv"),'w') as f:
-                    f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
+                resultfile=join(WORKDIR,"results",s,"NCLscan",s+".result")
+                ctable=join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv")
+                if not os.path.exists(resultfile):
+                    Path(join(WORKDIR,"results",s,"NCLscan",s+".result")).touch() # nclscan cannot run for se 
+                if not os.path.exists(ctable):
+                    with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv"),'w') as f:
+                        f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
             else:
                 targetfiles.append(join(WORKDIR,"results",s,"NCLscan",s+".result"))
     return targetfiles
