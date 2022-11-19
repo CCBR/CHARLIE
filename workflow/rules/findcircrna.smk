@@ -1,19 +1,50 @@
 # Find circRNAs using:
-# circExplorer2
-# ciri2
-# CLEAR
-# DCC
+# ------------------------------------------------------------------------------------------------
+# TOOL          |    Main output file
+# ------------------------------------------------------------------------------------------------
+# circExplorer2 | "results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv"
+# ciri2         | "results","{sample}","ciri","{sample}.ciri.out"
+# CLEAR         | "results","{sample}","CLEAR","quant.txt.annotated" ... not used as this is just filtered circExplorer output
+# DCC           | "results","{sample}","DCC","{sample}.dcc.counts_table.tsv"
+# MapSplice     | "results","{sample}","MapSplice","circular_RNAs.txt"
+# NCLscan       | "results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"
 # and annotate them
 
 
 ## function
-def get_dcc_inputs(wildcards):
-    filelist=[]
-    for s in SAMPLES:
-        filelist.append(join(WORKDIR,"results",s,"STAR1p",s+"_p1.Chimeric.out.junction"))
-        filelist.append(join(WORKDIR,"results",s,"STAR1p","mate1",s+"_mate1.Chimeric.out.junction"))
-        filelist.append(join(WORKDIR,"results",s,"STAR1p","mate2",s+"_mate2.Chimeric.out.junction"))
-    return filelist
+# def get_dcc_inputs(wildcards):
+#     filelist=[]
+#     for s in SAMPLES:
+#         filelist.append(join(WORKDIR,"results",s,"STAR1p",s+"_p1.Chimeric.out.junction"))
+#         filelist.append(join(WORKDIR,"results",s,"STAR1p","mate1",s+"_mate1.Chimeric.out.junction"))
+#         filelist.append(join(WORKDIR,"results",s,"STAR1p","mate2",s+"_mate2.Chimeric.out.junction"))
+#     return filelist
+
+def get_nclscan_target_files_per_sample(wildcards):
+    targetfiles=dict()
+    s=wildcards.sample
+    if SAMPLESDF.loc[[s],"PEorSE"][0]=="PE": # SE is already take care of by function get_nclscan_target_files
+        targetfiles['fixed_gtf']=join(REF_DIR,"ref.fixed.gtf")
+        targetfiles['ndx']=join(REF_DIR,"NCLscan_index","AllRef.ndx")
+        targetfiles['R1']=join(WORKDIR,"results",s,"trim",s+".R1.trim.fastq.gz")
+        targetfiles['R2']=join(WORKDIR,"results",s,"trim",s+".R2.trim.fastq.gz")
+    return targetfiles # empty if SE and will not run the rule at all!
+
+def get_per_sample_files_to_merge(wildcards):
+    filedict={}
+    s=wildcards.sample
+    filedict['circExplorer']=join(WORKDIR,"results",s,"circExplorer",s+".circExplorer.counts_table.tsv")
+    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out")
+    # # if RUN_CLEAR:
+    # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
+    if RUN_DCC:
+        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv")
+    if RUN_MAPSPLICE:
+        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv")
+    if RUN_NCLSCAN:
+        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv")
+    return(filedict)
+
 
 ## rules
 # rule circExplorer:
@@ -198,6 +229,7 @@ rm -rf {params.sample}.bwa.sam
 
 
 rule create_ciri_count_matrix:
+# DEPRECATED
     input:
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES)
     output:
@@ -215,6 +247,7 @@ python {params.script} {params.lookup} {params.hostID}
 """
 
 rule create_circexplorer_count_matrix:
+# DEPRECATED
     input:
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES)
     output:
@@ -666,13 +699,10 @@ rsync -az --progress alignments.bam.bai {output.bai}
 # | 3 | end                  | 1223968          |
 # | 4 | strand               | -                |
 # | 5 | read_count           | 26               |
-# | 6 | nclscan_annotation   | normal##2.811419 | <--1 for intragenic 0 for intergenic
+# | 6 | nclscan_annotation   | 1                | <--1+1 for intragenic 0+1 for intergenic
 rule nclscan:
     input:
-        fixed_gtf=rules.create_index.output.fixed_gtf,
-        ndx=rules.create_index.output.ndx,
-        R1=rules.cutadapt.output.of1,
-        R2=rules.cutadapt.output.of2,
+        unpack(get_nclscan_target_files_per_sample)
     output:
         result=join(WORKDIR,"results","{sample}","NCLscan","{sample}.result"),
         ct=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"),
@@ -697,60 +727,100 @@ fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 outdir=$(dirname {output.result})
 
+if [ "{params.peorse}" == "PE" ];then
 {params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
 python {params.script} \
   --result {output.result} -o {output.ct}
+# else
+#     outdir=$(dirname {output.result})
+#     if [ ! -d $outdir ];then
+#         mkdir -p $outdir
+#     fi
+#     touch {output.result}
+#     touch {output.ct}
+# This part is redundant as it is already taken care of by get_nclscan_target_files function!
+fi
 """
 
+def _boolean2str(x): # "1" for True and "0" for False
+    if x==True:
+        return "1"
+    else:
+        return "0"
 
-localrules: merge_per_sample_circRNA_counts
-# rule merge_per_sample_circRNA_counts:
-# merges counts from circExplorer2 and CIRI2 for all identified circRNAs. 
-# The output file columns are:
-# | # | ColName                               |
-# |---|---------------------------------------|
-# | 1 | circRNA_id                            |
-# | 2 | strand                                |
-# | 3 | <samplename>_circExplorer_read_count  |
-# | 4 | <samplename>_ciri_read_count          |
-# | 5 | <samplename>_circExplorer_known_novel | --> options are known, low_conf, novel
-# | 6 | <samplename>_circRNA_type             | --> options are exon, intron, intergenic_region
-# | 7 | <samplename>_ntools                   | --> number of tools calling this BSJ/circRNA
-rule merge_per_sample_circRNA_counts:
+# rule merge_per_sample:
+# The output file looks like this:
+# | Col# | ColName                              | Description                                                                                                                                                                                                        |
+# |------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+# | 1    | circRNA_id                           | chrom:start-end                                                                                                                                                                                                    |
+# | 2    | strand                               | "+ or -"                                                                                                                                                                                                           |
+# | 3    | <samplename>_ntools                  | number of tools which have this circRNA_id detected                                                                                                                                                                |
+# | 4    | <samplename>_circExplorer_read_count |                                                                                                                                                                                                                    |
+# | 5    | <samplename>_ciri_read_count         |                                                                                                                                                                                                                    |
+# | 6    | <samplename>_dcc_read_count          |                                                                                                                                                                                                                    |
+# | 7    | <samplename>_mapsplice_read_count    |                                                                                                                                                                                                                    |
+# | 8    | <samplename>_nclscan_read_count      |                                                                                                                                                                                                                    |
+# | 9    | circExplorer_annotation              | options are known, low_conf, novel                                                                                                                                                                                 |
+# | 10   | ciri_annotation                      | options are exon, intron, intergenic_region                                                                                                                                                                        |
+# | 11   | dcc_annotation                       | JunctionType##Start-End Region from CircCoordinates file; 0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5: AT/AC, 6: GT/AT;Start-End Region eg. intron-intergenic, exon-exon, intergenic-intron, etc.  |
+# | 12   | mapsplice_annotation                 | "fusion_type"##"entropy"; "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!                                                                                                |
+# | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |  
+rule merge_per_sample:
     input:
-        circExplorer_table=rules.circExplorer.output.counts_table,
-        ciri_table=rules.ciri.output.ciriout,
-        dcc_table=rules.dcc.output.ct, #join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
+        unpack(get_per_sample_files_to_merge)
     output:
-        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt")
+        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),
     params:
         script=join(SCRIPTS_DIR,"merge_per_sample_counts_table.py"),
-        samplename="{sample}"
+        samplename="{sample}",
+        runclear=_boolean2str(RUN_CLEAR),
+        rundcc=_boolean2str(RUN_DCC),
+        runmapsplice=_boolean2str(RUN_MAPSPLICE),
+        runnclscan=_boolean2str(RUN_NCLSCAN),
+        minreadcount=config['minreadcount']
+    envmodules:
+        TOOLS["python37"]["version"]
     shell:"""
 set -exo pipefail
-python {params.script} \
-    --circExplorer {input.circExplorer_table} \
-    --ciri {input.ciri_table} \
-    --samplename {params.samplename} \
-    -o {output.merged_counts}
+outdir=$(dirname {output.merged_counts})
+
+parameters=" --circExplorer {input.circExplorer}"
+parameters="$parameters --ciri {input.CIRI}"
+if [[ "{params.rundcc}" == "1" ]]; then
+    parameters="$parameters --dcc {input.DCC}"
+fi
+if [[ "{params.runmapsplice}" == "1" ]]; then
+    parameters="$parameters --mapsplice {input.MapSplice}"
+fi
+if [[ "{params.runnclscan}" == "1" ]]; then
+    parameters="$parameters --nclscan {input.NCLscan}"
+fi
+parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+
+echo "python {params.script} $parameters" 
+python {params.script} $parameters
 """
 
-localrules: create_counts_matrix
+
+# localrules: create_counts_matrix
 # rule create_counts_matrix:
 # merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
 rule create_counts_matrix:
     input:
-        expand(join(WORKDIR,"results","{sample}","circRNA_counts.txt"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
     output:
         matrix=join(WORKDIR,"results","circRNA_counts_matrix.tsv")
     params:
         script=join(SCRIPTS_DIR,"merge_counts_tables_2_counts_matrix.py"),
         resultsdir=join(WORKDIR,"results"),
         lookup_table=ANNOTATION_LOOKUP
+    envmodules:
+        TOOLS['python37']['version']
     shell:"""
 set -exo pipefail
 python {params.script} \
-    --results_folder {params.resultsdir} \
+    --per_sample_tables {input} \
     --lookup_table {params.lookup_table} \
     -o {output.matrix}
 """

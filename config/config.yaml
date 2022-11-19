@@ -15,7 +15,7 @@ run_clear: True
 run_dcc: True
 #
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
-run_mapslice: True
+run_mapsplice: True
 #
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
@@ -108,7 +108,8 @@ resourcesdir: "PIPELINE_HOME/resources"
 tools: "PIPELINE_HOME/resources/tools.yaml"
 cluster: "PIPELINE_HOME/resources/cluster.json"
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
-circexplorer_bsj_circRNA_min_reads: 1 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded

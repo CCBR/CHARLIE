@@ -26,7 +26,7 @@ resultsfile=pandas.read_csv(args.resultsfile,sep="\t",header=None)
 # | 6  | Strand of the acceptor side                | stranda
 # | 7  | Gene name of the donor side                | gened
 # | 8  | Gene name of the acceptor side             | genea
-# | 9  | Intragenic (1) or intergenic (0) case      | case
+# | 9  | Intragenic (1) or intergenic (0) case      | case --> changed to 2 and 1 as zero means no annotation in merge_per_sample_counts_table.py
 # | 10 | Total number of all supporting reads       | reads
 # | 11 | Total number of junc-reads                 | jreads
 # | 12 | Total number of span-reads                 | sreads
@@ -44,6 +44,7 @@ minus_strand = minus_strand[["chrd", "coordd", "coorda", "strandd", "reads", "ca
 minus_strand.columns = ['chrom','end','start','strand','read_count', 'nclscan_annotation']
 
 outdf = pandas.concat([plus_strand,minus_strand],ignore_index=True,sort=False)
+outdf["nclscan_annotation"] = outdf["nclscan_annotation"] + 1 #change 1 to 2 and 0 to 1 ... as 0 is for no annotation
 
 outdf = outdf.astype({"chrom": str, "start": int, "end": int, "strand": str, "read_count": int, "nclscan_annotation": str})
 

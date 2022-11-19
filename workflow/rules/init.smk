@@ -56,11 +56,22 @@ def append_files_in_list(flist,ofile):
 ## used for sambamba sort, etc
 # MEMORYG="100G"
 
+def _is_true(variable):
+    if variable==True or variable=="True" or variable == "TRUE":
+        return True
+    else:
+        return False
+
 #resouce absolute path
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
 RESOURCES_DIR=config['resourcesdir']
 FASTAS_GTFS_DIR=config['fastas_gts_dir']
+RUN_CLEAR=_is_true(config['run_clear'])
+RUN_DCC=_is_true(config['run_dcc'])
+RUN_MAPSPLICE=_is_true(config['run_mapsplice'])
+RUN_NCLSCAN=_is_true(config['run_nclscan'])
+
 
 REF_DIR=join(WORKDIR,"ref")
 if not os.path.exists(REF_DIR):
@@ -97,8 +108,6 @@ if not os.path.exists(join(WORKDIR,"fastqs")):
     os.mkdir(join(WORKDIR,"fastqs"))
 if not os.path.exists(join(WORKDIR,"results")):
     os.mkdir(join(WORKDIR,"results"))
-if not os.path.exists(join(WORKDIR,"results","DCC")):
-    os.mkdir(join(WORKDIR,"results","DCC"))
 
 REQUIRED_FILES=[config[f] for f in ["samples", "tools", "cluster"]]
 REQUIRED_FILES.append(ANNOTATION_LOOKUP)
@@ -157,26 +166,5 @@ getthreads=lambda rname:int(CLUSTER[rname]["threads"]) if rname in CLUSTER and "
 getmemg=lambda rname:CLUSTER[rname]["mem"] if rname in CLUSTER and "mem" in CLUSTER[rname] else CLUSTER["__default__"]["mem"]
 getmemG=lambda rname:getmemg(rname).replace("g","G")
 
-## create DCC samplesheets 
-# DCC_DIR=join(WORKDIR,"results","DCC")
-# SAMPLESHEET=join(DCC_DIR,"samplesheet.txt")
-# MATE1SHEET=join(DCC_DIR,"mate1.txt")
-# MATE2SHEET=join(DCC_DIR,"mate2.txt")
-# SAMPLESLIST=join(DCC_DIR,"samples.txt")
-# ss=open(SAMPLESHEET,'w')
-# mate1=open(MATE1SHEET,'w')
-# mate2=open(MATE2SHEET,'w')
-# samples_list=open(SAMPLESLIST,'w')
-# for sample in SAMPLES:
-#     samples_list.write("%s\n"%(sample))
-#     f1=join(WORKDIR,"results",sample,"STAR1p",sample+"_p1.Chimeric.out.junction")
-#     f2=join(WORKDIR,"results",sample,"STAR1p","mate1",sample+"_mate1.Chimeric.out.junction")
-#     f3=join(WORKDIR,"results",sample,"STAR1p","mate2",sample+"_mate2.Chimeric.out.junction")
-#     ss.write("%s\n"%(f1))
-#     mate1.write("%s\n"%(f2))
-#     mate2.write("%s\n"%(f3))
-# samples_list.close()
-# ss.close()
-# mate1.close()
-# mate2.close()
+
 
