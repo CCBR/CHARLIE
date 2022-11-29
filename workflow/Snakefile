@@ -109,29 +109,24 @@ rule all:
         join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # ## ciri BSJ bam
         # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
-        # ## ciri aggregate count matrix
-        # join(WORKDIR,"results","ciri_count_matrix.txt"),
-        # ## circExplorer aggregate count matrix
-        # join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-        # join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt"),
         # ## BSJ bams and bigwigs
         # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bed"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bam"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bed"),sample=SAMPLES),
         # ## Spliced reads bams and bigwigs
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bam"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bw"),sample=SAMPLES),
         # ## linear reads bams and bigwigs
         # # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
 
         # ## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
         # expand(join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),sample=SAMPLES),
