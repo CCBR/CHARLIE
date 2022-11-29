@@ -1,3 +1,25 @@
+# rule create_BSJ_bam:
+# This rule performs the following tasks:
+#
+# 1. Takes chimeric "junctions" file generated using STAR and extracts the info (readids, coordinates, cigar, etc.) of BSJ reads using junctions2readids.py script
+# output is tab-delimited file with the following columns:
+# a. readids
+# b. chromosome
+# c. strand
+# d. site1
+# e. site2
+# f. list of cigars comma-separated (soft-clips are converted to hard-clips)
+#
+# 2. Duplicate BSJ readids are purged.
+#
+# 3. STAR 2nd pass output BAM file is re-sorted to avoid "INVALID_INDEX_FILE_POINTER 1" errors
+#
+# 4. BAM from 3. is filtered for readids from 2. to get a filtered BAM containing some chimeric alignments and all BSJ alignments using filter_bam_by_readids.py script
+#
+# 5. BAM from 4. is further filtered to extract BSJ only alignments with the help of output from 1. using filter_bam_for_BSJs.py script
+#
+# 6. BAM from 5. is deduplicated and re-sorted to generated new sorted BSJ-only BAM
+#
 rule create_BSJ_bam:
     input:
         junction=rules.star2p.output.junction,
@@ -57,6 +79,13 @@ rule create_spliced_reads_bam:
     input:
         bam=rules.star2p.output.bam,
         tab=rules.merge_SJ_tabs.output.pass1sjtab
+# Note that typically with these settings in config.yaml
+# star_1pass_filter_host_noncanonical: "True"
+# star_1pass_filter_host_unannotated: "True"
+# star_1pass_filter_viruses_noncanonical: "False"
+# star_1pass_filter_viruses_unannotated: "False"
+# the input pass1sjtab contains only canonical junctions for host+additives and all detected junctions for viruses
+# merge_SJ_tabs creates the pass1sjtab using apply_junction_filters.py script
     output:
         bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads.bam")
     params:

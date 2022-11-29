@@ -1,6 +1,20 @@
 import pysam
 import sys
 import argparse
+# """
+# Script takes a STAR 2p BAM file and tab-delimited file with splice junctions in the first 3 columns,
+# and outputs spliced-only alignments
+# @Params:
+# @Inputs:
+# inbam: str (required)
+# 	path to input BAM file
+# tab: str (required)
+# 	path to tab file with splice junctions in the first 3 columns ... this is typically output from STAR 1p after applying filters.
+# @Outputs:
+# outbam: str (required)
+# 	path to output BAM file
+# """
+
 parser = argparse.ArgumentParser(description='extract spliced reads from bam file')
 parser.add_argument('--inbam',dest='inbam',required=True,help='STAR bam file with index')
 parser.add_argument('--tab',dest='tab',required=True,help='tab file with splice junctions in the first 3 columns')
@@ -33,6 +47,11 @@ for l in junctions:
 # replace softclips with hardclip
         cigar=cigar.replace("S","H")
         cigart=read.cigartuples
+
+# if cigartuple contains
+# N	BAM_CREF_SKIP	3
+# then it is a spliced read!
+
 # ref: https://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
 # cigartuples operation list is
 # M	BAM_CMATCH	0

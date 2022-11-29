@@ -2,6 +2,21 @@ import pysam
 import sys
 import argparse
 import os
+# """
+# Script takes a BAM file with a list of readids, then 
+# filters the input BAM for those readids and outputs
+# only those readid alignments into a new BAM file
+# @Params:
+# @Inputs:
+# inputBAM: str (required)
+# 	path to input BAM file
+# readids: str (required)
+# 	path to file with list of readids, one readid per line
+# @Outputs:
+# outputBAM: str (required)
+# 	path to output BAM file
+# """
+
 parser = argparse.ArgumentParser(description='Filter BAM by readids')
 parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
                     help='input BAM file')

@@ -31,6 +31,14 @@ from itertools import groupby
 # column 20: PEmerged bool : boolean indicating that overlapping PE reads were first merge into a single contiguous sequence before alignment.
 # column 21: readgrp : read group assignment for the read as indicated in the BAM file
 
+# output is tab-delimited file with the following columns:
+# a. readids
+# b. chromosome
+# c. strand
+# d. site1
+# e. site2
+# f. list of cigars comma-separated (soft-clips are converted to hard-clips)
+
 def split_text(s):
     for k, g in groupby(s, str.isalpha):
         yield ''.join(g)
