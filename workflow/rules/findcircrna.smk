@@ -132,6 +132,14 @@ rule circExplorer:
         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
         script=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py")
     threads: getthreads("circExplorer")
     envmodules: TOOLS["circexplorer"]["version"]
@@ -153,11 +161,19 @@ CIRCexplorer2 annotate \\
 -o $(basename {output.annotations}) \\
 --low-confidence
 
-python {params.script} \
-    --back_spliced_bed {output.backsplicedjunctions} \
-    --back_spliced_min_reads {params.bsj_min_nreads} \
-    --circularRNA_known {output.annotations} \
-    --low_conf low_conf_$(basename {output.annotations}) \
+python {params.script} \\
+    --back_spliced_bed {output.backsplicedjunctions} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --circularRNA_known {output.annotations} \\
+    --low_conf low_conf_$(basename {output.annotations}) \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
     -o {output.counts_table}
 """
 
