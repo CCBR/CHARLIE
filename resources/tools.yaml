@@ -12,6 +12,8 @@ fastqc:
  version: "fastqc/0.11.9"
 hisat:
  version: "hisat/2.2.1.0"
+java:
+ version: "java/1.8.0_181"
 multiqc:
  version: "multiqc/1.9"
 picard:

@@ -336,7 +336,7 @@ rule estimate_duplication:
     params:
         sample="{sample}",
         memG=getmemG("estimate_duplication"),
-    envmodules: TOOLS["picard"]["version"]
+    envmodules: TOOLS["picard"]["version"], TOOLS["java"]["version"]
     shell:"""
 set -exo pipefail
 java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
