@@ -86,11 +86,13 @@ BWA_INDEX=join(REF_DIR,"ref")
 
 HOST=config['host'] # hg38 or mm39
 ADDITIVES=config['additives'] # ERCC and/or BAC16Insert
+ADDITIVES=ADDITIVES.replace(" ","")
 if ADDITIVES != "":
     HOST_ADDITIVES=HOST+","+ADDITIVES
 else:
     HOST_ADDITIVES=HOST
 VIRUSES=config['viruses']
+VIRUSES=VIRUSES.replace(" ","")
 REPEATS_GTF=join(FASTAS_GTFS_DIR,HOST+".repeats.gtf")
 
 HOST_ADDITIVES_VIRUSES=HOST_ADDITIVES+","+VIRUSES
