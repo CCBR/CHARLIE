@@ -34,7 +34,7 @@ def get_per_sample_files_to_merge(wildcards):
     filedict={}
     s=wildcards.sample
     filedict['circExplorer']=join(WORKDIR,"results",s,"circExplorer",s+".circExplorer.counts_table.tsv")
-    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out")
+    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out.filtered")
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
     if RUN_DCC:
@@ -204,7 +204,8 @@ rule ciri:
         cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
         bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
         ciribam=temp(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.bam")),
-        ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out")
+        ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),
+        cirioutfiltered=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),
     params:
         sample="{sample}",
         outdir=join(WORKDIR,"results","{sample}","ciri"),
@@ -213,7 +214,17 @@ rule ciri:
         reffa=REF_FA,
         bwaindex=BWA_INDEX,
         gtf=REF_GTF,
-        ciripl=config['ciri_perl_script']
+        ciripl=config['ciri_perl_script'],
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script=join(SCRIPTS_DIR,"filter_ciriout.py")
     threads: getthreads("ciri")
     envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
     shell:"""
@@ -240,6 +251,18 @@ perl {params.ciripl} \\
 -G {output.cirilog} -T {threads}
 samtools view -@{threads} -bS {params.sample}.bwa.sam > {output.ciribam}
 rm -rf {params.sample}.bwa.sam
+python {params.script} \\
+    --ciriout {output.ciriout} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
+    -o {output.cirioutfiltered}
 """
 
 
