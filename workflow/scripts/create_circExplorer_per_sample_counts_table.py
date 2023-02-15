@@ -37,10 +37,10 @@ def read_regions(regionsfile,host,additives,viruses):
             regions[region_name]['sequences'][s]=1
     return regions        
 
-def _get_region(regions,seqname):
+def _get_host_additive_virus(regions,seqname):
     for k,v in regions.items():
         if seqname in v['sequences']:
-            return k
+            return v['host_additive_virus']
     else:
         exit("Sequence: %s does not have a region."%(seqname))
 
@@ -53,20 +53,20 @@ def read_BSJs(filename,regions,host_min,host_max,virus_min,virus_max,known_novel
         start=int(l[1])
         end=int(l[2])
         strand=l[5]
-        id="##".join([chrom,str(start),str(end)])
+        circid="##".join([chrom,str(start),str(end)])
         count=int(l[3].split("/")[1])
-        if count<=threshold:
+        if count < threshold:
             continue
-        region=_get_region(chrom,regions)
-        if region == "additive": continue
+        host_additive_virus=_get_host_additive_virus(regions=regions,seqname=chrom)
+        if host_additive_virus == "additive": continue
         size = end-start
-        if region == "host":
+        if host_additive_virus == "host":
             if size < host_min: continue
             if size > host_max: continue
-        if region == "virus":
+        if host_additive_virus == "virus":
             if size < virus_min : continue
             if size > virus_max : continue
-        BSJdict[id]=BSJ(chrom=chrom,start=start,end=end,strand=strand,known_novel=known_novel,read_count=count,counted=counted)
+        BSJdict[circid]=BSJ(chrom=chrom,start=start,end=end,strand=strand,known_novel=known_novel,read_count=count,counted=counted)
     return(BSJdict)
 
 parser = argparse.ArgumentParser(description='Create CircExplorer2 Per Sample Counts Table')
@@ -99,10 +99,11 @@ parser.add_argument('-o',dest='outfile',required=True,help='counts TSV table')
 args = parser.parse_args()
 
 regions=read_regions(regionsfile=args.regions,host=args.host,additives=args.additives,viruses=args.viruses)
-
 o=open(args.outfile,'w')
 o.write("#chrom\tstart\tend\tstrand\tread_count\tknown_novel\n")
 all_BSJs=read_BSJs(args.bsb,counted=0,threshold=args.back_spliced_min_reads,regions=regions,host_min=args.host_filter_min,host_max=args.host_filter_max,virus_min=args.virus_filter_min,virus_max=args.virus_filter_max)
+
+
 known_BSJs=read_BSJs(args.ck,known_novel="known",counted=0,threshold=args.back_spliced_min_reads,regions=regions,host_min=args.host_filter_min,host_max=args.host_filter_max,virus_min=args.virus_filter_min,virus_max=args.virus_filter_max)
 if args.lc:
     low_conf_BSJs=read_BSJs(args.lc,known_novel="known",counted=0,threshold=args.back_spliced_min_reads,regions=regions,host_min=args.host_filter_min,host_max=args.host_filter_max,virus_min=args.virus_filter_min,virus_max=args.virus_filter_max)
