@@ -6,10 +6,57 @@ import pandas
 parser = argparse.ArgumentParser(description='Create per sample Counts Table from NCLscan Outputs')
 parser.add_argument('--result', dest='resultsfile', type=str, required=True,
                     help='.result file from NCLscan')
+parser.add_argument('--back_spliced_min_reads', dest='back_spliced_min_reads', type=int, required=True,
+                    help='back_spliced minimum read threshold')
+parser.add_argument('--host', dest='host', type=str, required=True,
+                    help='host name eg.hg38... single value...host_filter_min/host_filter_max filters are applied to this region only')
+parser.add_argument('--additives', dest='additives', type=str, required=True,
+                    help='additive name(s) eg.ERCC... comma-separated list... all BSJs in this region are filtered out')
+parser.add_argument('--viruses', dest='viruses', type=str, required=True,
+                    help='virus name(s) eg.NC_009333.1... comma-separated list...virus_filter_min/virus_filter_max filters are applied to this region only')
+parser.add_argument('--host_filter_min', dest='host_filter_min', type=int, required=False, default=150,
+                    help='min BSJ size filter for host')
+parser.add_argument('--virus_filter_min', dest='virus_filter_min', type=int, required=False, default=150,
+                    help='min BSJ size filter for virus')
+parser.add_argument('--host_filter_max', dest='host_filter_max', type=int, required=False, default=5000,
+                    help='max BSJ size filter for host')
+parser.add_argument('--virus_filter_max', dest='virus_filter_max', type=int, required=False, default=5000,
+                    help='max BSJ size filter for virus')
+parser.add_argument('--regions', dest='regions', type=str, required=True,
+                    help='regions file eg. ref.fa.regions')
 parser.add_argument('-o',dest='outfile',required=True,help='output table')
+parser.add_argument('-fo',dest='filteredoutfile',required=True,help='filtered output table')
 args = parser.parse_args()
 
 # sn=args.samplename
+# read in regions
+hosts = args.host
+hosts = hosts.strip().split(",")
+viruses = args.viruses
+viruses = viruses.strip().split(",")
+regions = dict()
+regions["host"] = list()
+regions["additive"] = list()
+regions["virus"] = list()
+r = open(args.regions,'r')
+rlines = r.readlines()
+r.close()
+allseqs = list()
+for l in rlines:
+    l = l.strip().split("\t")
+    reg = l[0]
+    seq = l[1]
+    seq = seq.split()
+    host_additive_virus = "additive"
+    if reg in hosts:
+        host_additive_virus = "host"
+    elif reg in viruses:
+        host_additive_virus = "virus"
+    regions[host_additive_virus].extend(seq)
+    allseqs.extend(seq)
+regions["additive"] = list((set(allseqs)-set(regions["host"]))-set(regions["virus"]))
+
+
 
 # load files
 resultsfile=pandas.read_csv(args.resultsfile,sep="\t",header=None)
@@ -55,3 +102,27 @@ outdf.set_index(['circRNA_id'],inplace=True)
 # sort and write out
 outdf.sort_values(by=['chrom','start'],inplace=True)
 outdf.to_csv(args.outfile,sep="\t",header=True,index=False)
+
+# filter 
+# nreads filter
+outdf = outdf[~outdf["chrom"].isin(regions["additive"])]
+outdf = outdf[outdf["read_count"] >= args.back_spliced_min_reads]
+
+# host distance/size filter
+outdf_host = outdf[outdf["chrom"].isin(regions["host"])]
+outdf_host["dist"] = abs(outdf_host["start"] - outdf_host["end"])
+outdf_host = outdf_host[outdf_host["dist"] > args.host_filter_min]
+outdf_host = outdf_host[outdf_host["dist"] < args.host_filter_max]
+outdf_host.drop(["dist"],axis=1,inplace=True)
+
+# virus distance/size filter
+outdf_virus = outdf[outdf["chrom"].isin(regions["virus"])]
+outdf_virus["dist"] = abs(outdf_virus["start"] - outdf_virus["end"])
+outdf_virus = outdf_virus[outdf_virus["dist"] > args.virus_filter_min]
+outdf_virus = outdf_virus[outdf_virus["dist"] < args.virus_filter_max]
+outdf_virus.drop(["dist"],axis=1,inplace=True)
+
+outdf = pandas.concat([outdf_host,outdf_virus])
+# sort and write out
+outdf.sort_values(by=['chrom','start'],inplace=True)
+outdf.to_csv(args.filteredoutfile,sep="\t",header=True,index=False)

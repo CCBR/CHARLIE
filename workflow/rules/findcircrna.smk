@@ -40,9 +40,9 @@ def get_per_sample_files_to_merge(wildcards):
     if RUN_DCC:
         filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered")
     if RUN_MAPSPLICE:
-        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv")
+        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered")
     if RUN_NCLSCAN:
-        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv")
+        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
     return(filedict)
 
 
@@ -712,12 +712,22 @@ rule mapsplice_postprocess:
         circRNAs=rules.mapsplice.output.circRNAs
     output:
         ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered"),
         bam=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam"),
         bai=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam.bai"),
     envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
     params:
         script=join(SCRIPTS_DIR,"create_mapslice_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
     threads: getthreads("mapsplice_postprocess")
     shell:"""
 set -exo pipefail
@@ -727,10 +737,21 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-python {params.script} \
-  --circularRNAstxt {input.circRNAs} -o {output.ct}
+python {params.script} \\
+    --circularRNAstxt {input.circRNAs} \\
+    -o {output.ct} \\
+    -of {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 cd $TMPDIR
-samtools view -@{threads} -bS {input.sam} |samtools sort -@{threads} -o alignments.bam -
+samtools view -@{threads} -bS {input.sam} | samtools sort -@{threads} -o alignments.bam -
 samtools index -@{threads} alignments.bam
 rsync -az --progress alignments.bam {output.bam}
 rsync -az --progress alignments.bam.bai {output.bai}
@@ -769,6 +790,7 @@ rule nclscan:
     output:
         result=join(WORKDIR,"results","{sample}","NCLscan","{sample}.result"),
         ct=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered"),
     envmodules:
         TOOLS["ncl_required_modules"]
     threads: getthreads("nclscan")
@@ -780,6 +802,15 @@ rule nclscan:
         nclscan_config=config['nclscan_config'],
         script=join(SCRIPTS_DIR,"create_nclscan_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -792,8 +823,19 @@ outdir=$(dirname {output.result})
 
 if [ "{params.peorse}" == "PE" ];then
 {params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
-python {params.script} \
-  --result {output.result} -o {output.ct}
+python {params.script} \\
+    --result {output.result} \\
+    -o {output.ct} \\
+    -of {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 # else
 #     outdir=$(dirname {output.result})
 #     if [ ! -d $outdir ];then
@@ -840,7 +882,7 @@ rule merge_per_sample:
         rundcc=_boolean2str(RUN_DCC),
         runmapsplice=_boolean2str(RUN_MAPSPLICE),
         runnclscan=_boolean2str(RUN_NCLSCAN),
-        minreadcount=config['minreadcount']
+        minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
     envmodules:
         TOOLS["python37"]["version"]
     shell:"""
