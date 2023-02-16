@@ -65,6 +65,12 @@ star_1pass_filter_host_unannotated: "True"
 star_1pass_filter_viruses_noncanonical: "False"
 star_1pass_filter_viruses_unannotated: "False"
 
+# BSJ filters in bp:
+minsize_host: 150
+minsize_virus:  150
+maxsize_host: 1000000000
+maxsize_virus:  5000
+
 
 #
 ## Resources

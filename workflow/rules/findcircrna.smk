@@ -34,15 +34,15 @@ def get_per_sample_files_to_merge(wildcards):
     filedict={}
     s=wildcards.sample
     filedict['circExplorer']=join(WORKDIR,"results",s,"circExplorer",s+".circExplorer.counts_table.tsv")
-    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out")
+    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out.filtered")
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
     if RUN_DCC:
-        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv")
+        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered")
     if RUN_MAPSPLICE:
-        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv")
+        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered")
     if RUN_NCLSCAN:
-        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv")
+        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
     return(filedict)
 
 
@@ -132,6 +132,14 @@ rule circExplorer:
         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
         script=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py")
     threads: getthreads("circExplorer")
     envmodules: TOOLS["circexplorer"]["version"]
@@ -153,11 +161,19 @@ CIRCexplorer2 annotate \\
 -o $(basename {output.annotations}) \\
 --low-confidence
 
-python {params.script} \
-    --back_spliced_bed {output.backsplicedjunctions} \
-    --back_spliced_min_reads {params.bsj_min_nreads} \
-    --circularRNA_known {output.annotations} \
-    --low_conf low_conf_$(basename {output.annotations}) \
+python {params.script} \\
+    --back_spliced_bed {output.backsplicedjunctions} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --circularRNA_known {output.annotations} \\
+    --low_conf low_conf_$(basename {output.annotations}) \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
     -o {output.counts_table}
 """
 
@@ -188,7 +204,8 @@ rule ciri:
         cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
         bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
         ciribam=temp(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.bam")),
-        ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out")
+        ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),
+        cirioutfiltered=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),
     params:
         sample="{sample}",
         outdir=join(WORKDIR,"results","{sample}","ciri"),
@@ -197,7 +214,17 @@ rule ciri:
         reffa=REF_FA,
         bwaindex=BWA_INDEX,
         gtf=REF_GTF,
-        ciripl=config['ciri_perl_script']
+        ciripl=config['ciri_perl_script'],
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script=join(SCRIPTS_DIR,"filter_ciriout.py")
     threads: getthreads("ciri")
     envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
     shell:"""
@@ -224,6 +251,18 @@ perl {params.ciripl} \\
 -G {output.cirilog} -T {threads}
 samtools view -@{threads} -bS {params.sample}.bwa.sam > {output.ciribam}
 rm -rf {params.sample}.bwa.sam
+python {params.script} \\
+    --ciriout {output.ciriout} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
+    -o {output.cirioutfiltered}
 """
 
 
@@ -440,6 +479,7 @@ rule dcc:
         cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
         ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered"),
     threads: getthreads("dcc")
     envmodules: TOOLS["python27"]["version"]
     params:
@@ -449,7 +489,17 @@ rule dcc:
         rep=REPEATS_GTF,
         fa=REF_FA,
         randomstr=str(uuid.uuid4()),
-        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py")
+        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py"),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script2=join(SCRIPTS_DIR,"filter_ciriout.py")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -463,32 +513,45 @@ if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 conda activate DCC
 cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
-DCC @{input.ss} \
-    --temp $TMPDIR \
-    --threads {threads} \
-    --detect \
-    {params.dcc_strandedness} \
-    --annotation {params.gtf} \
-    --chrM \
-    --rep_file {params.rep} \
-    --refseq {params.fa} \
-    --PE-independent \
-    -mt1 @{input.m1} \
+DCC @{input.ss} \\
+    --temp $TMPDIR \\
+    --threads {threads} \\
+    --detect \\
+    {params.dcc_strandedness} \\
+    --annotation {params.gtf} \\
+    --chrM \\
+    --rep_file {params.rep} \\
+    --refseq {params.fa} \\
+    --PE-independent \\
+    -mt1 @{input.m1} \\
     -mt2 @{input.m2}
 else
-DCC @{input.ss} \
-    --temp $TMPDIR \
-    --threads {threads} \
-    --detect \
-    {params.dcc_strandedness} \
-    --annotation {params.gtf} \
-    --chrM \
-    --rep_file {params.rep} \
+DCC @{input.ss} \\
+    --temp $TMPDIR \\
+    --threads {threads} \\
+    --detect \\
+    {params.dcc_strandedness} \\
+    --annotation {params.gtf} \\
+    --chrM \\
+    --rep_file {params.rep} \\
     --refseq {params.fa} 
 fi
 
-python {params.script} \
+python {params.script} \\
   --CircCoordinates {output.cc} --CircRNACount {output.cr} -o {output.ct}
+
+python {params.script2} \\
+    --in_dcc_counts_table {output.ct} \\
+    --out_dcc_counts_table {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 """
 
 
@@ -649,12 +712,22 @@ rule mapsplice_postprocess:
         circRNAs=rules.mapsplice.output.circRNAs
     output:
         ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered"),
         bam=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam"),
         bai=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam.bai"),
     envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
     params:
         script=join(SCRIPTS_DIR,"create_mapslice_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
     threads: getthreads("mapsplice_postprocess")
     shell:"""
 set -exo pipefail
@@ -664,10 +737,21 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-python {params.script} \
-  --circularRNAstxt {input.circRNAs} -o {output.ct}
+python {params.script} \\
+    --circularRNAstxt {input.circRNAs} \\
+    -o {output.ct} \\
+    -of {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 cd $TMPDIR
-samtools view -@{threads} -bS {input.sam} |samtools sort -@{threads} -o alignments.bam -
+samtools view -@{threads} -bS {input.sam} | samtools sort -@{threads} -o alignments.bam -
 samtools index -@{threads} alignments.bam
 rsync -az --progress alignments.bam {output.bam}
 rsync -az --progress alignments.bam.bai {output.bai}
@@ -706,6 +790,7 @@ rule nclscan:
     output:
         result=join(WORKDIR,"results","{sample}","NCLscan","{sample}.result"),
         ct=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered"),
     envmodules:
         TOOLS["ncl_required_modules"]
     threads: getthreads("nclscan")
@@ -717,6 +802,15 @@ rule nclscan:
         nclscan_config=config['nclscan_config'],
         script=join(SCRIPTS_DIR,"create_nclscan_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -729,8 +823,19 @@ outdir=$(dirname {output.result})
 
 if [ "{params.peorse}" == "PE" ];then
 {params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
-python {params.script} \
-  --result {output.result} -o {output.ct}
+python {params.script} \\
+    --result {output.result} \\
+    -o {output.ct} \\
+    -of {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 # else
 #     outdir=$(dirname {output.result})
 #     if [ ! -d $outdir ];then
@@ -777,7 +882,7 @@ rule merge_per_sample:
         rundcc=_boolean2str(RUN_DCC),
         runmapsplice=_boolean2str(RUN_MAPSPLICE),
         runnclscan=_boolean2str(RUN_NCLSCAN),
-        minreadcount=config['minreadcount']
+        minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
     envmodules:
         TOOLS["python37"]["version"]
     shell:"""

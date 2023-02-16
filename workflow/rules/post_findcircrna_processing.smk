@@ -3,7 +3,7 @@ localrules: venn
 rule venn:
     input:
         circexplorerout=rules.circExplorer.output.annotations,
-        ciriout=rules.ciri.output.ciriout
+        ciriout=rules.ciri.output.cirioutfiltered
     output:
         png=join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),
         cirionly=join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),
@@ -194,7 +194,7 @@ cd $TMPDIR && rm -f *
 rule filter_ciri_bam_for_BSJs:
     input:
         bam=rules.ciri.output.ciribam,
-        ciriout=rules.ciri.output.ciriout,
+        ciriout=rules.ciri.output.cirioutfiltered,
         readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
     output:
         bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam")

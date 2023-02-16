@@ -26,14 +26,14 @@ def get_dcc_target_files(rundcc):
     targetfiles=[]
     if rundcc:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"DCC",s+".dcc.counts_table.tsv"))
+            targetfiles.append(join(WORKDIR,"results",s,"DCC",s+".dcc.counts_table.tsv.filtered"))
     return targetfiles
 
 def get_mapsplice_target_files(runmapslice):
     targetfiles=[]
     if runmapslice:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt"))
+            targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt.filtered"))
             targetfiles.append(join(WORKDIR,"results",s,"MapSplice","alignments.bam"))
     return targetfiles
 
@@ -47,10 +47,14 @@ def get_nclscan_target_files(runnclscan):
             if SAMPLESDF.loc[[s],"PEorSE"][0]=="SE":
                 resultfile=join(WORKDIR,"results",s,"NCLscan",s+".result")
                 ctable=join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv")
+                fctable=join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv.filtered")
                 if not os.path.exists(resultfile):
                     Path(join(WORKDIR,"results",s,"NCLscan",s+".result")).touch() # nclscan cannot run for se 
                 if not os.path.exists(ctable):
                     with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv"),'w') as f:
+                        f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
+                if not os.path.exists(fctable):
+                    with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv.filtered"),'w') as f:
                         f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
             else:
                 targetfiles.append(join(WORKDIR,"results",s,"NCLscan",s+".result"))
