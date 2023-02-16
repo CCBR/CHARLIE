@@ -81,7 +81,7 @@ def _get_host_additive_virus(regions,seqname):
         exit("Sequence: %s does not have a region."%(seqname))
 
 
-parser = argparse.ArgumentParser(description='Create CircExplorer2 Per Sample Counts Table')
+parser = argparse.ArgumentParser(description='Filter CIRI2 Per Sample Counts Table')
 parser.add_argument('--ciriout', dest='ciriout', type=str, required=True,
                     help='ciri out file')
 parser.add_argument('--back_spliced_min_reads', dest='back_spliced_min_reads', type=int, required=True,

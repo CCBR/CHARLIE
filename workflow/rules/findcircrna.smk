@@ -38,7 +38,7 @@ def get_per_sample_files_to_merge(wildcards):
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
     if RUN_DCC:
-        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv")
+        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered")
     if RUN_MAPSPLICE:
         filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv")
     if RUN_NCLSCAN:
@@ -479,6 +479,7 @@ rule dcc:
         cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
         ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered"),
     threads: getthreads("dcc")
     envmodules: TOOLS["python27"]["version"]
     params:
@@ -488,7 +489,17 @@ rule dcc:
         rep=REPEATS_GTF,
         fa=REF_FA,
         randomstr=str(uuid.uuid4()),
-        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py")
+        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py"),
+        bsj_min_nreads=config['minreadcount'],
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script2=join(SCRIPTS_DIR,"filter_ciriout.py")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -502,32 +513,45 @@ if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 conda activate DCC
 cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
-DCC @{input.ss} \
-    --temp $TMPDIR \
-    --threads {threads} \
-    --detect \
-    {params.dcc_strandedness} \
-    --annotation {params.gtf} \
-    --chrM \
-    --rep_file {params.rep} \
-    --refseq {params.fa} \
-    --PE-independent \
-    -mt1 @{input.m1} \
+DCC @{input.ss} \\
+    --temp $TMPDIR \\
+    --threads {threads} \\
+    --detect \\
+    {params.dcc_strandedness} \\
+    --annotation {params.gtf} \\
+    --chrM \\
+    --rep_file {params.rep} \\
+    --refseq {params.fa} \\
+    --PE-independent \\
+    -mt1 @{input.m1} \\
     -mt2 @{input.m2}
 else
-DCC @{input.ss} \
-    --temp $TMPDIR \
-    --threads {threads} \
-    --detect \
-    {params.dcc_strandedness} \
-    --annotation {params.gtf} \
-    --chrM \
-    --rep_file {params.rep} \
+DCC @{input.ss} \\
+    --temp $TMPDIR \\
+    --threads {threads} \\
+    --detect \\
+    {params.dcc_strandedness} \\
+    --annotation {params.gtf} \\
+    --chrM \\
+    --rep_file {params.rep} \\
     --refseq {params.fa} 
 fi
 
-python {params.script} \
+python {params.script} \\
   --CircCoordinates {output.cc} --CircRNACount {output.cr} -o {output.ct}
+
+python {params.script2} \\
+    --in_dcc_counts_table {output.ct} \\
+    --out_dcc_counts_table {output.ctf} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus}
 """
 
 
