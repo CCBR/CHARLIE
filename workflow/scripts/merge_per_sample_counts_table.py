@@ -35,9 +35,9 @@ circE=pandas.read_csv(args.circE,sep="\t",header=0)
 # | 4 | strand      |
 # | 5 | read_count  |
 # | 6 | known_novel |
-circE['circRNA_id']=circE['chrom'].astype(str)+"##"+circE['start'].astype(str)+"##"+circE['end'].astype(str)+"##"+circE['strand'].astype(str)
+circE['circRNA_id']=circE['#chrom'].astype(str)+"##"+circE['start'].astype(str)+"##"+circE['end'].astype(str)+"##"+circE['strand'].astype(str)
 circE.rename({'read_count': sn+'_circExplorer_read_count', 'known_novel':'circExplorer_annotation'}, axis=1, inplace=True)
-circE.drop(['chrom','start', 'end','strand'], axis = 1,inplace=True)
+circE.drop(['#chrom','start', 'end','strand'], axis = 1,inplace=True)
 circE.set_index(['circRNA_id'],inplace=True)
 dfs.append(circE)
 
