@@ -30,9 +30,10 @@
         "time": "12:00:00"
     },
     "nclscan": {
-        "mem": "200g",
+        "mem": "512g",
         "threads": "56",
-        "time": "48:00:00"
+        "time": "48:00:00",
+        "partition": "largemem"
     },
     "fastqc": {
         "mem": "40g",
@@ -72,11 +73,10 @@
         "threads": "4",
         "time": "24:00:00"
     },
-    "create_BSJ_bam": {
-        "mem": "512g",
+    "create_circExplorer_BSJ_bam": {
+        "mem": "200g",
         "threads": "4",
-        "time": "24:00:00",
-        "partition": "largemem"
+        "time": "24:00:00"
     },
     "create_spliced_reads_bam": {
         "mem": "200g",
