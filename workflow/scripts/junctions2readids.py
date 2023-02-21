@@ -61,7 +61,7 @@ def get_cigars(l):
 	return cigars
 	
 parser = argparse.ArgumentParser(description="""
-Extract readids,strand,site,cigar etc. of BSJ reads from chimeric junctions file generated using STAR.
+Extract readids,strand,site,cigar etc. of reads with spliced junction from chimeric junctions file generated using STAR.
 """)
 parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
 # parser.add_argument('-r',dest='readids',required=True,help='Output txt file with a readid per line')
@@ -72,10 +72,10 @@ with open(args.junctions, 'r') as junc_f:
         if "junction_type" in line:
             continue
         flag = int(line.split()[6])
-        if flag < 0:
+        if flag < 0:  # junction type : -1=encompassing junction (between the mates)
             continue
         chr1, site1, strand1, chr2, site2, strand2 = line.split()[:6]
-        if chr1 != chr2 or strand1 != strand2:
+        if chr1 != chr2 or strand1 != strand2: # D & A need to be on the same chrom and same strand
             continue
         if strand1 == '+':
             start = int(site2)
