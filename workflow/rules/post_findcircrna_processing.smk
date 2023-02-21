@@ -1,4 +1,84 @@
 
+rule create_circExplorer_BSJ_bam:
+    input:
+        countstable=rules.circExplorer.output.counts_table,
+        chimericbam=rules.star2p.output.chimeric_bam
+    output:
+        BSJbam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bam"),
+        plusBSJbam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bam"),
+        minusBSJbam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bam"),
+        BSJbed=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bed")
+    params:
+        sample="{sample}",
+        peorse=get_peorse,
+        memG=getmemG("create_circExplorer_BSJ_bam"),
+        script1=join(SCRIPTS_DIR,"create_circExplorer_BSJ_bam_pe.py"),
+        script2=join(SCRIPTS_DIR,"create_circExplorer_BSJ_bam_se.py"),
+        randomstr=str(uuid.uuid4())
+    envmodules: TOOLS["python37"]["version"],TOOLS["samtools"]["version"]
+    threads : getthreads("create_circExplorer_BSJ_bam")
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+
+if [ "{params.peorse}" == "PE" ];then
+
+python3 {params.script1} \\
+    --inbam {input.chimericbam} \\
+    --sample_counts_table {input.countstable} \\
+    -p ${{TMPDIR}}/{params.sample}.plus.bam \\
+    -m ${{TMPDIR}}/{params.sample}.minus.bam \\
+    -b {output.BSJbed}
+
+
+else
+
+python3 {params.script2} \\
+    --inbam {input.chimericbam} \\
+    --sample_counts_table {input.countstable} \\
+    -p ${{TMPDIR}}/{params.sample}.plus.bam \\
+    -m ${{TMPDIR}}/{params.sample}.minus.bam \\
+    -b {output.BSJbed}
+
+fi
+
+samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.plusBSJbam} ${{TMPDIR}}/{params.sample}.plus.bam 
+samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.minusBSJbam} ${{TMPDIR}}/{params.sample}.minus.bam 
+samtools merge -@{threads} -u -o ${{TMPDIR}}/{params.sample}.BSJ.bam ${{TMPDIR}}/{params.sample}.plus.bam ${{TMPDIR}}/{params.sample}.minus.bam 
+samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.BSJbam} ${{TMPDIR}}/{params.sample}.BSJ.bam
+
+rm -rf $TMPDIR
+"""
+
+rule alignment_stats:
+    input:
+        star2pbam=rules.star2p.output.bam,
+        splicedreadsbam=rules.create_spliced_reads_bam.output.bam,
+        BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
+    output:
+        alignmentstats=join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt")
+    params:
+        regions=REF_REGIONS,
+        bam2nreads_script=join(SCRIPTS_DIR,"bam_get_uniquely_aligned_fragments.bash"),
+        outdir=join(WORKDIR,"results","{sample}","STAR2p")
+    threads: getthreads("alignment_stats")
+    envmodules: TOOLS["samtools"]["version"]
+    shell:"""
+set -exo pipefail
+while read a b;do echo $a;done < {params.regions} > {params.outdir}/tmp1
+while read a b;do bash {params.bam2nreads_script} {input.star2pbam} "$b";done < {params.regions} > {params.outdir}/tmp2
+while read a b;do bash {params.bam2nreads_script} {input.splicedreadsbam} "$b";done < {params.regions} > {params.outdir}/tmp3
+while read a b;do bash {params.bam2nreads_script} {input.BSJbam} "$b";done < {params.regions} > {params.outdir}/tmp4
+echo -ne "#region\taligned_fragments\tspliced_fragments\tBSJ_fragments\n" > {output.alignmentstats}
+paste {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 >> {output.alignmentstats}
+rm -f {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 
+"""
+
 localrules: venn
 rule venn:
     input:
@@ -62,7 +142,7 @@ rm -f /dev/shm{params.sample}*
 
 rule recall_valid_BSJ_split_BAM_by_strand_create_BW:
     input:
-        bam=rules.create_BSJ_bam.output.bam,
+        bam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
     output:
         bam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),
         plusbam=join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),

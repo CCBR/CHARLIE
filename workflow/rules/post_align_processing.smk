@@ -1,79 +1,4 @@
-# rule create_BSJ_bam:
-# This rule performs the following tasks:
-#
-# 1. Takes chimeric "junctions" file generated using STAR and extracts the info (readids, coordinates, cigar, etc.) of BSJ reads using junctions2readids.py script
-# output is tab-delimited file with the following columns:
-# a. readids
-# b. chromosome
-# c. strand
-# d. site1
-# e. site2
-# f. list of cigars comma-separated (soft-clips are converted to hard-clips)
-#
-# 2. Duplicate BSJ readids are purged.
-#
-# 3. STAR 2nd pass output BAM file is re-sorted to avoid "INVALID_INDEX_FILE_POINTER 1" errors
-#
-# 4. BAM from 3. is filtered for readids from 2. to get a filtered BAM containing some chimeric alignments and all BSJ alignments using filter_bam_by_readids.py script
-#
-# 5. BAM from 4. is further filtered to extract BSJ only alignments with the help of output from 1. using filter_bam_for_BSJs.py script
-#
-# 6. BAM from 5. is deduplicated and re-sorted to generated new sorted BSJ-only BAM
-#
-rule create_BSJ_bam:
-    input:
-        junction=rules.star2p.output.junction,
-        bam=rules.star2p.output.bam
-    output:
-        readids=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.readids"),
-        bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam")
-    params:
-        sample="{sample}",
-        memG=getmemG("create_BSJ_bam"),
-        script1=join(SCRIPTS_DIR,"junctions2readids.py"),
-        script2=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
-        script3=join(SCRIPTS_DIR,"filter_bam_for_BSJs.py"),
-        outdir=join(WORKDIR,"results","{sample}","STAR2p"),
-        randomstr=str(uuid.uuid4())
-    envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"],TOOLS["samtools"]["version"]
-    threads : getthreads("create_BSJ_bam")
-    shell:"""
-set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
-fi
-cd {params.outdir}
 
-## get BSJ readids along with chrom,site,cigar etc.
-python {params.script1} -j {input.junction} > {output.readids}
-
-## extract only the uniq readids
-cut -f1 {output.readids} | sort | uniq > ${{TMPDIR}}/{params.sample}.readids
-
-# INVALID_INDEX_FILE_POINTER 1 issues give errors hence re-indexing
-samtools index {input.bam}
-## downsize the star2p bam file to a new bam file with only BSJ reads ... these may still contain alignments which are chimeric but not BSJ
-## note the argument --readids here is just a list of readids
-python {params.script2} --inputBAM {input.bam} --outputBAM ${{TMPDIR}}/{params.sample}.chimeric.bam --readids ${{TMPDIR}}/{params.sample}.readids
-sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.chimeric.sorted.bam ${{TMPDIR}}/{params.sample}.chimeric.bam
-rm -f ${{TMPDIR}}/{params.sample}.chimeric.bam*
-
-## using the downsized star2p bam file containing chimeric alignments ...included all the BSJs... we now extract only the BSJs
-## note the argument --readids here is a tab delimited file created by junctions2readids.py ... reaids,chrom,strand,sites,cigars,etc.
-python {params.script3} --inputBAM ${{TMPDIR}}/{params.sample}.chimeric.sorted.bam --outputBAM ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam --readids {output.readids}
-sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam
-rm -f ${{TMPDIR}}/{params.sample}.BSJs.tmp.bam*
-
-## some alignments are repeated/duplicated in the output for some reason ... hence deduplicating
-samtools view -H ${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam > ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam
-samtools view ${{TMPDIR}}/{params.sample}.BSJs.tmp.sorted.bam | sort | uniq >> ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam
-samtools view -bS ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.sam > ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.bam
-sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.BSJs.tmp.dedup.bam
-cd ${{TMPDIR}} && rm -f *
-"""
 
 rule create_spliced_reads_bam:
     input:
@@ -234,29 +159,6 @@ done < {params.regions}
 cd $TMPDIR && rm -f *
 """	
 
-rule alignment_stats:
-    input:
-        star2pbam=rules.star2p.output.bam,
-        splicedreadsbam=rules.create_spliced_reads_bam.output.bam,
-        BSJbam=rules.create_BSJ_bam.output.bam,
-    output:
-        alignmentstats=join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt")
-    params:
-        regions=REF_REGIONS,
-        bam2nreads_script=join(SCRIPTS_DIR,"bam_get_uniquely_aligned_fragments.bash"),
-        outdir=join(WORKDIR,"results","{sample}","STAR2p")
-    threads: getthreads("alignment_stats")
-    envmodules: TOOLS["samtools"]["version"]
-    shell:"""
-set -exo pipefail
-while read a b;do echo $a;done < {params.regions} > {params.outdir}/tmp1
-while read a b;do bash {params.bam2nreads_script} {input.star2pbam} "$b";done < {params.regions} > {params.outdir}/tmp2
-while read a b;do bash {params.bam2nreads_script} {input.splicedreadsbam} "$b";done < {params.regions} > {params.outdir}/tmp3
-while read a b;do bash {params.bam2nreads_script} {input.BSJbam} "$b";done < {params.regions} > {params.outdir}/tmp4
-echo -ne "#region\taligned_fragments\tspliced_fragments\tBSJ_fragments\n" > {output.alignmentstats}
-paste {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 >> {output.alignmentstats}
-rm -f {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 
-"""
 
 localrules: merge_genecounts
 rule merge_genecounts:
