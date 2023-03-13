@@ -1,6 +1,8 @@
 import pysam
 import sys
 import argparse
+import gzip
+import os
 
 """
 
@@ -68,8 +70,8 @@ class BSJ:
         self.score=0
         self.name="."
         self.strand="U"
-        self.bitids=list()
-        self.rids=list()
+        self.bitids=set()
+        self.rids=set()
         
     def plusone(self):
         self.score+=1
@@ -87,10 +89,10 @@ class BSJ:
         self.end=end
     
     def append_bitid(self,bitid):
-        self.bitids.append(bitid)
+        self.bitids.add(bitid)
 
     def append_rid(self,rid):
-        self.rids.append(rid)
+        self.rids.add(rid)
         
     def write_out_BSJ(self,outbed):
         t=[]
@@ -102,13 +104,18 @@ class BSJ:
         t.append(self.strand)
         t.append(",".join(self.bitids))
         t.append(",".join(self.rids))
-        outbed.write("\t".join(t)+"\n")		
+        outbed.write("\t".join(t)+"\n")
+
+    def update_score_and_found_count(self,junctions_found):
+        self.score = len(self.rids)
+        jid = self.chrom + "##" + str(self.start) + "##" + str(int(self.end)-1)
+        junctions_found[jid]+=self.score
+
         
 class Readinfo:
     def __init__(self,readid,rname):
         self.readid=readid
         self.refname=rname
-        self.alignments=list()
         self.bitflags=list()
         self.bitid=""
         self.strand="."
@@ -124,6 +131,8 @@ class Readinfo:
         s = "readid: %s"%(self.readid)
         s = "%s\tbitflags: %s"%(s,self.bitflags)
         s = "%s\tbitid: %s"%(s,self.bitid)
+        for bf in self.bitflags:
+            s = "%s\t%s\trefcoordinates: %s"%(s,bf,", ".join(list(map(lambda x:str(x),self.refcoordinates[bf]))))
         return s
 
     def set_refcoordinates(self,bitflag,refpos):
@@ -238,9 +247,14 @@ class Readinfo:
             if left == -1 or right == -1 or middle == -1:
                 return False
             chrom = self.refname
+            # print("validate_BSJ_read",self.readid,left,right,middle)
+            # print("validate_BSJ_read",self.readid,self.refcoordinates[left][0],self.refcoordinates[left][-1])
+            # print("validate_BSJ_read",self.readid,self.refcoordinates[right][0],self.refcoordinates[right][-1])
+            # print("validate_BSJ_read",self.readid,self.refcoordinates[middle][0],self.refcoordinates[middle][-1])
             leftmost = str(self.refcoordinates[left][0])
             rightmost = str(self.refcoordinates[right][-1])
             possiblejid = chrom+"##"+leftmost+"##"+rightmost
+            # print("validate_BSJ_read",self.readid,possiblejid)
             if possiblejid in junctions:
                 self.start = leftmost
                 self.end = str(int(rightmost) + 1)    # this will be added to the BED file
@@ -249,30 +263,6 @@ class Readinfo:
             return False
             
     
-    # def get_start_end(self):
-    #     refcoordinates=self.refcoordinates
-    #     isread1=self.isread1
-    #     if len(self.isread1)!=3:			
-    #         refcoords=[]
-    #         for i in refcoordinates.keys():
-    #             refcoords.extend(refcoordinates[i])
-    #     else:			
-    #         l=[]
-    #         for i in isread1.keys():
-    #             l.append(isread1[i])
-    #         Ycount=l.count("Y")
-    #         Ncount=l.count("N")
-    #         if Ycount>Ncount:
-    #             useread1="Y"
-    #         else:
-    #             useread1="N"
-    #         refcoords=[]
-    #         for i in refcoordinates.keys():
-    #             if isread1[i]==useread1:
-    #                 refcoords.extend(refcoordinates[i])
-    #     refcoords=sorted(refcoords)
-    #     self.start=str(refcoords[0])
-    #     self.end=str(int(refcoords[-1])+1)
     
     def get_bsjid(self):
         t=[]
@@ -297,29 +287,105 @@ def get_bitflag(r):
     bitflag=str(r).split("\t")[1]
     return int(bitflag)
 
+def _bsjid2jid(bsjid):
+    x=bsjid.split("##")
+    chrom=x[0]
+    start=x[1]
+    end=str(int(x[2])-1)
+    jid="##".join([chrom,start,end])
+    return jid,chrom
+
+def read_regions(regionsfile,host,additives,viruses):
+    host=host.split(",")
+    additives=additives.split(",")
+    viruses=viruses.split(",")
+    infile=open(regionsfile,'r')
+    regions=dict()
+    for l in infile.readlines():
+        l = l.strip().split("\t")
+        region_name=l[0]
+        regions[region_name]=dict()
+        regions[region_name]['sequences']=dict()
+        if region_name in host:
+            regions[region_name]['host_additive_virus']="host"
+        elif region_name in additives:
+            regions[region_name]['host_additive_virus']="additive"
+        elif region_name in viruses:
+            regions[region_name]['host_additive_virus']="virus"
+        else:
+            exit("%s has unknown region. Its not a host or a additive or a virus!!")
+        sequence_names=l[1].split()
+        for s in sequence_names:
+            regions[region_name]['sequences'][s]=1
+    return regions        
+
+def _get_host_additive_virus(regions,seqname):
+    for k,v in regions.items():
+        if seqname in v['sequences']:
+            return v['host_additive_virus']
+    else:
+        exit("Sequence: %s does not have a region."%(seqname))
+
+def _get_regionname_from_seqname(regions,seqname):
+    for k,v in regions.items():
+        if seqname in v['sequences']:
+            return k
+    else:
+        exit("Sequence: %s does not have a region."%(seqname))
 
 
 def main():
     # debug = True
     debug = False
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i","--inbam",dest="inbam",required=True,type=argparse.FileType('r'),
-        help="Input bam file")
-    parser.add_argument('--sample_counts_table', dest='countstable', type=str, required=True,
+    parser = argparse.ArgumentParser(
+        description="""Extracts PE BSJs from STAR2p output Chimeric BAM file. It also adds
+        unique read group IDs to each read. This RID is of the format <chrom>##<start>##<end>
+        where the chrom, start and end represent the BSJ the read is depicting.
+        """
+    )
+    parser.add_argument("-i","--inbam",dest="inbam",required=True,type=str,
+        help="Input Chimeric-only STAR2p BAM file")
+    parser.add_argument('-t','--sample_counts_table', dest='countstable', type=str, required=True,
                     help='circExplore per-sample counts table')	# get coordinates of the circRNA
+    parser.add_argument("-s",'--sample_name', dest='samplename', type=str, required=False, default = 'sample1',
+        help='Sample Name: SM for RG')
+    parser.add_argument("-l",'--library', dest='library', type=str, required=False, default = 'lib1',
+        help='Sample Name: LB for RG')
+    parser.add_argument("-f",'--platform', dest='platform', type=str, required=False, default = 'illumina',
+        help='Sample Name: PL for RG')
+    parser.add_argument("-u",'--unit', dest='unit', type=str, required=False, default = 'unit1',
+        help='Sample Name: PU for RG')
+    parser.add_argument("-o","--outbam",dest="outbam",required=True,type=argparse.FileType('w'),
+        help="Output bam file ... both strands")
     parser.add_argument("-p","--plusbam",dest="plusbam",required=True,type=argparse.FileType('w'),
         help="Output plus strand bam file")
     parser.add_argument("-m","--minusbam",dest="minusbam",required=True,type=argparse.FileType('w'),
         help="Output plus strand bam file")
-    parser.add_argument("-b","--bed",dest="bed",required=True,type=argparse.FileType('w', encoding='UTF-8'),
-        help="Output BSJ bed file (with strand info)")
+    parser.add_argument("--outputhostbams",dest="outputhostbams",required=False,action='store_true', default=False,
+        help="Output individual host BAM files")
+    parser.add_argument("--outputvirusbams",dest="outputvirusbams",required=False,action='store_true', default=False,
+        help="Output individual virus BAM files")
+    parser.add_argument("--outdir",dest="outdir",required=False,type=str,
+        help="Output folder for the individual BAM files (required only if --outputhostbams or --outputvirusbams is used).")
+    parser.add_argument("-b","--bed",dest="bed",required=True,type=str,
+        help="Output BSJ bed.gz file (with strand info)")
+    parser.add_argument("-j","--junctionsfound",dest="junctionsfound",required=True,type=argparse.FileType('w', encoding='UTF-8'),
+        help="Output TSV file with counts of junctions expected vs found")
+    parser.add_argument('--regions', dest='regions', type=str, required=True,
+        help='regions file eg. ref.fa.regions')
+    parser.add_argument('--host', dest='host', type=str, required=True,
+        help='host name eg.hg38... single value')
+    parser.add_argument('--additives', dest='additives', type=str, required=True,
+        help='additive name(s) eg.ERCC... comma-separated list... all BSJs in this region are filtered out')
+    parser.add_argument('--viruses', dest='viruses', type=str, required=True,
+        help='virus name(s) eg.NC_009333.1... comma-separated list')
     args = parser.parse_args()		
     samfile = pysam.AlignmentFile(args.inbam, "rb")
-    plusfile = pysam.AlignmentFile(args.plusbam, "wb", template=samfile)
-    minusfile = pysam.AlignmentFile(args.minusbam, "wb", template=samfile)
-# 	bsjfile = open(args.bed,"w")
+    samheader = samfile.header.to_dict()
+    samheader['RG']=list()
     junctionsfile = open(args.countstable,'r')
     junctions=dict()
+    junctions_found=dict()
     print("Reading...junctions!...")
     for l in junctionsfile.readlines():
         if "read_count" in l: continue
@@ -328,11 +394,32 @@ def main():
         start = l[1]
         end = str(int(l[2])-1)
         jid = chrom+"##"+start+"##"+end                     # create a unique junction ID for each line in the BSJ junction file and make it the dict key ... easy for searching!
-        junctions[jid]=1
+        samheader['RG'].append({'ID':jid, 'LB':args.library, 'PL':args.platform, 'PU':args.unit,'SM':args.samplename})
+        junctions[jid] = int(l[4])
+        junctions_found[jid] = 0
     junctionsfile.close()
+    sequences = list()
+    for v in samheader['SQ']:
+        sequences.append(v['SN'])
+    seqname2regionname=dict()
+    hosts=set()
+    viruses=set()
+    regions = read_regions(regionsfile=args.regions,host=args.host,additives=args.additives,viruses=args.viruses)
+    for s in sequences:
+        hav = _get_host_additive_virus(regions,s)
+        if hav == "host":
+            hostname = _get_regionname_from_seqname(regions,s)
+            seqname2regionname[s]=hostname
+            hosts.add(hostname)
+        if hav == "virus":
+            virusname = _get_regionname_from_seqname(regions,s)
+            seqname2regionname[s]=virusname
+            viruses.add(virusname)
     print("Done reading %d junctions."%(len(junctions)))
 
     bigdict=dict()
+    # print("Opening...")
+    # print(args.inbam)
     print("Reading...alignments!...")
     count=0
     count2=0
@@ -345,7 +432,7 @@ def main():
         if debug:print(rid)
         if not rid in bigdict:
             bigdict[rid]=Readinfo(rid,read.reference_name)
-        bigdict[rid].append_alignment(read)                 # since rid has HI number included ... this separates alignment by HI
+        # bigdict[rid].append_alignment(read)                 # since rid has HI number included ... this separates alignment by HI
         bitflag=get_bitflag(read)
         if debug:print(bitflag)
         bigdict[rid].append_bitflag(bitflag)                # each rid can have upto 3 lines in the BAM with each having its own bitflag ... collect all bigflags in a list here 
@@ -354,51 +441,89 @@ def main():
         # bigdict[rid].set_read1_reverse_secondary_supplementary(bitflag,read)
         if debug:print(bigdict[rid])
     print("Done reading %d chimeric alignments. [%d same chrom chimeras]"%(count,count2))
-
+    samfile.reset()
     print("Writing BAMs")
+    print("Re-Reading...alignments!...")
+    plusfile = pysam.AlignmentFile(args.plusbam, "wb", header = samheader)
+    minusfile = pysam.AlignmentFile(args.minusbam, "wb", header = samheader)
+    outfile = pysam.AlignmentFile(args.outbam, "wb", header = samheader)
+    outputbams = dict()
+    if args.outputhostbams:
+        for h in hosts:
+            outbamname = os.path.join(args.outdir,args.samplename+"."+h+".BSJ.bam")
+            outputbams[h] = pysam.AlignmentFile(outbamname, "wb", header = samheader)
+    if args.outputvirusbams:
+        for v in viruses:
+            outbamname = os.path.join(args.outdir,args.samplename+"."+v+".BSJ.bam")
+            outputbams[v] = pysam.AlignmentFile(outbamname, "wb", header = samheader)            
     bsjdict=dict()
     bitid_counts=dict()
-    for rid in bigdict.keys():
-        bigdict[rid].generate_bitid()                       # separate all bitflags for the same rid with ## and create a unique single bitflag ... bitflags are pre-sorted
-        if debug:print(bigdict[rid])                        
-        bigdict[rid].get_strand()                           # use the unique aggregated bitid to extract the strand information ... all possible cases are explicitly covered
-        if not bigdict[rid].validate_BSJ_read(junctions=junctions): # ensure that the read alignments leftmost and rightmost coordinates match with one of the BSJ junctions... if yes then that rid represents a BSJ. Also add start and end to the BSJ object
-            continue
-        # bigdict[rid].get_start_end()
-        # print(bigdict[rid])
-        if bigdict[rid].strand=="+":
-            bigdict[rid].write_out_reads(plusfile)
-        if bigdict[rid].strand=="-":
-            bigdict[rid].write_out_reads(minusfile)
-        bsjid=bigdict[rid].get_bsjid()
-        if not bsjid in bsjdict:
-            bsjdict[bsjid]=BSJ()
-            bsjdict[bsjid].set_chrom(bigdict[rid].refname)
-            bsjdict[bsjid].set_start(bigdict[rid].start)
-            bsjdict[bsjid].set_end(bigdict[rid].end)
-            bsjdict[bsjid].set_strand(bigdict[rid].strand)
-        bsjdict[bsjid].plusone()
-        bsjdict[bsjid].append_bitid(bigdict[rid].bitid)
-        if not bigdict[rid].bitid in bitid_counts:
-            bitid_counts[bigdict[rid].bitid]=0
-        bitid_counts[bigdict[rid].bitid]+=1
-        bsjdict[bsjid].append_rid(rid)
+    lenoutputbams = len(outputbams)
+    for read in samfile.fetch():
+        if read.reference_id != read.next_reference_id: continue
+        rid=get_uniq_readid(read)
+        if rid in bigdict:
+            bigdict[rid].generate_bitid()                       # separate all bitflags for the same rid with ## and create a unique single bitflag ... bitflags are pre-sorted
+            if debug:print(bigdict[rid])                        
+            bigdict[rid].get_strand()                           # use the unique aggregated bitid to extract the strand information ... all possible cases are explicitly covered
+            if not bigdict[rid].validate_BSJ_read(junctions=junctions): # ensure that the read alignments leftmost and rightmost coordinates match with one of the BSJ junctions... if yes then that rid represents a BSJ. Also add start and end to the BSJ object
+                continue
+            # bigdict[rid].get_start_end()
+            # print(bigdict[rid])
+            bsjid=bigdict[rid].get_bsjid()
+            jid,chrom=_bsjid2jid(bsjid)
+            read.set_tag("RG", jid, value_type="Z")
+            if bigdict[rid].strand=="+":
+                plusfile.write(read)
+            if bigdict[rid].strand=="-":
+                minusfile.write(read)
+            outfile.write(read)
+            if lenoutputbams != 0:
+                regionname=_get_regionname_from_seqname(regions,chrom)
+                if regionname in hosts and args.outputhostbams:
+                    outputbams[regionname].write(read)
+                if regionname in viruses and args.outputvirusbams:
+                    outputbams[regionname].write(read)
+            if not bsjid in bsjdict:
+                bsjdict[bsjid]=BSJ()
+                bsjdict[bsjid].set_chrom(bigdict[rid].refname)
+                bsjdict[bsjid].set_start(bigdict[rid].start)
+                bsjdict[bsjid].set_end(bigdict[rid].end)
+                bsjdict[bsjid].set_strand(bigdict[rid].strand)
+            bsjdict[bsjid].append_bitid(bigdict[rid].bitid)
+            if not bigdict[rid].bitid in bitid_counts:
+                bitid_counts[bigdict[rid].bitid]=0
+            bitid_counts[bigdict[rid].bitid]+=1
+            bsjdict[bsjid].append_rid(rid)
+    plusfile.close()
+    minusfile.close()
+    samfile.close()
+    outfile.close()
+    if lenoutputbams != 0:
+        for k,v in outputbams.items():
+            v.close()
     print("Done!")	
     for b in bitid_counts.keys():
         print(b,bitid_counts[b])
     print("Writing BED")
-    for bsjid in bsjdict.keys():
-        bsjdict[bsjid].write_out_BSJ(args.bed)
+
+    with gzip.open(args.bed,'wt') as bsjfile:
+        for bsjid in bsjdict.keys():
+            bsjdict[bsjid].update_score_and_found_count(junctions_found)
+            bsjdict[bsjid].write_out_BSJ(bsjfile)
+    bsjfile.close()
         
-    plusfile.close()
-    minusfile.close()
-    samfile.close()
-    args.bed.close()
+
+    args.junctionsfound.write("#chrom\tstart\tend\texpected_BSJ_reads\tfound_BSJ_reads\n")
+    for jid in junctions.keys():
+        x=jid.split("##")
+        chrom=x[0]
+        start=int(x[1])
+        end=int(x[2])+1
+        args.junctionsfound.write("%s\t%d\t%d\t%d\t%d\n"%(chrom,start,end,junctions[jid],junctions_found[jid]))
+    args.junctionsfound.close()
     print("ALL Done!")
-    
-        
-
-
+            
 
 if __name__ == "__main__":
     main()
