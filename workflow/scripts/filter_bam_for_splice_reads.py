@@ -25,6 +25,7 @@ inbam = pysam.AlignmentFile(args.inbam, "rb" )
 outbam = pysam.AlignmentFile(args.outbam, "wb", template=inbam )
 tab = open(args.tab)
 junctions = tab.readlines()
+junctions.pop(0)
 tab.close()
 count=0
 threshold=0
@@ -41,7 +42,8 @@ for l in junctions:
 # get chromosome name, start and end positions for the junction
 # and fetch reads aligning to this region using "fetch"
 # ref: https://pysam.readthedocs.io/en/latest/api.html#pysam.FastaFile.fetch
-    for read in inbam.fetch(c,s,e):
+    for read in inbam.fetch(c,s-200,e+200):
+    # for read in inbam.fetch(c):
 # get cigarstring to replace softclips
         cigar=read.cigarstring
 # replace softclips with hardclip
@@ -80,9 +82,17 @@ for l in junctions:
 # so gather start and end coordinates
                 start=read.reference_start+cigart[0][1]+1
                 end=start+cigart[1][1]-1
+                # print(read)
+                # print(cigart)
+                # print(c+"##"+str(s)+"##"+str(e),start-s,end-e,read.get_reference_positions(full_length=True),read)
                 if start==s and end==e:
 # check if start and end are in the junctions file
 # if yes then write to output file
+                    # print(read)
+                    # print(cigart)
+                    # print(start,end)
+                    # print(s,e)
+                    # exit()
                     outbam.write(read)
                     #print(read.query_name,c,s,e,start,end)
                     #print(read)
