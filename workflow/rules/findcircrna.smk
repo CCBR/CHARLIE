@@ -486,6 +486,7 @@ rule dcc:
     output:
         cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
+        linear=join(WORKDIR,"results","{sample}","DCC","LinearCount"),
         ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
         ctf=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered"),
     threads: getthreads("dcc")
