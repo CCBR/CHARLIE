@@ -96,9 +96,12 @@ VIRUSES=VIRUSES.replace(" ","")
 REPEATS_GTF=join(FASTAS_GTFS_DIR,HOST+".repeats.gtf")
 
 HOST_ADDITIVES_VIRUSES=HOST_ADDITIVES+","+VIRUSES
+HOST_VIRUSES=HOST+","+VIRUSES
 HOST_ADDITIVES_VIRUSES=HOST_ADDITIVES_VIRUSES.split(",")
 FASTAS=[join(FASTAS_GTFS_DIR,f+".fa") for f in HOST_ADDITIVES_VIRUSES]
 REGIONS=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in HOST_ADDITIVES_VIRUSES]
+REGIONS_HOST=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in HOST.split(",")]
+REGIONS_VIRUSES=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in VIRUSES.split(",")]
 GTFS=[join(FASTAS_GTFS_DIR,f+".gtf") for f in HOST_ADDITIVES_VIRUSES]
 FASTAS_REGIONS_GTFS=FASTAS.copy()
 FASTAS_REGIONS_GTFS.extend(REGIONS)
@@ -121,9 +124,13 @@ for f in REQUIRED_FILES:
 
 REF_FA=join(REF_DIR,"ref.fa")
 REF_REGIONS=join(REF_DIR,"ref.fa.regions")
+REF_REGIONS_HOST=join(REF_DIR,"ref.fa.regions.host")
+REF_REGIONS_VIRUSES=join(REF_DIR,"ref.fa.regions.viruses")
 REF_GTF=join(REF_DIR,"ref.gtf")
 append_files_in_list(FASTAS,REF_FA)
 append_files_in_list(REGIONS,REF_REGIONS)
+append_files_in_list(REGIONS_HOST,REF_REGIONS_HOST)
+append_files_in_list(REGIONS_VIRUSES,REF_REGIONS_VIRUSES)
 append_files_in_list(GTFS,REF_GTF)
 
 SAMPLESDF = pd.read_csv(config["samples"],sep="\t",header=0,index_col="sampleName")
