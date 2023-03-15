@@ -83,7 +83,7 @@ def _get_jinfo(jid):
     if (strand=="+" and read_strand=="-") or (strand=="-" and read_strand=="+"): strand_info="OS"
     short_jid = "##".join([chrom,start,end,strand])
     converted_jid = "##".join([chrom,start,end,strand,strand_info])
-    return chrom,start,end,strand_info,short_jid,converted_jid    
+    return chrom,start,end,strand_info,short_jid,converted_jid,read_strand    
 
 class JID:
     def __init__(self,chrom,start,end,strand):
@@ -138,10 +138,18 @@ def main():
     # OUTPUTs
     parser.add_argument("-o","--outbam",dest="outbam",required=True,type=str,
         help="Output \"primary alignment near BSJ\" only BAM file")
+    parser.add_argument("--outplusbam",dest="outplusbam",required=True,type=str,
+        help="Output \"primary alignment near BSJ\" only plus strand BAM file")
+    parser.add_argument("--outminusbam",dest="outminusbam",required=True,type=str,
+        help="Output \"primary alignment near BSJ\" only minus strand BAM file")
     parser.add_argument("--splicedbam",dest="splicedbam",required=True,type=str,
         help="Output \"primary spliced alignment\" only BAM file")
     parser.add_argument("--splicedbsjbam",dest="splicedbsjbam",required=True,type=str,
         help="Output \"primary spliced alignment near BSJ\" only BAM file")
+    parser.add_argument("--splicedbsjplusbam",dest="splicedbsjplusbam",required=True,type=str,
+        help="Output \"primary spliced alignment near BSJ\" only plus strand BAM file")
+    parser.add_argument("--splicedbsjminusbam",dest="splicedbsjminusbam",required=True,type=str,
+        help="Output \"primary spliced alignment near BSJ\" only minus strand BAM file")
     parser.add_argument("--outputhostbams",dest="outputhostbams",required=False,action='store_true', default=False,
         help="Output individual host BAM files")
     parser.add_argument("--outputvirusbams",dest="outputvirusbams",required=False,action='store_true', default=False,
@@ -208,8 +216,12 @@ def main():
     print("%s | Done reading %d junctions."%(get_ctime(),count))
     
     outbam = pysam.AlignmentFile(args.outbam, "wb", header=samheader)
+    outplusbam = pysam.AlignmentFile(args.outplusbam, "wb", header=samheader)
+    outminusbam = pysam.AlignmentFile(args.outminusbam, "wb", header=samheader)
     splicedbam = pysam.AlignmentFile(args.splicedbam, "wb", header=samheader)
     splicedbsjbam = pysam.AlignmentFile(args.splicedbsjbam, "wb", header=samheader)
+    splicedbsjplusbam = pysam.AlignmentFile(args.splicedbsjplusbam, "wb", header=samheader)
+    splicedbsjminusbam = pysam.AlignmentFile(args.splicedbsjminusbam, "wb", header=samheader)
     outputbams = dict()
     if args.outputhostbams:
         for h in hosts:
@@ -265,10 +277,12 @@ def main():
                 mate_already_counted2[rid]=1
                 count2+=1
             jid = rid2jid[rid]
-            chrom, jstart, jend, strand_info, short_jid, converted_jid = _get_jinfo(jid)
+            chrom, jstart, jend, strand_info, short_jid, converted_jid, read_strand = _get_jinfo(jid)
             junction_counts[short_jid].increment_linear(strand_info)
             read.set_tag("RG", converted_jid , value_type="Z")
             outbam.write(read)
+            if read_strand=="+": outplusbam.write(read)
+            if read_strand=="-": outminusbam.write(read)
             if lenoutputbams != 0:
                 regionname=_get_regionname_from_seqname(regions,chrom)
                 if regionname in hosts and args.outputhostbams:
@@ -323,14 +337,21 @@ def main():
         if rid in spliced : splicedbam.write(read)
         if rid in splicedbsj : 
             jid = rid2jid[rid]
-            converted_jid = _convertjid(jid)
+            # converted_jid = _convertjid(jid)
+            chrom, jstart, jend, strand_info, short_jid, converted_jid, read_strand = _get_jinfo(jid)
             read.set_tag("RG", converted_jid ,  value_type="Z") 
             splicedbsjbam.write(read)
+            if read_strand=="+": splicedbsjplusbam.write(read)
+            if read_strand=="-": splicedbsjminusbam.write(read)
 
     samfile.close()
     outbam.close()
+    outplusbam.close()
+    outminusbam.close()
     splicedbam.close()
     splicedbsjbam.close()
+    splicedbsjplusbam.close()
+    splicedbsjminusbam.close()
     print("%s | Closing all BAMs"%(get_ctime()))
     args.countsfound.write("#chrom\tstart\tend\tstrand\tlinear_BSJ_reads_same_strand\tlinear_spliced_BSJ_reads_same_strand\tlinear_BSJ_reads_opposite_strand\tlinear_spliced_BSJ_reads_opposite_strand\n")
     for short_jid in junction_counts.keys():
