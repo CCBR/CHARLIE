@@ -221,7 +221,7 @@ rule star2p:
     output:
         junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
         unsortedbam=temp(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.out.bam")),
-        bam=temp(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.bam")),
+        bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.bam"),
         chimeric_bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.chimeric.bam"),
         non_chimeric_bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.non_chimeric.bam"),
         genecounts=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab")
