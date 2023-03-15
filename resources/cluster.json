@@ -78,12 +78,7 @@
         "threads": "4",
         "time": "24:00:00"
     },
-    "create_spliced_reads_bam": {
-        "mem": "200g",
-        "threads": "4",
-        "time": "24:00:00"
-    },
-    "create_linear_reads_bam":{
+    "create_circExplorer_linear_spliced_bams":{
         "mem": "200g",
         "threads": "4",
         "time": "24:00:00"
