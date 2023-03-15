@@ -3,6 +3,10 @@ import sys
 import argparse
 import gzip
 import os
+import time
+
+def get_ctime():
+    return time.ctime(time.time())
 
 """
 
@@ -71,7 +75,7 @@ class BSJ:
 
     def update_score_and_found_count(self,junctions_found):
         self.score = len(self.rids)
-        jid = self.chrom + "##" + str(self.start) + "##" + str(int(self.end)-1)
+        jid = self.chrom + "##" + str(self.start) + "##" + str(int(self.end)-1) + "##" + self.strand
         junctions_found[jid]+=self.score
         
 class Readinfo:
@@ -167,8 +171,8 @@ class Readinfo:
                     bstart=refcoords[k][0]
                     bend=refcoords[k][-1]
             chrom = self.refname
-            possiblejid=chrom+"##"+str(astart)+"##"+str(bend)
-            possiblejid2=chrom+"##"+str(bstart)+"##"+str(aend)
+            possiblejid=chrom+"##"+str(astart)+"##"+str(bend)+"##"+self.strand
+            possiblejid2=chrom+"##"+str(bstart)+"##"+str(aend)+"##"+self.strand
             # exit()
             if possiblejid in junctions:
                 self.start = astart
@@ -203,6 +207,10 @@ def get_uniq_readid(r):
 def get_bitflag(r):
     bitflag=str(r).split("\t")[1]
     return int(bitflag)
+
+def _bsjid2chrom(bsjid):
+    x=bsjid.split("##")
+    return x[0]
 
 def _bsjid2jid(bsjid):
     x=bsjid.split("##")
@@ -304,14 +312,15 @@ def main():
     junctionsfile = open(args.countstable,'r')
     junctions=dict()
     junctions_found=dict()
-    print("Reading...junctions!...")
+    print("%s | Reading...junctions!..."%(get_ctime()))
     for l in junctionsfile.readlines():
         if "read_count" in l: continue
         l = l.strip().split("\t")
         chrom = l[0]
         start = l[1]
         end = str(int(l[2])-1)
-        jid = chrom+"##"+start+"##"+end                     # create a unique junction ID for each line in the BSJ junction file and make it the dict key ... easy for searching!
+        strand = l[3]
+        jid = chrom+"##"+start+"##"+end+"##"+strand                     # create a unique junction ID for each line in the BSJ junction file and make it the dict key ... easy for searching!
         samheader['RG'].append({'ID':jid, 'LB':args.library, 'PL':args.platform, 'PU':args.unit,'SM':args.samplename})
         junctions[jid] = int(l[4])
         junctions_found[jid] = 0
@@ -334,11 +343,11 @@ def main():
             virusname = _get_regionname_from_seqname(regions,s)
             seqname2regionname[s]=virusname
             viruses.add(virusname)
-    print("Done reading %d junctions."%(len(junctions)))
+    print("%s | Done reading %d junctions."%(get_ctime(),len(junctions)))
 
 
     bigdict=dict()
-    print("Reading...alignments!...")
+    print("%s | Reading...alignments!..."%(get_ctime()))
     count=0
     count2=0
     for read in samfile.fetch():
@@ -361,13 +370,13 @@ def main():
         bigdict[rid].set_cigarstr(bitflag,read.cigarstring)
         bigdict[rid].set_read1_reverse_secondary_supplementary(bitflag,read)
         if debug:print(bigdict[rid])
-    print("Done reading %d chimeric alignments. [%d same chrom chimeras]"%(count,count2))
+    print("%s | Done reading %d chimeric alignments. [%d same chrom chimeras]"%(get_ctime(),count,count2))
     if debug:
         for rid in bigdict.keys():
             print(">>>%s\t%s\t%s\t%s"%(rid,bigdict[rid].isreverse,bigdict[rid].cigarstrs,bigdict[rid].refcoordinates))
     samfile.reset()
 
-    print("Writing BAMs")
+    print("%s | Writing BAMs"%(get_ctime()))
     plusfile = pysam.AlignmentFile(args.plusbam, "wb", header = samheader)
     minusfile = pysam.AlignmentFile(args.minusbam, "wb", header = samheader)
     outfile = pysam.AlignmentFile(args.outbam, "wb", header = samheader)
@@ -397,8 +406,9 @@ def main():
             # bigdict[rid].get_start_end()
             # print(bigdict[rid])
             bsjid=bigdict[rid].get_bsjid()
-            jid,chrom=_bsjid2jid(bsjid)
-            read.set_tag("RG", jid, value_type="Z")
+            chrom=_bsjid2chrom(bsjid)
+            # jid,chrom=_bsjid2jid(bsjid)
+            read.set_tag("RG", bsjid, value_type="Z")
             if bigdict[rid].strand=="+":
                 plusfile.write(read)
             if bigdict[rid].strand=="-":
@@ -429,25 +439,26 @@ def main():
     if lenoutputbams != 0:
         for k,v in outputbams.items():
             v.close()
-    print("Done!")	
+    print("%s | Done!"%(get_ctime()))	
     for b in bitid_counts.keys():
         print(b,bitid_counts[b])
-    print("Writing BED")
+    print("%s | Writing BED"%(get_ctime()))
     with gzip.open(args.bed,'wt') as bsjfile:
         for bsjid in bsjdict.keys():
             bsjdict[bsjid].update_score_and_found_count(junctions_found)
             bsjdict[bsjid].write_out_BSJ(bsjfile)
     bsjfile.close()
 
-    args.junctionsfound.write("#chrom\tstart\tend\texpected_BSJ_reads\tfound_BSJ_reads\n")
+    args.junctionsfound.write("#chrom\tstart\tend\tstrand\ttexpected_BSJ_reads\tfound_BSJ_reads\n")
     for jid in junctions.keys():
         x=jid.split("##")
         chrom=x[0]
         start=int(x[1])
         end=int(x[2])+1
-        args.junctionsfound.write("%s\t%d\t%d\t%d\t%d\n"%(chrom,start,end,junctions[jid],junctions_found[jid]))
+        strand=x[3]
+        args.junctionsfound.write("%s\t%d\t%d\t%s\t%d\t%d\n"%(chrom,start,end,strand,junctions[jid],junctions_found[jid]))
     args.junctionsfound.close()
-    print("ALL Done!")
+    print("%s | ALL Done!"%(get_ctime()))
     
         
 

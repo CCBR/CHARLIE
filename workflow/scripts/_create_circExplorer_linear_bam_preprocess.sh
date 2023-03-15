@@ -9,14 +9,15 @@
     # samtools
     # bedSort from ucsc tools
 
-if [ "$#" != 5 ];then
+if [ "$#" != 7 ];then
     echo "5 arguments expected!"
     echo "#1 --> path to non-chimeric BAM file"
     echo "#2 --> sample name"
     echo "#3 --> PE or SE"
     echo "#4 --> known BSJs in bed.gz format"
     echo "#5 --> tmpdir"
-    echo "OUTPUT: ${sample_name}.rid2jid.tsv.gz is created!"
+    echo "#6 --> gzipped outputfilename eg.${sample_name}.rid2jid.tsv.gz"
+    echo "#7 --> output filtered sample BAM"
     exit
 fi
 set -exo pipefail
@@ -29,49 +30,53 @@ peorse=$3
 bsjbedgz=$4
 tmpdir=$5
 #OUTPUTs
+rid2jidgzip=$6
+filtered_bam=$7
 # ${tmpdir}/${sample_name}.rid2jid.tsv.gz is created!
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 
-# Filter all alignments other than the primary alignment
+## Filter all alignments other than the primary alignment
 
-# if [ "$peorse" == "PE" ];then
+if [ "$peorse" == "PE" ];then
 
-# python3 ${SCRIPT_DIR}/filter_bam.py \
-#     --inbam $non_chimeric_star2p_bam \
-#     --outbam ${tmpdir}/${sample_name}.bam \
-#     --pe
+python3 ${SCRIPT_DIR}/filter_bam.py \
+    --inbam $non_chimeric_star2p_bam \
+    --outbam $filtered_bam \
+    --pe
 
-# else
+else
 
-# python3 ${SCRIPT_DIR}/filter_bam.py \
-#     --inbam $non_chimeric_star2p_bam \
-#     --outbam ${tmpdir}/${sample_name}.bam \
+python3 ${SCRIPT_DIR}/filter_bam.py \
+    --inbam $non_chimeric_star2p_bam \
+    --outbam $filtered_bam \
 
-# fi
+fi
 
-# sort primary alignments by query name
+samtools index -@4 $filtered_bam
 
-# samtools sort -n -l 1 -T $tmpdir -@4 -O BAM -o ${tmpdir}/${sample_name}.qsorted.bam ${tmpdir}/${sample_name}.bam
+## sort primary alignments by query name
 
-# if [ "$peorse" == "PE" ];then
+samtools sort -n -l 1 -T $tmpdir -@4 -O BAM -o ${tmpdir}/${sample_name}.qsorted.bam $filtered_bam
 
-# # convert primary alignments to BEDPE format
+if [ "$peorse" == "PE" ];then
 
-# bedtools bamtobed -bedpe -i ${tmpdir}/${sample_name}.qsorted.bam > ${tmpdir}/${sample_name}.bedpe
-# # grab the START and END coordinates of the entire read-pair aligned
-# python3 ${SCRIPT_DIR}/_bedpe2bed.py -i ${tmpdir}/${sample_name}.bedpe -o ${tmpdir}/${sample_name}.bed
+# convert primary alignments to BEDPE format
 
-# else
+bedtools bamtobed -bedpe -i ${tmpdir}/${sample_name}.qsorted.bam > ${tmpdir}/${sample_name}.bedpe
+# grab the START and END coordinates of the entire read-pair aligned with correct strand info
+python3 ${SCRIPT_DIR}/_bedpe2bed.py -i ${tmpdir}/${sample_name}.bedpe -o ${tmpdir}/${sample_name}.bed
 
-# bedtools bamtobed -i ${tmpdir}/${sample_name}.qsorted.bam > ${tmpdir}/${sample_name}.bed
+else
 
-# fi
+bedtools bamtobed -i ${tmpdir}/${sample_name}.qsorted.bam > ${tmpdir}/${sample_name}.bed
 
-# bedSort ${tmpdir}/${sample_name}.bed ${tmpdir}/${sample_name}.bed
+fi
 
-# fix the max readlength in all alignments
+bedSort ${tmpdir}/${sample_name}.bed ${tmpdir}/${sample_name}.bed
+
+## fix the max readlength in all alignments
 
 python3 ${SCRIPT_DIR}/bam_get_max_readlen.py -i $non_chimeric_star2p_bam > ${tmpdir}/${sample_name}.maxrl
 maxrl=$(cat ${tmpdir}/${sample_name}.maxrl)
@@ -81,4 +86,6 @@ two_maxrl=$((maxrl*2))
 ## interect known BSJs with primary alignments and then keep alignments with some alignment within the "inclusion zone"
 
 bedtools intersect -nonamecheck -wa -wb -a $bsjbedgz -b ${tmpdir}/${sample_name}.bed | \
-python3 ${SCRIPT_DIR}/_bedintersect_to_rid2jid.py -i - -o ${sample_name}.rid2jid.tsv.gz -m $two_maxrl
+python3 ${SCRIPT_DIR}/_bedintersect_to_rid2jid.py -i - -o $rid2jidgzip -m $two_maxrl
+
+rm -f ${tmpdir}/${sample_name}.qsorted.bam

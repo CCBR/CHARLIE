@@ -28,7 +28,9 @@ def main():
         else:
             right = x[5]
         rid = x[6]
-        outfile.write("%s\t%s\t%s\t%s\t0\t.\n"%(chrom,left,right,rid))
+        score = x[7]
+        strand = x[8] # read1 strand
+        outfile.write("%s\t%s\t%s\t%s\t%s\t%s\n"%(chrom,left,right,rid,score,strand))
         		
     infile.close()
     outfile.close()

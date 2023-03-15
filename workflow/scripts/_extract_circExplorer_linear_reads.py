@@ -3,6 +3,10 @@ import argparse
 import os
 import gzip
 import pprint
+import time
+
+def get_ctime():
+    return time.ctime(time.time())
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -44,6 +48,61 @@ def _get_regionname_from_seqname(regions,seqname):
             return k
     else:
         exit("Sequence: %s does not have a region."%(seqname))
+
+def _convertjid(jid):
+    jid = jid.split("##")
+    chrom = jid[0]
+    start = jid[1]
+    end = jid[2]
+    strand = jid[3]
+    read_strand = jid[4]
+    strand_info = "."
+    if strand==read_strand: strand_info="SS"
+    if (strand=="+" and read_strand=="-") or (strand=="-" and read_strand=="+"): strand_info="OS"
+    return "##".join([chrom,start,end,strand,strand_info])
+
+def _get_shortjid(jid):
+    jid = jid.split("##")
+    chrom = jid[0]
+    start = jid[1]
+    end = jid[2]
+    strand = jid[3]
+    read_strand = jid[4]
+    strand_info = "."
+    return "##".join([chrom,start,end,strand])
+
+def _get_jinfo(jid):
+    jid = jid.split("##")
+    chrom = jid[0]
+    start = jid[1]
+    end = jid[2]
+    strand = jid[3]
+    read_strand = jid[4]
+    strand_info = "."
+    if strand==read_strand: strand_info="SS"
+    if (strand=="+" and read_strand=="-") or (strand=="-" and read_strand=="+"): strand_info="OS"
+    short_jid = "##".join([chrom,start,end,strand])
+    converted_jid = "##".join([chrom,start,end,strand,strand_info])
+    return chrom,start,end,strand_info,short_jid,converted_jid    
+
+class JID:
+    def __init__(self,chrom,start,end,strand):
+        self.chrom=chrom
+        self.start=start
+        self.end=end
+        self.strand=strand
+        self.ss_linear_count=0
+        self.os_linear_count=0
+        self.ss_linear_spliced_count=0
+        self.os_linear_spliced_count=0
+
+    def increment_linear(self,strand_info):
+        if strand_info=="SS": self.ss_linear_count+=1
+        if strand_info=="OS": self.os_linear_count+=1
+
+    def increment_linear_spliced(self,strand_info):
+        if strand_info=="SS": self.ss_linear_spliced_count+=1
+        if strand_info=="OS": self.os_linear_spliced_count+=1
 
 
 def main():
@@ -94,25 +153,23 @@ def main():
 
 
     args = parser.parse_args()
-    print("Reading...rid2jid!...")
+    print("%s | Reading...rid2jid!..."%(get_ctime()))
     rid2jid = dict()
     with gzip.open(args.rid2jid,'rt') as tfile:
         for l in tfile:
             l=l.strip().split("\t")
             rid2jid[l[0]]=l[1]
     tfile.close()
-    print("Done reading...%d rid2jid's!"%(len(rid2jid)))
+    print("%s | Done reading...%d rid2jid's!"%(get_ctime(),len(rid2jid)))
 
     samfile = pysam.AlignmentFile(args.inbam, "rb")
     samheader = samfile.header.to_dict()
     samheader['RG']=list()
     junctionsfile = open(args.countstable,'r')
-    print("Reading...junctions!...")
+    print("%s | Reading...junctions!..."%(get_ctime()))
     count=0
     junction_counts=dict()
-    spliced=dict()
-    splicedbsj=dict()
-    splicedbsjjid=dict()
+    # splicedbsjjid=dict()
     for l in junctionsfile.readlines():
         count+=1
         if "read_count" in l: continue
@@ -120,11 +177,17 @@ def main():
         chrom = l[0]
         start = l[1]
         end = str(int(l[2])-1)
-        jid   = chrom+"##"+start+"##"+end                     # create a unique junction ID for each line in the BSJ junction file and make it the dict key ... easy for searching!
-        samheader['RG'].append({'ID':jid ,  'LB':args.library, 'PL':args.platform, 'PU':args.unit,'SM':args.samplename})
-        junction_counts[jid] = dict()
-        splicedbsjjid[jid] = dict()
+        strand = l[3]
+        short_jid  = chrom+"##"+start+"##"+end+"##"+strand        # create a unique junction ID for each line in the BSJ junction file and make it the dict key ... easy for searching!
+        jid1 = short_jid+"##SS"                                   # SS=sample strand ... called BSJ and read are on the same strand
+        jid2 = short_jid+"##OS"                                   # OS=opposite strand ... called BSJ and read are on opposite strands
+        samheader['RG'].append({'ID':jid1 ,  'LB':args.library, 'PL':args.platform, 'PU':args.unit,'SM':args.samplename})
+        samheader['RG'].append({'ID':jid2 ,  'LB':args.library, 'PL':args.platform, 'PU':args.unit,'SM':args.samplename})
+        # print(short_jid)
+        junction_counts[short_jid] = JID(chrom,start,end,strand)
+        # splicedbsjjid[jid] = dict()
     junctionsfile.close()
+    # exit()
     sequences = list()
     for v in samheader['SQ']:
         sequences.append(v['SN'])
@@ -142,7 +205,7 @@ def main():
             virusname = _get_regionname_from_seqname(regions,s)
             seqname2regionname[s]=virusname
             viruses.add(virusname)
-    print("Done reading %d junctions."%(count))
+    print("%s | Done reading %d junctions."%(get_ctime(),count))
     
     outbam = pysam.AlignmentFile(args.outbam, "wb", header=samheader)
     splicedbam = pysam.AlignmentFile(args.splicedbam, "wb", header=samheader)
@@ -158,7 +221,7 @@ def main():
             outputbams[v] = pysam.AlignmentFile(outbamname, "wb", header = samheader)            
     lenoutputbams = len(outputbams)
     # pp.pprint(rid2jid)
-    print("Opened output BAMs for writing...")
+    print("%s | Opened output BAMs for writing..."%(get_ctime()))
     spliced=dict() # 1=spliced
     splicedbsj=dict()
     count1=0    # total reads
@@ -170,6 +233,7 @@ def main():
     mate_already_counted2=dict()
     # mate_already_counted3=dict() # not needed as similar to the "spliced" dict
     # mate_already_counted4=dict() # not needed as similar to "spliced" dict have value 2
+    last_printed=-1
     for read in samfile.fetch():
         if args.pe and ( read.reference_id != read.next_reference_id ): continue    # only works for PE ... for SE read.next_reference_id is -1
         if args.pe and ( not read.is_proper_pair ): continue
@@ -201,15 +265,9 @@ def main():
                 mate_already_counted2[rid]=1
                 count2+=1
             jid = rid2jid[rid]
-            # print(rid,jid ) 
-            x=jid.split("##")
-            chrom=x[0]
-            s=int(x[1])
-            e=int(x[2])
-# "junction_counts" is number of counts of linear BSJ reads found for each BSJ
-            if not rid in junction_counts[jid] :
-                junction_counts[jid][rid]=1
-            read.set_tag("RG", jid , value_type="Z")
+            chrom, jstart, jend, strand_info, short_jid, converted_jid = _get_jinfo(jid)
+            junction_counts[short_jid].increment_linear(strand_info)
+            read.set_tag("RG", converted_jid , value_type="Z")
             outbam.write(read)
             if lenoutputbams != 0:
                 regionname=_get_regionname_from_seqname(regions,chrom)
@@ -230,10 +288,12 @@ def main():
                     if nsplices == 1:
                         start=int(read.reference_start)+int(cigart[0][1])+1
                         end=int(start)+int(cigart[1][1])-1
-                        if abs(int(start)-int(s))<3 or abs(int(end)-int(e))<3: # include 2,1,0,-1,-2
+                        # print(start,end,jstart,jend)
+                        if abs(int(start)-int(jstart))<3 or abs(int(end)-int(jend))<3: # include 2,1,0,-1,-2
+                            junction_counts[short_jid].increment_linear_spliced(strand_info)
                             splicedbsj[rid]=1  # aka read is spliced and is spliced at BSJ
                             count4+=1
-                            splicedbsjjid[jid][rid]=1
+                            # splicedbsjjid[jid][rid]=1
                     else:   # read has multiple splicing events
                         for j in range(len(cigart)-1):
                             if cigart[j][0]==0 and cigart[j+1][0]==3:
@@ -242,44 +302,49 @@ def main():
                                     add_coords+=int(cigart[k][1])
                                 start=int(read.reference_start)+add_coords+1
                                 end=int(start)+int(cigart[j+1][1])-1
-                                if abs(int(start)-int(s))<3 or abs(int(end)-int(e))<3: # include 2,1,0,-1,-2
+                                if abs(int(start)-int(jstart))<3 or abs(int(end)-int(jend))<3: # include 2,1,0,-1,-2
+                                    junction_counts[short_jid].increment_linear_spliced(strand_info)
                                     splicedbsj[rid]=1  # aka read is spliced and is spliced at BSJ
                                     count4+=1
-                                    splicedbsjjid[jid][rid]=1
+                                    # splicedbsjjid[jid][rid]=1
                                     break
-        if (count1%10000==0):
-            print("...Processed %d reads/readpairs (%d  were spliced! %d linear around BSJ! %d spliced at BSJ)"%(count1,len(spliced),count2,len(splicedbsj)))
-    print("Done processing alignments: %d reads/readpairs (%d  were spliced! %d linear around BSJ! %d spliced at BSJ)"%(count1,len(spliced),count2,len(splicedbsj)))
+        if (count1%100000==0) and (last_printed!=count1):
+            last_printed=count1
+            print("%s | ...Processed %d reads/readpairs (%d  were spliced! %d linear around BSJ! %d spliced at BSJ)"%(get_ctime(),count1,len(spliced),count2,len(splicedbsj)))
+    print("%s | Done processing alignments: %d reads/readpairs (%d  were spliced! %d linear around BSJ! %d spliced at BSJ)"%(get_ctime(),count1,len(spliced),count2,len(splicedbsj)))
     if lenoutputbams != 0:
         for k,v in outputbams.items():
             v.close()
     samfile.reset()
-    print("Writing spliced BAMs ...")
+    print("%s | Writing spliced BAMs ..."%(get_ctime()))
 
     for read in samfile.fetch():
         rid = read.query_name
         if rid in spliced : splicedbam.write(read)
         if rid in splicedbsj : 
             jid = rid2jid[rid]
-            read.set_tag("RG", jid ,  value_type="Z") 
+            converted_jid = _convertjid(jid)
+            read.set_tag("RG", converted_jid ,  value_type="Z") 
             splicedbsjbam.write(read)
 
     samfile.close()
     outbam.close()
     splicedbam.close()
     splicedbsjbam.close()
-    print("Closing all BAMs")
-    args.countsfound.write("#chrom\tstart\tend\tfound_linear_BSJ_reads\tspliced_linear_BSJ_reads\n")
-    for jid in junction_counts.keys():
-        x=jid.split("##")
-        chrom=x[0]
-        start=int(x[1])
-        end=int(x[2])+1
-        linear_count=len(junction_counts[jid])
-        spliced_linear_count=len(splicedbsjjid[jid])
-        args.countsfound.write("%s\t%d\t%d\t%d\t%d\n"%(chrom,start,end,linear_count,spliced_linear_count))
+    print("%s | Closing all BAMs"%(get_ctime()))
+    args.countsfound.write("#chrom\tstart\tend\tstrand\tlinear_BSJ_reads_same_strand\tlinear_spliced_BSJ_reads_same_strand\tlinear_BSJ_reads_opposite_strand\tlinear_spliced_BSJ_reads_opposite_strand\n")
+    for short_jid in junction_counts.keys():
+        chrom=junction_counts[short_jid].chrom
+        start=junction_counts[short_jid].start
+        end=int(junction_counts[short_jid].end)+1
+        strand=junction_counts[short_jid].strand
+        ss_linear_count=junction_counts[short_jid].ss_linear_count
+        ss_linear_spliced_count=junction_counts[short_jid].ss_linear_spliced_count
+        os_linear_count=junction_counts[short_jid].os_linear_count
+        os_linear_spliced_count=junction_counts[short_jid].os_linear_spliced_count
+        args.countsfound.write("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\n"%(chrom,str(start),str(end),strand,ss_linear_count,ss_linear_spliced_count,os_linear_count,os_linear_spliced_count))
     args.countsfound.close()
-    print("DONE!!")
+    print("%s | DONE!!"%(get_ctime()))
 
 
 if __name__ == "__main__":

@@ -20,10 +20,14 @@ def main():
         for l in args.bedint:
             l=l.strip().split("\t")
             # print(l)
-            if ( abs(int(l[2])-int(l[10])) <= args.maxdist ) or ( abs(int(l[1])-int(l[9])) <= args.maxdist ) or ( abs(int(l[2])-int(l[9])) <= args.maxdist ) or ( abs(int(l[1])-int(l[10])) <= args.maxdist ):
-                jid=l[0]+"##"+l[1]+"##"+str(int(l[2])-1)
+            # print(" abs(int(l[2])-int(l[10])) <= args.maxdist :", abs(int(l[2])-int(l[10])),(abs(int(l[2])-int(l[10])) <= args.maxdist ))
+            # print(" abs(int(l[1])-int(l[9])) <= args.maxdist :",  abs(int(l[1])-int(l[9])),(abs(int(l[1])-int(l[9])) <= args.maxdist))
+            # print(" abs(int(l[2])-int(l[9])) <= args.maxdist : ", abs(int(l[2])-int(l[9])),(abs(int(l[2])-int(l[9])) <= args.maxdist))
+            # print(" abs(int(l[1])-int(l[10])) <= args.maxdist :", abs(int(l[1])-int(l[10])),(abs(int(l[1])-int(l[10])) <= args.maxdist))
+            if ( abs(int(l[2])-int(l[11])) <= args.maxdist ) or ( abs(int(l[1])-int(l[10])) <= args.maxdist ) or ( abs(int(l[2])-int(l[10])) <= args.maxdist ) or ( abs(int(l[1])-int(l[11])) <= args.maxdist ):
+                jid=l[0]+"##"+l[1]+"##"+str(int(l[2])-1)+"##"+l[5]+"##"+l[-1] # jid format is chrom##start##end##strand##read_strand
                 # outl=l[3:]
-                rid=l[11]
+                rid=l[12]
                 outl=[rid]
                 outl.append(jid)
                 outstr="\t".join(outl)
