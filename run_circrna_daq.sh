@@ -291,6 +291,7 @@ fi
 
 # bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
 
+sleep 60
 /data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
 
 EOF
