@@ -548,8 +548,10 @@ DCC @{input.ss} \\
     --refseq {params.fa} 
 fi
 
+paste {output.cr} {output.linear} | cut -f1-5,9 > ${{TMPDIR}}/CircRNALinearCount
+
 python {params.script} \\
-  --CircCoordinates {output.cc} --CircRNACount {output.cr} -o {output.ct}
+  --CircCoordinates {output.cc} --CircRNALinearCount ${{TMPDIR}}/CircRNALinearCount -o {output.ct}
 
 python {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
