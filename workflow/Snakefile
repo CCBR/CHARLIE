@@ -118,14 +118,7 @@ rule all:
         join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),                                                     # multi-sample counts matrix
         
         # ## picard MarkDuplicates metrics
-        expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),    # required to estimate duplication stats
-        
-        # ## BSJ bam
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.BSJ.bam"),sample=SAMPLES),
-        
-        ## alignment stats
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt"), sample=SAMPLES),
-        
+        expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),    # required to estimate duplication stats    
         ## circExplorer --> we run circExplorer2
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv"),sample=SAMPLES),
@@ -178,6 +171,11 @@ rule all:
         get_mapsplice_target_files(RUN_MAPSPLICE),
         # ## NCLscan
         get_nclscan_target_files(RUN_NCLSCAN),
+
+        ## alignment stats
+        join(WORKDIR,"results","alignmentstats.txt")
+        # expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"), sample=SAMPLES),
+
         # ## merged counts per sample table of all counts/annotations from all circRNA callers
         # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
         # ## aggregated counts matrix
