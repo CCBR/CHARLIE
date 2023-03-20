@@ -1,3 +1,19 @@
+# AWK_SUM_READCOUNTS_CMD=r"""{sum=sum+$1}END{print sum}"""
+
+def get_alignment_stats_input(wildcards):
+    sample = wildcards.sample
+    d = dict()
+    d['star2bam']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.bam")
+    d['star2bam_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.chimeric.bam")
+    d['star2bam_nonchimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")  
+    d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
+    d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
+    d['linearsplicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.spliced.bam") 
+    d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
+    d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.cram")
+    if RUN_MAPSPLICE:
+        d['mapslicebam']=join(WORKDIR,"results",sample,"MapSplice",sample+".mapslice.cram")
+    return d
 
 rule create_circExplorer_BSJ_bam:
     input:
@@ -234,7 +250,7 @@ localrules: create_circExplorer_merged_found_counts_table
 rule create_circExplorer_merged_found_counts_table:
     input:
         bsj_found_counts=rules.create_circExplorer_BSJ_bam.output.BSJfoundcounts,
-        linear_found_counts=rules.create_circExplorer_spliced_bams.output.linear_foundcounts
+        linear_found_counts=rules.create_circExplorer_linear_spliced_bams.output.linear_foundcounts
     output:
         count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.readcounts.tsv")
     params:
@@ -257,29 +273,93 @@ python3 {params.pythonscript} \\
 """
 
 
-# rule alignment_stats:
-#     input:
-#         star2pbam=rules.star2p.output.bam,
-#         splicedreadsbam=rules.create_spliced_reads_bam.output.bam,
-#         BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
-#     output:
-#         alignmentstats=join(WORKDIR,"results","{sample}","STAR2p","alignmentstats.txt")
-#     params:
-#         regions=REF_REGIONS,
-#         bam2nreads_script=join(SCRIPTS_DIR,"  h"),
-#         outdir=join(WORKDIR,"results","{sample}","STAR2p")
-#     threads: getthreads("alignment_stats")
-#     envmodules: TOOLS["samtools"]["version"]
-#     shell:"""
-# set -exo pipefail
-# while read a b;do echo $a;done < {params.regions} > {params.outdir}/tmp1
-# while read a b;do bash {params.bam2nreads_script} {input.star2pbam} "$b";done < {params.regions} > {params.outdir}/tmp2
-# while read a b;do bash {params.bam2nreads_script} {input.splicedreadsbam} "$b";done < {params.regions} > {params.outdir}/tmp3
-# while read a b;do bash {params.bam2nreads_script} {input.BSJbam} "$b";done < {params.regions} > {params.outdir}/tmp4
-# echo -ne "#region\taligned_fragments\tspliced_fragments\tBSJ_fragments\n" > {output.alignmentstats}
-# paste {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 >> {output.alignmentstats}
-# rm -f {params.outdir}/tmp1 {params.outdir}/tmp2 {params.outdir}/tmp3 {params.outdir}/tmp4 
-# """
+rule alignment_stats:
+    input:
+        # star2bam=rules.star2p.output.bam,
+        # splicedbam=rules.create_circExplorer_linear_spliced_bams.output.spliced_bam,
+        # linearbam=rules.create_circExplorer_linear_spliced_bams.output.linear_bam,
+        # linearsplicedbam=rules.create_circExplorer_linear_spliced_bams.output.linear_spliced_bam,
+        # BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
+        # ciribam=rules.ciri.output.ciribam,
+        unpack(get_alignment_stats_input),
+        # mapslicebam=rules.mapsplice_postprocess.output.bam,
+    output:
+        alignmentstats=join(WORKDIR,"results","{sample}","alignmentstats.txt")
+    params:
+        sample="{sample}",
+        regions=REF_REGIONS,
+        peorse=get_peorse,
+        run_mapsplice=N_RUN_MAPSPLICE,
+        bash2nreads_pyscript=join(SCRIPTS_DIR,"_bam_get_alignment_stats.py"),
+        randomstr=str(uuid.uuid4())
+    threads: getthreads("alignment_stats")
+    envmodules: TOOLS["python37"]["version"],TOOLS["parallel"]["version"]
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+    mkdir -p $TMPDIR
+fi
+for bamfile in {input};do
+    bamfile_bn=$(basename $bamfile)
+    if [ "{params.peorse}" == "PE" ];then
+    echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+    else
+    echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+    fi
+done > ${{TMPDIR}}/do_bamstats
+parallel -j 2 < ${{TMPDIR}}/do_bamstats
+
+print_bam_results () {{
+    bamfile=$1
+    bamfile_bn=$(basename $bamfile)
+    stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
+    prefix=$2
+    while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
+}}
+
+echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
+print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
+print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
+print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
+print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
+print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
+print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
+if [ "{params.run_mapsplice}" == "1" ];then print_bam_results {input.mapslicebam} "MapSplice" >> {output.alignmentstats};fi
+"""
+
+
+localrules: merge_alignment_stats
+rule merge_alignment_stats:
+    input:
+        expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"),sample=SAMPLES)
+    output:
+        join(WORKDIR,"results","alignmentstats.txt")
+    params:
+        randomstr=str(uuid.uuid4())
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+    mkdir -p $TMPDIR
+fi
+count=0
+for f in {input};do
+    count=$((count+1))
+    if [ "$count" == "1" ];then
+        cp $f {output}
+    else
+        cut -f2 $f > ${{TMPDIR}}/${{count}}
+        paste {output} ${{TMPDIR}}/${{count}} > ${{TMPDIR}}/${{count}}.tmp
+        mv ${{TMPDIR}}/${{count}}.tmp {output}
+    fi
+done 
+"""
+
 
 # localrules: venn
 # rule venn:
@@ -473,30 +553,30 @@ python3 {params.pythonscript} \\
 # cd $TMPDIR && rm -f *
 # """
 
-rule filter_ciri_bam_for_BSJs:
-    input:
-        bam=rules.ciri.output.ciribam,
-        ciriout=rules.ciri.output.cirioutfiltered,
-        readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
-    output:
-        bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam")
-    params:
-        sample="{sample}",
-        memG=getmemG("filter_ciri_bam_for_BSJs"),
-        script=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
-        randomstr=str(uuid.uuid4())
-    threads: getthreads("filter_ciri_bam_for_BSJs")
-    envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"]
-    shell:"""
-set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
-fi
-sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.ciri.sorted.bam {input.bam}
-python {params.script} --inputBAM ${{TMPDIR}}/{params.sample}.ciri.sorted.bam --outputBAM ${{TMPDIR}}/{params.sample}.tmp.bam --readids {input.readids}
-sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.tmp.bam
-cd $TMPDIR && rm -f *
-"""
+# rule filter_ciri_bam_for_BSJs:
+#     input:
+#         bam=rules.ciri.output.ciribam,
+#         ciriout=rules.ciri.output.cirioutfiltered,
+#         readids=rules.add_novel_ciri_BSJs_to_customBSJ.output.cirireadids
+#     output:
+#         bam=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam")
+#     params:
+#         sample="{sample}",
+#         memG=getmemG("filter_ciri_bam_for_BSJs"),
+#         script=join(SCRIPTS_DIR,"filter_bam_by_readids.py"),
+#         randomstr=str(uuid.uuid4())
+#     threads: getthreads("filter_ciri_bam_for_BSJs")
+#     envmodules: TOOLS["python37"]["version"],TOOLS["sambamba"]["version"]
+#     shell:"""
+# set -exo pipefail
+# if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+#     TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+# else
+#     TMPDIR="/dev/shm/{params.randomstr}"
+#     mkdir -p $TMPDIR
+# fi
+# sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out=${{TMPDIR}}/{params.sample}.ciri.sorted.bam {input.bam}
+# python {params.script} --inputBAM ${{TMPDIR}}/{params.sample}.ciri.sorted.bam --outputBAM ${{TMPDIR}}/{params.sample}.tmp.bam --readids {input.readids}
+# sambamba sort --memory-limit={params.memG} --tmpdir=${{TMPDIR}} --nthreads={threads} --out={output.bam} ${{TMPDIR}}/{params.sample}.tmp.bam
+# cd $TMPDIR && rm -f *
+# """
