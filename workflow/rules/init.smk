@@ -62,6 +62,11 @@ def _is_true(variable):
     else:
         return False
 
+def _convert_to_int(variable):
+    if variable: return 1       # True
+    if not variable: return 0   # False
+    return -1                   # Unknown
+
 #resouce absolute path
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
@@ -71,6 +76,10 @@ RUN_CLEAR=_is_true(config['run_clear'])
 RUN_DCC=_is_true(config['run_dcc'])
 RUN_MAPSPLICE=_is_true(config['run_mapsplice'])
 RUN_NCLSCAN=_is_true(config['run_nclscan'])
+N_RUN_CLEAR=_convert_to_int(RUN_CLEAR)
+N_RUN_DCC=_convert_to_int(RUN_DCC)
+N_RUN_MAPSPLICE=_convert_to_int(RUN_MAPSPLICE)
+N_RUN_NCLSCAN=_convert_to_int(RUN_NCLSCAN)
 
 
 REF_DIR=join(WORKDIR,"ref")
