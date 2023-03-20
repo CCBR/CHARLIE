@@ -32,7 +32,7 @@ for rid in rids:
     rids_dict[rid]=1
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
-bigdict = dict()
+# bigdict = dict()
 
 count=0
 for read in inBAM.fetch():
@@ -40,12 +40,14 @@ for read in inBAM.fetch():
 	if count%1000000 == 0:
 		print("%d reads read!"%(count))
 	qn=read.query_name
-	if not qn in bigdict:
-		bigdict[qn]=list()
-	bigdict[qn].append(read)
+	if qn in rids_dict:
+		outBAM.write(read)
+	# if not qn in bigdict:
+	# 	bigdict[qn]=list()
+	# bigdict[qn].append(read)
 inBAM.close()
 
-for r in rids_dict:
-	for read in bigdict[r]:
-		outBAM.write(read)
+# for r in rids_dict:
+# 	for read in bigdict[r]:
+# 		outBAM.write(read)
 outBAM.close()

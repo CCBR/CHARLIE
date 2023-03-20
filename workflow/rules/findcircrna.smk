@@ -189,7 +189,7 @@ python {params.script} \\
 # | 5  | #junction_reads      | circular junction read (also called as back-spliced junction read) count of a predicted circRNA                                                                                                                                                                                                                                                                                                                                                                                                         |
 # | 6  | SM_MS_SMS            | unique CIGAR types of a predicted circRNA. For example, a circRNAs have three junction reads: read A (80M20S, 80S20M), read B (80M20S, 80S20M), read C (40M60S, 40S30M30S, 70S30M), then its has two SM types (80S20M, 70S30M), two MS types (80M20S, 70M30S) and one SMS type (40S30M30S). Thus its SM_MS_SMS should be 2_2_1.                                                                                                                                                                         |
 # | 7  | #non_junction_reads  | non-junction read count of a predicted circRNA that mapped across the circular junction but consistent with linear RNA instead of being back-spliced                                                                                                                                                                                                                                                                                                                                                    |
-# | 8  | junction_reads_ratio | ratio of circular junction reads calculated by 2#junction_reads/(2#junction_reads+#non_junction_reads). #junction_reads is multiplied by two because a junction read is generated from two ends of circular junction but only counted once while a non-junction read is from one end. It has to be mentioned that the non-junction reads are still possibly from another larger circRNA, so the junction_reads_ratio based on it may be an inaccurate estimation of relative expression of the circRNA. |
+# | 8  | junction_reads_ratio | ratio of circular junction reads calculated by 2 * #junction_reads/(2 * #junction_reads+#non_junction_reads). #junction_reads is multiplied by two because a junction read is generated from two ends of circular junction but only counted once while a non-junction read is from one end. It has to be mentioned that the non-junction reads are still possibly from another larger circRNA, so the junction_reads_ratio based on it may be an inaccurate estimation of relative expression of the circRNA. |
 # | 9  | circRNA_type         | type of a circRNA according to positions of its two ends on chromosome (exon, intron or intergenic_region; only available when annotation file is provided)                                                                                                                                                                                                                                                                                                                                             |
 # | 10 | gene_id              | ID of the gene(s) where an exonic or intronic circRNA locates                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 # | 11 | strand               | strand info of a predicted circRNAs (new in CIRI2)                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -203,11 +203,12 @@ rule ciri:
     output:
         cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
         bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
-        ciribam=temp(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.bam")),
+        ciribam=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.cram"),
         ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),
         cirioutfiltered=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),
     params:
         sample="{sample}",
+        memG=getmemG("ciri"),
         outdir=join(WORKDIR,"results","{sample}","ciri"),
         peorse=get_peorse,
         genepred=rules.create_index.output.genepred_w_geneid,
@@ -229,6 +230,12 @@ rule ciri:
     envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
     shell:"""
 set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 cd {params.outdir}
 if [ "{params.peorse}" == "PE" ];then
     ## paired-end
@@ -249,7 +256,7 @@ perl {params.ciripl} \\
 -F {params.reffa} \\
 -A {params.gtf} \\
 -G {output.cirilog} -T {threads}
-samtools view -@{threads} -bS {params.sample}.bwa.sam > {output.ciribam}
+samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o {output.ciribam} -
 rm -rf {params.sample}.bwa.sam
 python {params.script} \\
     --ciriout {output.ciriout} \\
@@ -475,9 +482,11 @@ rule dcc:
         ss=rules.dcc_create_samplesheets.output.ss,
         m1=rules.dcc_create_samplesheets.output.m1,
         m2=rules.dcc_create_samplesheets.output.m2,
+        bam=rules.star2p.output.bam
     output:
         cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
+        linear=join(WORKDIR,"results","{sample}","DCC","LinearCount"),
         ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
         ctf=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered"),
     threads: getthreads("dcc")
@@ -499,7 +508,7 @@ rule dcc:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script2=join(SCRIPTS_DIR,"filter_ciriout.py")
+        script2=join(SCRIPTS_DIR,"filter_dcc.py")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -516,10 +525,11 @@ if [ "{params.peorse}" == "PE" ];then
 DCC @{input.ss} \\
     --temp $TMPDIR \\
     --threads {threads} \\
-    --detect \\
+    --detect --gene \\
+    --bam {input.bam} \\
     {params.dcc_strandedness} \\
     --annotation {params.gtf} \\
-    --chrM \\
+    --chrM -G \\
     --rep_file {params.rep} \\
     --refseq {params.fa} \\
     --PE-independent \\
@@ -529,10 +539,11 @@ else
 DCC @{input.ss} \\
     --temp $TMPDIR \\
     --threads {threads} \\
-    --detect \\
+    --detect --gene \\
+    --bam {input.bam} \\
     {params.dcc_strandedness} \\
     --annotation {params.gtf} \\
-    --chrM \\
+    --chrM -G \\
     --rep_file {params.rep} \\
     --refseq {params.fa} 
 fi
@@ -542,7 +553,7 @@ python {params.script} \\
 
 python {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
-    --out_dcc_counts_table {output.ctf} \\
+    --out_dcc_filtered_counts_table {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --host {params.host} \\
     --additives {params.additives} \\
@@ -713,14 +724,16 @@ rule mapsplice_postprocess:
     output:
         ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv"),
         ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered"),
-        bam=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam"),
-        bai=join(WORKDIR,"results","{sample}","MapSplice","alignments.bam.bai"),
+        bam=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.cram"),
+        bai=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.cram.crai"),
     envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
     params:
-        script=join(SCRIPTS_DIR,"create_mapslice_per_sample_counts_table.py"),
+        script=join(SCRIPTS_DIR,"create_mapsplice_per_sample_counts_table.py"),
+        memG=getmemG("mapsplice_postprocess"),
         randomstr=str(uuid.uuid4()),
         bsj_min_nreads=config['minreadcount'],
         refregions=REF_REGIONS,
+        reffa=REF_FA,
         host=HOST,
         additives=ADDITIVES,
         viruses=VIRUSES,
@@ -740,7 +753,7 @@ if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 python {params.script} \\
     --circularRNAstxt {input.circRNAs} \\
     -o {output.ct} \\
-    -of {output.ctf} \\
+    -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --host {params.host} \\
     --additives {params.additives} \\
@@ -751,10 +764,9 @@ python {params.script} \\
     --virus_filter_min {params.minsize_virus} \\
     --virus_filter_max {params.maxsize_virus}
 cd $TMPDIR
-samtools view -@{threads} -bS {input.sam} | samtools sort -@{threads} -o alignments.bam -
-samtools index -@{threads} alignments.bam
-rsync -az --progress alignments.bam {output.bam}
-rsync -az --progress alignments.bam.bai {output.bai}
+samtools view -@{threads} -T {params.reffa} -CS {input.sam} | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o alignments.cram -
+rsync -az --progress alignments.cram {output.bam}
+rsync -az --progress alignments.cram.crai {output.bai}
 """
 
 
@@ -820,13 +832,15 @@ else
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 outdir=$(dirname {output.result})
+results_bn=$(basename {output.result})
 
 if [ "{params.peorse}" == "PE" ];then
-{params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $outdir --fq1 {input.R1} --fq2 {input.R2}
+{params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $TMPDIR --fq1 {input.R1} --fq2 {input.R2}
+rsync -az --progress ${{TMPDIR}}/${{results_bn}} {output.result}
 python {params.script} \\
     --result {output.result} \\
     -o {output.ct} \\
-    -of {output.ctf} \\
+    -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --host {params.host} \\
     --additives {params.additives} \\

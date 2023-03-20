@@ -220,10 +220,14 @@ rule star2p:
         pass1sjtab=rules.merge_SJ_tabs.output.pass1sjtab
     output:
         junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
-        bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.sortedByCoord.out.bam"),
+        unsortedbam=temp(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Aligned.out.bam")),
+        bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.bam"),
+        chimeric_bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.chimeric.bam"),
+        non_chimeric_bam=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.non_chimeric.bam"),
         genecounts=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab")
     params:
         sample="{sample}",
+        memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
         outdir=join(WORKDIR,"results","{sample}","STAR2p"),
@@ -275,14 +279,15 @@ if [ "{params.peorse}" == "PE" ];then
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
-    --outSAMtype BAM SortedByCoordinate \\
+    --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {params.gtf} \\
     --quantMode GeneCounts \\
     --outTmpDir=${{TMPDIR}} \\
-    --sjdbOverhang $overhang
-
+    --sjdbOverhang $overhang \\
+    --outBAMcompression 0 \\
+    --outSAMattributes All
 else
 #single-end
     overhang=$(zcat {input.R1} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
@@ -315,17 +320,50 @@ else
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
-    --outSAMtype BAM SortedByCoordinate \\
+    --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {params.gtf} \\
     --quantMode GeneCounts \\
     --outTmpDir=${{TMPDIR}} \\
-    --sjdbOverhang $overhang
+    --sjdbOverhang $overhang \\
+    --outBAMcompression 0 \\
+    --outSAMattributes All
 fi
-## ensure the star2p file is indexed ... is should already be sorted by STAR
 sleep 120
-samtools index {output.bam}
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+samtools view -H {output.unsortedbam} > ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam
+cp ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam ${{TMPDIR}}/{params.sample}_p2.chimeric.sam
+# ref https://github.com/alexdobin/STAR/issues/678
+samtools view -@ {threads} {output.unsortedbam} | grep "ch:A:1" >> ${{TMPDIR}}/{params.sample}_p2.chimeric.sam
+samtools view -@ {threads} {output.unsortedbam} | grep -v "ch:A:1" >> ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam
+ls -alrth
+for i in 1 2 3;do
+    if [ ! -d ${{TMPDIR}}/{params.randomstr}_${{i}} ];then mkdir -p ${{TMPDIR}}/{params.randomstr}_${{i}};fi
+done
+samtools view -@ {threads} -b -S ${{TMPDIR}}/{params.sample}_p2.chimeric.sam | \\
+samtools sort \\
+    -l 9 \\
+    -T ${{TMPDIR}}/{params.randomstr}_1 \\
+    --write-index \\
+    -@ {threads} \\
+    --output-fmt BAM \\
+    -o {output.chimeric_bam} -
+samtools view -@ {threads} -b -S ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam | \\
+samtools sort \\
+    -l 9 \\
+    -T ${{TMPDIR}}/{params.randomstr}_2 \\
+    --write-index \\
+    -@ {threads} \\
+    --output-fmt BAM \\
+    -o {output.non_chimeric_bam} -
+samtools sort \\
+    -l 9 \\
+    -T ${{TMPDIR}}/{params.randomstr}_3 \\
+    --write-index \\
+    -@ {threads} \\
+    --output-fmt BAM \\
+    -o {output.bam} {output.unsortedbam}
 """
 
 rule estimate_duplication:

@@ -30,9 +30,10 @@
         "time": "12:00:00"
     },
     "nclscan": {
-        "mem": "200g",
+        "mem": "512g",
         "threads": "56",
-        "time": "48:00:00"
+        "time": "48:00:00",
+        "partition": "largemem"
     },
     "fastqc": {
         "mem": "40g",
@@ -72,18 +73,12 @@
         "threads": "4",
         "time": "24:00:00"
     },
-    "create_BSJ_bam": {
-        "mem": "512g",
-        "threads": "4",
-        "time": "24:00:00",
-        "partition": "largemem"
-    },
-    "create_spliced_reads_bam": {
+    "create_circExplorer_BSJ_bam": {
         "mem": "200g",
         "threads": "4",
         "time": "24:00:00"
     },
-    "create_linear_reads_bam":{
+    "create_circExplorer_linear_spliced_bams":{
         "mem": "200g",
         "threads": "4",
         "time": "24:00:00"
@@ -100,6 +95,10 @@
     "split_linear_reads_BAM_create_BW": {
         "mem": "120g",
         "time": "24:00:00"        
+    },
+    "alignment_stats": {
+        "mem": "120g",
+        "threads": "8",
+        "time": "6:00:00"
     }
-
 }

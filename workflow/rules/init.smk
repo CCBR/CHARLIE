@@ -62,6 +62,11 @@ def _is_true(variable):
     else:
         return False
 
+def _convert_to_int(variable):
+    if variable: return 1       # True
+    if not variable: return 0   # False
+    return -1                   # Unknown
+
 #resouce absolute path
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
@@ -71,6 +76,10 @@ RUN_CLEAR=_is_true(config['run_clear'])
 RUN_DCC=_is_true(config['run_dcc'])
 RUN_MAPSPLICE=_is_true(config['run_mapsplice'])
 RUN_NCLSCAN=_is_true(config['run_nclscan'])
+N_RUN_CLEAR=_convert_to_int(RUN_CLEAR)
+N_RUN_DCC=_convert_to_int(RUN_DCC)
+N_RUN_MAPSPLICE=_convert_to_int(RUN_MAPSPLICE)
+N_RUN_NCLSCAN=_convert_to_int(RUN_NCLSCAN)
 
 
 REF_DIR=join(WORKDIR,"ref")
@@ -96,9 +105,12 @@ VIRUSES=VIRUSES.replace(" ","")
 REPEATS_GTF=join(FASTAS_GTFS_DIR,HOST+".repeats.gtf")
 
 HOST_ADDITIVES_VIRUSES=HOST_ADDITIVES+","+VIRUSES
+HOST_VIRUSES=HOST+","+VIRUSES
 HOST_ADDITIVES_VIRUSES=HOST_ADDITIVES_VIRUSES.split(",")
 FASTAS=[join(FASTAS_GTFS_DIR,f+".fa") for f in HOST_ADDITIVES_VIRUSES]
 REGIONS=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in HOST_ADDITIVES_VIRUSES]
+REGIONS_HOST=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in HOST.split(",")]
+REGIONS_VIRUSES=[join(FASTAS_GTFS_DIR,f+".fa.regions") for f in VIRUSES.split(",")]
 GTFS=[join(FASTAS_GTFS_DIR,f+".gtf") for f in HOST_ADDITIVES_VIRUSES]
 FASTAS_REGIONS_GTFS=FASTAS.copy()
 FASTAS_REGIONS_GTFS.extend(REGIONS)
@@ -121,9 +133,13 @@ for f in REQUIRED_FILES:
 
 REF_FA=join(REF_DIR,"ref.fa")
 REF_REGIONS=join(REF_DIR,"ref.fa.regions")
+REF_REGIONS_HOST=join(REF_DIR,"ref.fa.regions.host")
+REF_REGIONS_VIRUSES=join(REF_DIR,"ref.fa.regions.viruses")
 REF_GTF=join(REF_DIR,"ref.gtf")
 append_files_in_list(FASTAS,REF_FA)
 append_files_in_list(REGIONS,REF_REGIONS)
+append_files_in_list(REGIONS_HOST,REF_REGIONS_HOST)
+append_files_in_list(REGIONS_VIRUSES,REF_REGIONS_VIRUSES)
 append_files_in_list(GTFS,REF_GTF)
 
 SAMPLESDF = pd.read_csv(config["samples"],sep="\t",header=0,index_col="sampleName")

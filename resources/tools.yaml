@@ -16,6 +16,8 @@ java:
  version: "java/1.8.0_181"
 multiqc:
  version: "multiqc/1.9"
+parallel:
+ version: "current"
 picard:
  version: "picard/2.25.0"
 python27:
@@ -25,7 +27,7 @@ python37:
 sambamba:
  version: "sambamba/0.8.0"
 samtools:
- version: "samtools/1.11"
+ version: "samtools/1.16.1"
 star:
  version: "STAR/2.7.6a"
  alignTranscriptsPerReadNmax: "20000"
