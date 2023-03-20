@@ -95,6 +95,10 @@
     "split_linear_reads_BAM_create_BW": {
         "mem": "120g",
         "time": "24:00:00"        
+    },
+    "alignment_stats": {
+        "mem": "120g",
+        "threads": "8",
+        "time": "6:00:00"
     }
-
 }
