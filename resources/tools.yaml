@@ -16,6 +16,8 @@ java:
  version: "java/1.8.0_181"
 multiqc:
  version: "multiqc/1.9"
+parallel:
+ version: "current"
 picard:
  version: "picard/2.25.0"
 python27:
