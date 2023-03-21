@@ -125,7 +125,7 @@ rule circExplorer:
     output:
         backsplicedjunctions=join(WORKDIR,"results","{sample}","circExplorer","{sample}.back_spliced_junction.bed"),
         annotations=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),
-        counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
+        annotation_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.annotation_counts.tsv")
     params:
         sample="{sample}",
         bsj_min_nreads=config['circexplorer_bsj_circRNA_min_reads'], # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
@@ -140,7 +140,7 @@ rule circExplorer:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py")
+        script=join(SCRIPTS_DIR,"circExplorer_get_annotated_counts_per_sample.py") # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     envmodules: TOOLS["circexplorer"]["version"]
     shell:"""
@@ -174,7 +174,7 @@ python {params.script} \\
     --host_filter_max {params.maxsize_host} \\
     --virus_filter_min {params.minsize_virus} \\
     --virus_filter_max {params.maxsize_virus} \\
-    -o {output.counts_table}
+    -o {output.annotation_counts_table}
 """
 
 
@@ -225,7 +225,8 @@ rule ciri:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR,"filter_ciriout.py")
+        script=join(SCRIPTS_DIR,"filter_ciriout.py"),
+        randomstr=str(uuid.uuid4()),
     threads: getthreads("ciri")
     envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
     shell:"""
@@ -523,7 +524,7 @@ conda activate DCC
 cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
 DCC @{input.ss} \\
-    --temp $TMPDIR \\
+    --temp ${{TMPDIR}}/DCC \\
     --threads {threads} \\
     --detect --gene \\
     --bam {input.bam} \\
@@ -537,7 +538,7 @@ DCC @{input.ss} \\
     -mt2 @{input.m2}
 else
 DCC @{input.ss} \\
-    --temp $TMPDIR \\
+    --temp ${{TMPDIR}}/DCC \\
     --threads {threads} \\
     --detect --gene \\
     --bam {input.bam} \\
@@ -547,6 +548,8 @@ DCC @{input.ss} \\
     --rep_file {params.rep} \\
     --refseq {params.fa} 
 fi
+
+ls -alrth ${{TMPDIR}}
 
 paste {output.cr} {output.linear} | cut -f1-5,9 > ${{TMPDIR}}/CircRNALinearCount
 
@@ -890,14 +893,15 @@ rule merge_per_sample:
     input:
         unpack(get_per_sample_files_to_merge)
     output:
-        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),
+        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
     params:
-        script=join(SCRIPTS_DIR,"merge_per_sample_counts_table.py"),
+        script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
         samplename="{sample}",
         runclear=_boolean2str(RUN_CLEAR),
         rundcc=_boolean2str(RUN_DCC),
         runmapsplice=_boolean2str(RUN_MAPSPLICE),
         runnclscan=_boolean2str(RUN_NCLSCAN),
+        peorse=get_peorse,
         minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
     envmodules:
         TOOLS["python37"]["version"]
@@ -914,7 +918,9 @@ if [[ "{params.runmapsplice}" == "1" ]]; then
     parameters="$parameters --mapsplice {input.MapSplice}"
 fi
 if [[ "{params.runnclscan}" == "1" ]]; then
-    parameters="$parameters --nclscan {input.NCLscan}"
+    if [[ "{params.peorse}" == "PE" ]]; then    # NCLscan is run only if the sample is PE
+        parameters="$parameters --nclscan {input.NCLscan}"
+    fi
 fi
 parameters="$parameters --min_read_count_reqd {params.minreadcount}"
 parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
@@ -924,24 +930,33 @@ python {params.script} $parameters
 """
 
 
-# localrules: create_counts_matrix
-# rule create_counts_matrix:
+localrules: create_master_counts_file
+# rule create_master_counts_file:
 # merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
-rule create_counts_matrix:
+rule create_master_counts_file:
     input:
-        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
     output:
-        matrix=join(WORKDIR,"results","circRNA_counts_matrix.tsv")
+        matrix=join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
     params:
-        script=join(SCRIPTS_DIR,"merge_counts_tables_2_counts_matrix.py"),
+        script=join(SCRIPTS_DIR,"_make_master_counts_table.py"),
         resultsdir=join(WORKDIR,"results"),
         lookup_table=ANNOTATION_LOOKUP
     envmodules:
         TOOLS['python37']['version']
     shell:"""
 set -exo pipefail
-python {params.script} \
-    --per_sample_tables {input} \
-    --lookup_table {params.lookup_table} \
+count=0
+for f in {input};do
+    count=$((count+1))
+    if [ "$count" == "1" ];then
+        infiles="$f"
+    else
+        infiles="$infiles,$f"
+    fi
+done
+
+python {params.script} \\
+    --counttablelist $infiles \\
     -o {output.matrix}
 """

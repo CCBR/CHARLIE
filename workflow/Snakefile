@@ -121,7 +121,7 @@ rule all:
         expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),    # required to estimate duplication stats    
         ## circExplorer --> we run circExplorer2
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.annotation_counts.tsv"),sample=SAMPLES),
 
         ## circExplorer ... polished BSJ output
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bed.gz"),sample=SAMPLES),             # filtered BSJs with additional columns like :
@@ -173,12 +173,13 @@ rule all:
         get_nclscan_target_files(RUN_NCLSCAN),
 
         ## alignment stats
-        join(WORKDIR,"results","alignmentstats.txt")
+        join(WORKDIR,"results","alignmentstats.txt"),
         # expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"), sample=SAMPLES),
 
         # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt"),sample=SAMPLES),
-        # ## aggregated counts matrix
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        # ## master counts file
+        join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
         # join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # # ## ciri BSJ bam
         # # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),

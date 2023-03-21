@@ -17,7 +17,7 @@ def get_alignment_stats_input(wildcards):
 
 rule create_circExplorer_BSJ_bam:
     input:
-        countstable=rules.circExplorer.output.counts_table,
+        countstable=rules.circExplorer.output.annotation_counts_table,
         chimericbam=rules.star2p.output.chimeric_bam
     output:
         BSJbam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bam"),
@@ -123,7 +123,7 @@ rule create_circExplorer_linear_spliced_bams:
         bam=rules.star2p.output.bam,
         nonchimericbam=rules.star2p.output.non_chimeric_bam,
         bsjbedgz=rules.create_circExplorer_BSJ_bam.output.BSJbed,
-        countstable=rules.circExplorer.output.counts_table,
+        countstable=rules.circExplorer.output.annotation_counts_table,
     output:
         rid2jid=join(WORKDIR,"results","{sample}","circExplorer","{sample}.rid2jid.tsv.gz"),
         filtered_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.bam"),
@@ -249,13 +249,16 @@ cd $TMPDIR && rm -f *
 localrules: create_circExplorer_merged_found_counts_table
 rule create_circExplorer_merged_found_counts_table:
     input:
+        annotation_counts=rules.circExplorer.output.annotation_counts_table,
         bsj_found_counts=rules.create_circExplorer_BSJ_bam.output.BSJfoundcounts,
         linear_found_counts=rules.create_circExplorer_linear_spliced_bams.output.linear_foundcounts
     output:
-        count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.readcounts.tsv")
+        found_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.readcounts.tsv"),
+        count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
     params:
         sample="{sample}",
         pythonscript=join(SCRIPTS_DIR,"_merge_circExplorer_found_counts.py"),
+        pythonscript2=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py"),
         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
         randomstr=str(uuid.uuid4())    
     shell:"""
@@ -269,8 +272,39 @@ fi
 python3 {params.pythonscript} \\
     -b {input.bsj_found_counts} \\
     -l {input.linear_found_counts} \\
-    -o {output.count_counts_table}
+    -o {output.found_counts_table}
+
+python3 {params.pythonscript2} \\
+    --annotationcounts {input.annotation_counts} \\
+    --allfoundcounts {output.found_counts_table} \\
+    --countstable {output.count_counts_table}
 """
+
+# localrules: create_circExplorer_per_sample_counts_table
+# rule create_circExplorer_per_sample_counts_table:
+#     input:
+#         annotation_counts=rules.circExplorer.output.annotation_counts_table,
+#         found_counts=rules.create_circExplorer_merged_found_counts_table.output.found_counts_table
+#     output:
+#         count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
+#     params:
+#         sample="{sample}",
+#         pythonscript=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py"),
+#         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
+#         randomstr=str(uuid.uuid4())    
+#     shell:"""
+# set -exo pipefail
+# if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+#     TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+# else
+#     TMPDIR="/dev/shm/{params.randomstr}"
+#     mkdir -p $TMPDIR
+# fi
+# python3 {params.pythonscript} \\
+#     --annotationcounts {input.annotation_counts} \\
+#     --allfoundcounts {input.found_counts} \\
+#     --countstable {output.count_counts_table}
+# """
 
 
 rule alignment_stats:
