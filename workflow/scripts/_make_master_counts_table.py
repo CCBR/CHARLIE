@@ -22,6 +22,7 @@ def main() :
             tmpdf.set_index(['chrom', 'start', 'end', 'strand', 'flanking_sites', 'sample_name'])
             outdf = pd.concat([outdf , tmpdf],axis=0,join="outer",sort=False)
     outdf.reset_index(inplace=True)
+    outdf.fillna(-1,inplace=True)
     print(outdf.columns)
     outdf = outdf.sort_values(by=['chrom','start','end','strand'])
     outdf.to_csv(args.outfile,sep="\t",header=True,index=False,compression='gzip')

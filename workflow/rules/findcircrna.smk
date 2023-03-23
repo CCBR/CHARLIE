@@ -902,6 +902,7 @@ rule merge_per_sample:
         runmapsplice=_boolean2str(RUN_MAPSPLICE),
         runnclscan=_boolean2str(RUN_NCLSCAN),
         peorse=get_peorse,
+        reffa=REF_FA,
         minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
     envmodules:
         TOOLS["python37"]["version"]
@@ -923,6 +924,7 @@ if [[ "{params.runnclscan}" == "1" ]]; then
     fi
 fi
 parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+parameters="$parameters --reffa {params.reffa}"
 parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
 echo "python {params.script} $parameters" 
