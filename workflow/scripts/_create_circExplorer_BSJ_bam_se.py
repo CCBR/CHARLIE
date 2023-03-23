@@ -449,7 +449,7 @@ def main():
             bsjdict[bsjid].write_out_BSJ(bsjfile)
     bsjfile.close()
 
-    args.junctionsfound.write("#chrom\tstart\tend\tstrand\ttexpected_BSJ_reads\tfound_BSJ_reads\n")
+    args.junctionsfound.write("#chrom\tstart\tend\tstrand\texpected_BSJ_reads\tfound_BSJ_reads\n")
     for jid in junctions.keys():
         x=jid.split("##")
         chrom=x[0]
