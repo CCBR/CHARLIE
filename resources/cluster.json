@@ -12,12 +12,12 @@
     "cutadapt": {
         "mem": "120g",
         "threads": "56",
-        "time": "24:00:00"
+        "time": "6:00:00"
     },
     "dcc": {
         "mem": "120g",
-        "threads": "32",
-        "time": "24:00:00"
+        "threads": "4",
+        "time": "4:00:00"
     },
     "mapsplice": {
         "mem": "200g",
@@ -26,24 +26,24 @@
     },
     "mapsplice_postprocess": {
         "mem": "120g",
-        "threads": "16",
-        "time": "12:00:00"
+        "threads": "4",
+        "time": "4:00:00"
     },
     "nclscan": {
         "mem": "512g",
         "threads": "56",
-        "time": "48:00:00",
+        "time": "4:00:00",
         "partition": "largemem"
     },
     "fastqc": {
         "mem": "40g",
-        "threads": "16",
-        "time": "24:00:00"
+        "threads": "4",
+        "time": "4:00:00"
     },
     "ciri": {
         "mem": "512g",
         "threads": "56",
-        "time": "24:00:00",
+        "time": "4:00:00",
         "partition": "largemem"
     },
     "filter_ciri_bam_for_BSJs": {
@@ -55,38 +55,35 @@
     "create_index": {
         "mem": "200g",
         "threads": "56",
-        "time": "24:00:00"
+        "time": "12:00:00"
     },
     "star1p": {
         "mem": "200g",
         "threads": "56",
-        "time": "24:00:00"
+        "time": "6:00:00"
     },
     "star2p": {
-        "mem": "512g",
+        "mem": "200g",
         "threads": "56",
-        "time": "24:00:00",
-        "partition": "largemem"
+        "time": "6:00:00",
     },
     "estimate_duplication": {
         "mem": "200g",
         "threads": "4",
-        "time": "24:00:00"
+        "time": "4:00:00"
     },
     "create_circExplorer_BSJ_bam": {
-        "mem": "200g",
-        "threads": "4",
-        "time": "24:00:00"
-    },
-    "create_circExplorer_linear_spliced_bams":{
-        "mem": "200g",
-        "threads": "4",
-        "time": "24:00:00"
-    },
-    "clear": {
         "mem": "120g",
         "threads": "4",
-        "time": "24:00:00"
+        "time": "4:00:00"
+    },
+    "create_circExplorer_linear_spliced_bams":{
+        "mem": "120g",
+        "threads": "4",
+        "time": "4:00:00"
+    },
+    "clear": {
+        "time": "1:00:00"
     },
     "split_splice_reads_BAM_create_BW": {
         "mem": "120g",
@@ -97,8 +94,12 @@
         "time": "24:00:00"        
     },
     "alignment_stats": {
-        "mem": "120g",
-        "threads": "8",
-        "time": "6:00:00"
+        "time": "1:00:00"
+    },
+    "merge_per_sample": {
+        "time": "1:00:00"
+    },
+    "merge_SJ_tabs": {
+        "time": "1:00:00"
     }
 }
