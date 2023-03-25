@@ -11,7 +11,6 @@ resources/mm10ToMm39.over.chain.gz
 resources/mm39.circBase.bed
 resources/mm39.circBase.bed.unmap
 resources/mm39.circBase.collapsed.bed
-resources/mm39_circBase_annotation_lookup.txt
 resources/mm9.circBase.bed
 resources/mm9.circBase.txt
 resources/mm9ToMm10.over.chain.gz
