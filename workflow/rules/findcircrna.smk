@@ -40,7 +40,7 @@ def get_per_sample_files_to_merge(wildcards):
     if RUN_DCC:
         filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered")
     if RUN_MAPSPLICE:
-        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered")
+        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv.filtered")
     if RUN_NCLSCAN:
         filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
     return(filedict)
@@ -720,17 +720,17 @@ fi
 # | 5 | read_count           | 26               |
 # | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
 # "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
-# mapslice output contains an alignment.sam file which can be really large. Hence converting it to a sorted bam
+# mapsplice output contains an alignment.sam file which can be really large. Hence converting it to a sorted bam
 # to save space
 rule mapsplice_postprocess:
     input:
         sam=rules.mapsplice.output.sam,
         circRNAs=rules.mapsplice.output.circRNAs
     output:
-        ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv"),
-        ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.counts_table.tsv.filtered"),
-        bam=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.cram"),
-        bai=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapslice.cram.crai"),
+        ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv"),
+        ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv.filtered"),
+        bam=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram"),
+        bai=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram.crai"),
     envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
     params:
         script=join(SCRIPTS_DIR,"create_mapsplice_per_sample_counts_table.py"),

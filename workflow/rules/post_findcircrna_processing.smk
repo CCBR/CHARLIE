@@ -12,7 +12,7 @@ def get_alignment_stats_input(wildcards):
     d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
     d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.cram")
     if RUN_MAPSPLICE:
-        d['mapslicebam']=join(WORKDIR,"results",sample,"MapSplice",sample+".mapslice.cram")
+        d['mapsplicebam']=join(WORKDIR,"results",sample,"MapSplice",sample+".mapsplice.cram")
     return d
 
 rule create_circExplorer_BSJ_bam:
@@ -316,7 +316,7 @@ rule alignment_stats:
         # BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
         # ciribam=rules.ciri.output.ciribam,
         unpack(get_alignment_stats_input),
-        # mapslicebam=rules.mapsplice_postprocess.output.bam,
+        # mapsplicebam=rules.mapsplice_postprocess.output.bam,
     output:
         alignmentstats=join(WORKDIR,"results","{sample}","alignmentstats.txt")
     params:
@@ -361,7 +361,7 @@ print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentst
 print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
 print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
 print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
-if [ "{params.run_mapsplice}" == "1" ];then print_bam_results {input.mapslicebam} "MapSplice" >> {output.alignmentstats};fi
+if [ "{params.run_mapsplice}" == "1" ];then print_bam_results {input.mapsplicebam} "MapSplice" >> {output.alignmentstats};fi
 """
 
 
