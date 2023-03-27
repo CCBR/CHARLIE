@@ -12,7 +12,7 @@ def get_alignment_stats_input(wildcards):
     d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
     d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.cram")
     if RUN_MAPSPLICE:
-        d['mapslicebam']=join(WORKDIR,"results",sample,"MapSplice",sample+".mapslice.cram")
+        d['mapsplicebam']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram")
     return d
 
 rule create_circExplorer_BSJ_bam:
@@ -306,63 +306,111 @@ python3 {params.pythonscript2} \\
 #     --countstable {output.count_counts_table}
 # """
 
-
-rule alignment_stats:
-    input:
-        # star2bam=rules.star2p.output.bam,
-        # splicedbam=rules.create_circExplorer_linear_spliced_bams.output.spliced_bam,
-        # linearbam=rules.create_circExplorer_linear_spliced_bams.output.linear_bam,
-        # linearsplicedbam=rules.create_circExplorer_linear_spliced_bams.output.linear_spliced_bam,
-        # BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
-        # ciribam=rules.ciri.output.ciribam,
-        unpack(get_alignment_stats_input),
-        # mapslicebam=rules.mapsplice_postprocess.output.bam,
-    output:
-        alignmentstats=join(WORKDIR,"results","{sample}","alignmentstats.txt")
-    params:
-        sample="{sample}",
-        regions=REF_REGIONS,
-        peorse=get_peorse,
-        run_mapsplice=N_RUN_MAPSPLICE,
-        bash2nreads_pyscript=join(SCRIPTS_DIR,"_bam_get_alignment_stats.py"),
-        randomstr=str(uuid.uuid4())
-    threads: getthreads("alignment_stats")
-    envmodules: TOOLS["python37"]["version"],TOOLS["parallel"]["version"]
-    shell:"""
-set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
-fi
-for bamfile in {input};do
-    bamfile_bn=$(basename $bamfile)
-    if [ "{params.peorse}" == "PE" ];then
-    echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+if RUN_MAPSPLICE:
+    rule alignment_stats:
+        input:
+            unpack(get_alignment_stats_input),
+            # star2bam=rules.star2p.output.bam,
+            # splicedbam=rules.create_circExplorer_linear_spliced_bams.output.spliced_bam,
+            # linearbam=rules.create_circExplorer_linear_spliced_bams.output.linear_bam,
+            # linearsplicedbam=rules.create_circExplorer_linear_spliced_bams.output.linear_spliced_bam,
+            # BSJbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
+            # ciribam=rules.ciri.output.ciribam,
+        output:
+            alignmentstats=join(WORKDIR,"results","{sample}","alignmentstats.txt")
+        params:
+            sample="{sample}",
+            regions=REF_REGIONS,
+            peorse=get_peorse,
+            run_mapsplice=N_RUN_MAPSPLICE,
+            bash2nreads_pyscript=join(SCRIPTS_DIR,"_bam_get_alignment_stats.py"),
+            randomstr=str(uuid.uuid4())
+        threads: getthreads("alignment_stats")
+        envmodules: TOOLS["python37"]["version"],TOOLS["parallel"]["version"]
+        shell:"""
+    set -exo pipefail
+    if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+        TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
     else
-    echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        TMPDIR="/dev/shm/{params.randomstr}"
+        mkdir -p $TMPDIR
     fi
-done > ${{TMPDIR}}/do_bamstats
-parallel -j 2 < ${{TMPDIR}}/do_bamstats
+    for bamfile in {input};do
+        bamfile_bn=$(basename $bamfile)
+        if [ "{params.peorse}" == "PE" ];then
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        else
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        fi
+    done > ${{TMPDIR}}/do_bamstats
+    parallel -j 2 < ${{TMPDIR}}/do_bamstats
 
-print_bam_results () {{
-    bamfile=$1
-    bamfile_bn=$(basename $bamfile)
-    stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
-    prefix=$2
-    while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
-}}
+    print_bam_results () {{
+        bamfile=$1
+        bamfile_bn=$(basename $bamfile)
+        stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
+        prefix=$2
+        while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
+    }}
 
-echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
-print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
-print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
-print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
-print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
-print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
-print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
-if [ "{params.run_mapsplice}" == "1" ];then print_bam_results {input.mapslicebam} "MapSplice" >> {output.alignmentstats};fi
-"""
+    echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
+    print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
+    print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
+    print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
+    print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
+    print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
+    print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
+    print_bam_results {input.mapsplicebam} "MapSplice" >> {output.alignmentstats}
+    """
+else:
+    rule alignment_stats:
+        input:
+            unpack(get_alignment_stats_input),
+        output:
+            alignmentstats=join(WORKDIR,"results","{sample}","alignmentstats.txt")
+        params:
+            sample="{sample}",
+            regions=REF_REGIONS,
+            peorse=get_peorse,
+            run_mapsplice=N_RUN_MAPSPLICE,
+            bash2nreads_pyscript=join(SCRIPTS_DIR,"_bam_get_alignment_stats.py"),
+            randomstr=str(uuid.uuid4())
+        threads: getthreads("alignment_stats")
+        envmodules: TOOLS["python37"]["version"],TOOLS["parallel"]["version"]
+        shell:"""
+    set -exo pipefail
+    if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+        TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+    else
+        TMPDIR="/dev/shm/{params.randomstr}"
+        mkdir -p $TMPDIR
+    fi
+    for bamfile in {input};do
+        bamfile_bn=$(basename $bamfile)
+        if [ "{params.peorse}" == "PE" ];then
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        else
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        fi
+    done > ${{TMPDIR}}/do_bamstats
+    parallel -j 2 < ${{TMPDIR}}/do_bamstats
+
+    print_bam_results () {{
+        bamfile=$1
+        bamfile_bn=$(basename $bamfile)
+        stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
+        prefix=$2
+        while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
+    }}
+
+    echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
+    print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
+    print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
+    print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
+    print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
+    print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
+    print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
+    """
 
 
 localrules: merge_alignment_stats
