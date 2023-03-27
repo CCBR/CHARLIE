@@ -649,6 +649,8 @@ rule mapsplice:
         circRNAs=join(WORKDIR,"results","{sample}","MapSplice","circular_RNAs.txt"),
     params:
         peorse=get_peorse,
+        minmaplen=MAPSPLICE_MIN_MAP_LEN,
+        filtering=MAPSPLICE_FILTERING,
         separate_fastas=join(REF_DIR,"separate_fastas"),
         ebwt=join(REF_DIR,"separate_fastas_index"),
         outdir=join(WORKDIR,"results","{sample}","MapSplice"),
@@ -676,17 +678,18 @@ R2fn=$(basename {input.R2})
 zcat {input.R1} > ${{TMPDIR}}/${{R1fn%.*}}
 zcat {input.R2} > ${{TMPDIR}}/${{R2fn%.*}}
 
-python $MSHOME/mapsplice.py \
- -1 ${{TMPDIR}}/${{R1fn%.*}} \
- -2 ${{TMPDIR}}/${{R2fn%.*}} \
- -c {params.separate_fastas} \
- -p {threads} \
- -x {params.ebwt} \
- --non-canonical-double-anchor \
- --non-canonical-single-anchor \
- --filtering 1 \
- --fusion-non-canonical --min-fusion-distance 200 \
- --gene-gtf {params.gtf} \
+python $MSHOME/mapsplice.py \\
+ -1 ${{TMPDIR}}/${{R1fn%.*}} \\
+ -2 ${{TMPDIR}}/${{R2fn%.*}} \\
+ -c {params.separate_fastas} \\
+ -p {threads} \\
+ --min-map-len {params.minmaplen} \\
+ -x {params.ebwt} \\
+ --non-canonical-double-anchor \\
+ --non-canonical-single-anchor \\
+ --filtering {params.filtering} \\
+ --fusion-non-canonical --min-fusion-distance 200 \\
+ --gene-gtf {params.gtf} \\
  -o {params.outdir}
 
 else

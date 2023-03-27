@@ -80,7 +80,8 @@ N_RUN_CLEAR=_convert_to_int(RUN_CLEAR)
 N_RUN_DCC=_convert_to_int(RUN_DCC)
 N_RUN_MAPSPLICE=_convert_to_int(RUN_MAPSPLICE)
 N_RUN_NCLSCAN=_convert_to_int(RUN_NCLSCAN)
-
+MAPSPLICE_MIN_MAP_LEN=config['mapsplice_min_map_len']
+MAPSPLICE_FILTERING=config['mapsplice_filtering']
 
 REF_DIR=join(WORKDIR,"ref")
 if not os.path.exists(REF_DIR):
