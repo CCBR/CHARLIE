@@ -143,7 +143,11 @@ append_files_in_list(REGIONS_HOST,REF_REGIONS_HOST)
 append_files_in_list(REGIONS_VIRUSES,REF_REGIONS_VIRUSES)
 append_files_in_list(GTFS,REF_GTF)
 
-SAMPLESDF = pd.read_csv(config["samples"],sep="\t",header=0,index_col="sampleName")
+SAMPLESDF = pd.read_csv(config["samples"],sep="\t",header=0)
+# NCLscan does not like hyphens in sample names change them to underscores
+# see https://github.com/CCBR/CCBR_circRNA_DAQ/issues/53
+SAMPLESDF["sampleName"] = SAMPLESDF["sampleName"].str.replace('-','_')
+SAMPLESDF.set_index(["sampleName"],inplace=True)
 SAMPLES = list(SAMPLESDF.index)
 SAMPLESDF["R1"]=join(RESOURCES_DIR,"dummy")
 SAMPLESDF["R2"]=join(RESOURCES_DIR,"dummy")

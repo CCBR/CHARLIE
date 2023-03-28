@@ -36,8 +36,8 @@ def get_mapsplice_target_files(runmapslice):
     if runmapslice:
         for s in SAMPLES:
             targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt"))
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapslice.cram"))
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapslice.counts_table.tsv.filtered"))
+            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapsplice.cram"))
+            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapsplice.counts_table.tsv.filtered"))
     return targetfiles
 
 def get_nclscan_target_files(runnclscan):
