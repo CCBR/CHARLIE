@@ -122,6 +122,7 @@ circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" ci
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
+circrnafinder_dir: "/data/Ziegelbauer_lab/tools/circRNA_finder-1.2"
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded
 cutadapt_min_length: 15
 cutadapt_n: 5

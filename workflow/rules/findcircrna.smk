@@ -869,6 +869,32 @@ python {params.script} \\
 fi
 """
 
+rule circrnafinder:
+    input:
+        bam=rules.star_circrnafinder.output.bam,
+    output:
+        bed=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"),
+        chimericbam=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.Chimeric.out.sorted.bam")
+    params:
+        postProcessStarAlignment_script=join(config['circrnafinder_dir'],postProcessStarAlignment.pl)
+    envmodules: TOOLS["perl"]["version"]
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+
+starDir=$(dirname {input.bam})
+outDir=$(dirname {output.bed})
+
+{params.postProcessStarAlignment_script} \\
+    --starDir ${{starDir}}/ \\
+    --outDir ${{outDir}}/
+"""
+
 def _boolean2str(x): # "1" for True and "0" for False
     if x==True:
         return "1"

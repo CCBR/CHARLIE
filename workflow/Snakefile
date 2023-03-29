@@ -14,6 +14,14 @@ pd.set_option('display.max_colwidth', None)
 
 include: "rules/init.smk"
 
+def get_circrnafinder_target_files(runcircrnafinder):
+    targetfiles=[]
+    if runcircrnafinder:
+        for s in SAMPLES:
+            targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".bam"))
+            targetfiles.append(join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"))
+    return targetfiles
+
 def get_clear_target_files(runclear):
     targetfiles=[]
     if runclear:
@@ -171,7 +179,8 @@ rule all:
         get_mapsplice_target_files(RUN_MAPSPLICE),
         # ## NCLscan
         get_nclscan_target_files(RUN_NCLSCAN),
-
+        # ## circRNA_finder
+        get_circrnafinder_target_files(RUN_CIRCRNAFINDER),
         ## alignment stats
         join(WORKDIR,"results","alignmentstats.txt"),
         # expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"), sample=SAMPLES),

@@ -373,13 +373,12 @@ rule star_circrnafinder:
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
     output:
-        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.bam")
+        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.bam")
     params:
         sample="{sample}",
         memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
-        outdir=join(WORKDIR,"results","{sample}","STAR_circRNAFinder"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4())
@@ -393,6 +392,8 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
+outdir=$(dirname {output.bam})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
 cd {params.outdir}
 
 if [ "{params.peorse}" == "PE" ];then
@@ -410,9 +411,9 @@ if [ "{params.peorse}" == "PE" ];then
 	--outSAMtype BAM Unsorted \\
 	--chimOutType Junctions SeparateSAMold \\
 	--outFilterMultimapNmax 2 \\
-	--outFileNamePrefix ${{TMPDIR}}/{params.sample}.circRNA_finder. \\
+	--outFileNamePrefix {params.sample}. \\
     --outBAMcompression 0 \\
-    --outTmpDir ${{TMPDIR}}/STAR \\
+    --outTmpDir $TMPDIR \\
 	--sjdbGTFfile {input.gtf}
 
 else
@@ -430,9 +431,9 @@ else
 	--outSAMtype BAM Unsorted \\
 	--chimOutType Junctions SeparateSAMold \\
 	--outFilterMultimapNmax 2 \\
-	--outFileNamePrefix ${{TMPDIR}}/{params.sample}.circRNA_finder. \\
+	--outFileNamePrefix {params.sample}. \\
     --outBAMcompression 0 \\
-    --outTmpDir ${{TMPDIR}}/STAR \\
+    --outTmpDir $TMPDIR \\
 	--sjdbGTFfile {input.gtf}
 
 fi
@@ -441,13 +442,16 @@ sleep 120
 
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
+mv {params.sample}.Aligned.bam {params.sample}.tmp.Aligned.bam
+
 samtools sort \\
     -l 9 \\
     -T ${{TMPDIR}}/{params.randomstr}_1 \\
     --write-index \\
     -@ {threads} \\
     --output-fmt BAM \\
-    -o {output.bam} ${{TMPDIR}}/{params.sample}.circRNA_finder.Aligned.bam
+    -o {output.bam} {params.sample}.tmp.Aligned.bam && \\
+rm -f {params.sample}.tmp.Aligned.bam
 
 rm -rf $TMPDIR
 

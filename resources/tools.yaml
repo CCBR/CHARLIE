@@ -18,6 +18,8 @@ multiqc:
  version: "multiqc/1.9"
 parallel:
  version: "current"
+perl:
+ version: "5.24"
 picard:
  version: "picard/2.25.0"
 python27:
