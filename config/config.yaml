@@ -15,10 +15,12 @@ run_clear: True
 run_dcc: True
 #
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
-run_mapsplice: True
+run_mapsplice: False
 mapsplice_min_map_len: 50
 mapsplice_filtering: 2  # 1=less stringent 2=default
 #
+# Should the circRNA_finder  be run? True or False WITHOUT quotes
+run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
 run_nclscan: True
