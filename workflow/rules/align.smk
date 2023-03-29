@@ -394,7 +394,7 @@ fi
 
 outdir=$(dirname {output.bam})
 if [ ! -d $outdir ];then mkdir -p $outdir;fi
-cd {params.outdir}
+cd $outdir
 
 if [ "{params.peorse}" == "PE" ];then
 # paired-end

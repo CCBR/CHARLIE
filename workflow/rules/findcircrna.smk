@@ -876,7 +876,8 @@ rule circrnafinder:
         bed=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"),
         chimericbam=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.Chimeric.out.sorted.bam")
     params:
-        postProcessStarAlignment_script=join(config['circrnafinder_dir'],postProcessStarAlignment.pl)
+        postProcessStarAlignment_script=join(config['circrnafinder_dir'],"postProcessStarAlignment.pl"),
+        randomstr=str(uuid.uuid4())
     envmodules: TOOLS["perl"]["version"]
     shell:"""
 set -exo pipefail

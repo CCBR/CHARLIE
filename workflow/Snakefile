@@ -18,8 +18,8 @@ def get_circrnafinder_target_files(runcircrnafinder):
     targetfiles=[]
     if runcircrnafinder:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".bam"))
-            targetfiles.append(join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"))
+            targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".Aligned.bam"))
+            targetfiles.append(join(WORKDIR,"results",s,"circRNA_finder",s+".filteredJunctions.bed"))
     return targetfiles
 
 def get_clear_target_files(runclear):
