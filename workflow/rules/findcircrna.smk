@@ -199,7 +199,8 @@ rule ciri:
     input:
         bwt=rules.create_index.output.bwt,
         R1=rules.cutadapt.output.of1,
-        R2=rules.cutadapt.output.of2
+        R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
     output:
         cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
         bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
@@ -214,7 +215,6 @@ rule ciri:
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
         bwaindex=BWA_INDEX,
-        gtf=REF_GTF,
         ciripl=config['ciri_perl_script'],
         bsj_min_nreads=config['minreadcount'],
         refregions=REF_REGIONS,
@@ -255,7 +255,7 @@ perl {params.ciripl} \\
 -I {params.sample}.bwa.sam \\
 -O {output.ciriout} \\
 -F {params.reffa} \\
--A {params.gtf} \\
+-A {input.gtf} \\
 -G {output.cirilog} -T {threads}
 samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o {output.ciribam} -
 rm -rf {params.sample}.bwa.sam
@@ -483,7 +483,8 @@ rule dcc:
         ss=rules.dcc_create_samplesheets.output.ss,
         m1=rules.dcc_create_samplesheets.output.m1,
         m2=rules.dcc_create_samplesheets.output.m2,
-        bam=rules.star2p.output.bam
+        bam=rules.star2p.output.bam,
+        gtf=rules.create_index.output.fixed_gtf,
     output:
         cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
         cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
@@ -495,7 +496,6 @@ rule dcc:
     params:
         peorse=get_peorse,
         dcc_strandedness=config['dcc_strandedness'],
-        gtf=REF_GTF,
         rep=REPEATS_GTF,
         fa=REF_FA,
         randomstr=str(uuid.uuid4()),
@@ -529,7 +529,7 @@ DCC @{input.ss} \\
     --detect --gene \\
     --bam {input.bam} \\
     {params.dcc_strandedness} \\
-    --annotation {params.gtf} \\
+    --annotation {input.gtf} \\
     --chrM -G \\
     --rep_file {params.rep} \\
     --refseq {params.fa} \\
@@ -543,7 +543,7 @@ DCC @{input.ss} \\
     --detect --gene \\
     --bam {input.bam} \\
     {params.dcc_strandedness} \\
-    --annotation {params.gtf} \\
+    --annotation {input.gtf} \\
     --chrM -G \\
     --rep_file {params.rep} \\
     --refseq {params.fa} 
@@ -643,6 +643,7 @@ rule mapsplice:
         bwt=rules.create_mapsplice_index.output.rev1ebwt, 
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
     output:
         # rev1ebwt=join(REF_DIR,"separate_fastas_index.rev.1.ebwt"),
         sam=temp(join(WORKDIR,"results","{sample}","MapSplice","alignments.sam")),
@@ -654,7 +655,6 @@ rule mapsplice:
         separate_fastas=join(REF_DIR,"separate_fastas"),
         ebwt=join(REF_DIR,"separate_fastas_index"),
         outdir=join(WORKDIR,"results","{sample}","MapSplice"),
-        gtf=REF_GTF,
         randomstr=str(uuid.uuid4()),
     threads: getthreads("mapsplice")
     container: "docker://cgrlab/mapsplice2:latest"
@@ -689,7 +689,7 @@ python $MSHOME/mapsplice.py \\
  --non-canonical-single-anchor \\
  --filtering {params.filtering} \\
  --fusion-non-canonical --min-fusion-distance 200 \\
- --gene-gtf {params.gtf} \\
+ --gene-gtf {input.gtf} \\
  -o {params.outdir}
 
 else
@@ -706,7 +706,7 @@ python $MSHOME/mapsplice.py \
  --non-canonical-single-anchor \
  --filtering 1 \
  --fusion-non-canonical --min-fusion-distance 200 \
- --gene-gtf {params.gtf} \
+ --gene-gtf {input.gtf} \
  -o {params.outdir}
 
 fi

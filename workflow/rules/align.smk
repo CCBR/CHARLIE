@@ -15,6 +15,7 @@ rule star1p:
         sa=rules.create_index.output.sa,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
     output:
         junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),
         chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
@@ -28,7 +29,6 @@ rule star1p:
         outdir=join(WORKDIR,"results","{sample}","STAR1p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-        gtf=REF_GTF,
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["star"]["version"]
     threads: getthreads("star1p")
@@ -72,8 +72,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
 
     # mate1
@@ -105,8 +105,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
 
     # mate2
@@ -138,8 +138,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
 
 else
@@ -175,8 +175,8 @@ else
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
     mkdir -p $(dirname {output.mate1_chimeric_junctions})
     touch {output.mate1_chimeric_junctions}
@@ -217,6 +217,7 @@ rule star2p:
     input:
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
         pass1sjtab=rules.merge_SJ_tabs.output.pass1sjtab
     output:
         junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
@@ -233,7 +234,6 @@ rule star2p:
         outdir=join(WORKDIR,"results","{sample}","STAR2p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-        gtf=REF_GTF,
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
     threads: getthreads("star2p")
@@ -282,9 +282,9 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
+    --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir=${{TMPDIR}} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
@@ -323,9 +323,9 @@ else
     --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
+    --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir=${{TMPDIR}} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
@@ -366,6 +366,93 @@ samtools sort \\
     -o {output.bam} {output.unsortedbam}
 """
 
+
+rule star_circrnafinder:
+    input:
+        R1=rules.cutadapt.output.of1,
+        R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
+    output:
+        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.bam")
+    params:
+        sample="{sample}",
+        memG=getmemG("star2p"),
+        peorse=get_peorse,
+        workdir=WORKDIR,
+        outdir=join(WORKDIR,"results","{sample}","STAR_circRNAFinder"),
+        starindexdir=STAR_INDEX_DIR,
+        alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
+        randomstr=str(uuid.uuid4())
+    envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
+    threads: getthreads("star2p")
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+cd {params.outdir}
+
+if [ "{params.peorse}" == "PE" ];then
+# paired-end
+    STAR --genomeDir {params.starindexdir} \\
+    --readFilesIn {input.R1} {input.R2} \\
+    --readFilesCommand  zcat \\
+    --runThreadN {threads} \\
+	--chimSegmentMin 20 \\
+	--chimScoreMin 1 \\
+	--alignIntronMax 1000000 \\
+	--outFilterMismatchNoverReadLmax 0.02 \\
+	--alignTranscriptsPerReadNmax 100000 \\
+	--twopassMode Basic \\
+	--outSAMtype BAM Unsorted \\
+	--chimOutType Junctions SeparateSAMold \\
+	--outFilterMultimapNmax 2 \\
+	--outFileNamePrefix ${{TMPDIR}}/{params.sample}.circRNA_finder. \\
+    --outBAMcompression 0 \\
+    --outTmpDir ${{TMPDIR}}/STAR \\
+	--sjdbGTFfile {input.gtf}
+
+else
+#single-end
+    STAR --genomeDir {params.starindexdir} \\
+    --readFilesIn {input.R1} \\
+    --readFilesCommand  zcat \\
+    --runThreadN {threads} \\
+	--chimSegmentMin 20 \\
+	--chimScoreMin 1 \\
+	--alignIntronMax 1000000 \\
+	--outFilterMismatchNoverReadLmax 0.02 \\
+	--alignTranscriptsPerReadNmax 100000 \\
+	--twopassMode Basic \\
+	--outSAMtype BAM Unsorted \\
+	--chimOutType Junctions SeparateSAMold \\
+	--outFilterMultimapNmax 2 \\
+	--outFileNamePrefix ${{TMPDIR}}/{params.sample}.circRNA_finder. \\
+    --outBAMcompression 0 \\
+    --outTmpDir ${{TMPDIR}}/STAR \\
+	--sjdbGTFfile {input.gtf}
+
+fi
+
+sleep 120
+
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+
+samtools sort \\
+    -l 9 \\
+    -T ${{TMPDIR}}/{params.randomstr}_1 \\
+    --write-index \\
+    -@ {threads} \\
+    --output-fmt BAM \\
+    -o {output.bam} ${{TMPDIR}}/{params.sample}.circRNA_finder.Aligned.bam
+
+rm -rf $TMPDIR
+
+"""
+
 rule estimate_duplication:
     input:
         bam=rules.star2p.output.bam
@@ -380,3 +467,5 @@ set -exo pipefail
 java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
 rm -f /dev/shm/{params.sample}*
 """
+
+
