@@ -124,6 +124,10 @@ ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded
 cutadapt_min_length: 15
+cutadapt_n: 5
+cutadapt_max_n: 0.5
+cutadapt_O: 5
+cutadapt_q: 20
 fastas_gts_dir: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
 annotation_lookups:
   hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
