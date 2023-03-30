@@ -373,7 +373,7 @@ rule star_circrnafinder:
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
     output:
-        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.bam")
+        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.out.bam")
     params:
         sample="{sample}",
         memG=getmemG("star2p"),
@@ -383,7 +383,7 @@ rule star_circrnafinder:
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
-    threads: getthreads("star2p")
+    threads: getthreads("star_circrnafinder")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -442,7 +442,7 @@ sleep 120
 
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-mv {params.sample}.Aligned.bam {params.sample}.tmp.Aligned.bam
+mv {output.bam} {params.sample}.tmp.Aligned.out.bam
 
 samtools sort \\
     -l 9 \\
@@ -450,8 +450,8 @@ samtools sort \\
     --write-index \\
     -@ {threads} \\
     --output-fmt BAM \\
-    -o {output.bam} {params.sample}.tmp.Aligned.bam && \\
-rm -f {params.sample}.tmp.Aligned.bam
+    -o {output.bam} {params.sample}.tmp.Aligned.out.bam && \\
+rm -f {params.sample}.tmp.Aligned.out.bam
 
 rm -rf $TMPDIR
 

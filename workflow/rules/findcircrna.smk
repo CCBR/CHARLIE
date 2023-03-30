@@ -869,11 +869,13 @@ python {params.script} \\
 fi
 """
 
+AWK_CIRCRNAFINDER=r"""-F"\t" -v OFS="\t" '{if ($5>=2) {print $1,$2,$3,$6,$5}}'"""
 rule circrnafinder:
     input:
         bam=rules.star_circrnafinder.output.bam,
     output:
         bed=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"),
+        ctf=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered"),
         chimericbam=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.Chimeric.out.sorted.bam")
     params:
         postProcessStarAlignment_script=join(config['circrnafinder_dir'],"postProcessStarAlignment.pl"),
@@ -894,6 +896,10 @@ outDir=$(dirname {output.bed})
 {params.postProcessStarAlignment_script} \\
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
+
+echo -ne "chr\tstart\tend\tstrand\tread_count" > {output.ctf}
+awk {AWK_CIRCRNAFINDER} {output.bed} >> {output.ctf}
+
 """
 
 def _boolean2str(x): # "1" for True and "0" for False
