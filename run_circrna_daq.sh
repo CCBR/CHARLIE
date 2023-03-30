@@ -96,7 +96,7 @@ fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 fi
-fi [ ! -f $WORKDIR/samples.tsv ];then
+if [ ! -f $WORKDIR/samples.tsv ];then
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
 fi
 if [ ! -f $WORKDIR/jobby ];then
