@@ -5,7 +5,6 @@ rule create_index:
     output:
         genepred_w_geneid=join(REF_DIR,"ref.genes.genepred_w_geneid"),
         sa=join(REF_DIR,"STAR_no_GTF","SA"),
-        # sa2=join(REF_DIR,"STAR_w_GTF","SA"), # this was created for circRNA_finder alignment.. but that works with GTF on the fly.. Hence no longer needed
         bwt=join(REF_DIR,"ref.sa"),
         fixed_gtf=join(REF_DIR,"ref.fixed.gtf"),
         transcripts_fa=join(REF_DIR,"ref.transcripts.fa"),
@@ -48,16 +47,6 @@ STAR \\
     --runMode genomeGenerate \\
     --genomeDir $stardir \\
     --genomeFastaFiles {params.reffa}
-
-# stardir2=$(dirname {output.sa2})
-# mkdir -p $stardir2 &&  \\
-# STAR \\
-#     --runThreadN {threads} \\
-#     --runMode genomeGenerate \\
-#     --genomeDir $stardir2 \\
-#     --genomeFastaFiles {params.reffa} \\
-#     --sjdbGTFfile {output.fixed_gtf} \\
-#     --sjdbOverhang 99
 
 # MapSplice requires the {params.reffa} multifasta to be split into separate fastas
 bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
