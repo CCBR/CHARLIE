@@ -868,7 +868,7 @@ python {params.script} \\
 # This part is redundant as it is already taken care of by get_nclscan_target_files function!
 fi
 """
-q
+
 rule circrnafinder:
     input:
         bam=rules.star_circrnafinder.output.bam,
