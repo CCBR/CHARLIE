@@ -871,7 +871,9 @@ fi
 
 rule circrnafinder:
     input:
-        bam=rules.star_circrnafinder.output.bam,
+        chimericsam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.sam"),
+        chimericjunction=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.junction"),
+        sjouttab=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.SJ.out.tab"),
     output:
         bed=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"),
         ctf=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered"),
@@ -880,7 +882,7 @@ rule circrnafinder:
         postProcessStarAlignment_script=join(config['circrnafinder_dir'],"postProcessStarAlignment.pl"),
         bsj_min_nreads=config['minreadcount'],
         randomstr=str(uuid.uuid4())
-    envmodules: TOOLS["perl"]["version"]
+    envmodules: TOOLS["perl"]["version"],TOOLS["samtools"]["version"]
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
@@ -890,7 +892,7 @@ else
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-starDir=$(dirname {input.bam})
+starDir=$(dirname {input.chimericsam})
 outDir=$(dirname {output.bed})
 
 {params.postProcessStarAlignment_script} \\
@@ -898,7 +900,7 @@ outDir=$(dirname {output.bed})
     --outDir ${{outDir}}/
 
 echo -ne "chr\tstart\tend\tstrand\tread_count" > {output.ctf}
-awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' >> {output.ctf}
+awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' {output.bed} >> {output.ctf}
 
 """
 
