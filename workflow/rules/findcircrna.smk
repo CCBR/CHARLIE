@@ -895,6 +895,9 @@ if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 starDir=$(dirname {input.chimericsam})
 outDir=$(dirname {output.bed})
 
+if [ -d $outDir ];then rm -rf $outDir;fi
+if [ ! -d $outDir ];then mkdir -p $outDir;fi
+
 {params.postProcessStarAlignment_script} \\
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
