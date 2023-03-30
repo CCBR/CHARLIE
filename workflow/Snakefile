@@ -5,6 +5,9 @@ import pandas as pd
 import yaml
 import uuid
 from pathlib import Path
+from snakemake.utils import min_version
+
+min_version("5.24")
 
 # no truncations during print pandas data frames
 pd.set_option('display.max_rows', None)
@@ -186,9 +189,16 @@ rule all:
         join(WORKDIR,"results","alignmentstats.txt"),
 
         # # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
         # # ## master counts file
-        join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
+        # join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
+
+
+
+
+
+
+
         # # ## ciri BSJ bam
         # # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
         # # ## BSJ bams and bigwigs
