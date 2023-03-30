@@ -898,7 +898,7 @@ outDir=$(dirname {output.bed})
     --outDir ${{outDir}}/
 
 echo -ne "chr\tstart\tend\tstrand\tread_count" > {output.ctf}
-awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_reads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' >> {output.ctf}
+awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' >> {output.ctf}
 
 """
 
