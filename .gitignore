@@ -1,4 +1,5 @@
-**/.*
+**/.kop*
+**/.snakemake
 !.editorconfig
 !.gitignore
 !.gitattributes
