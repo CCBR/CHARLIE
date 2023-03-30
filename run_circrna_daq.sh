@@ -100,7 +100,10 @@ if [ ! -f $WORKDIR/samples.tsv ];then
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
 fi
 if [ ! -f $WORKDIR/jobby ];then
-cp ${PIPELINE_HOME}/workflow/scripts/jobby $WORKDIR
+cp ${PIPELINE_HOME}/workflow/scripts/jobby $WORKDIR && chmod a+x $WORKDIR/jobby
+fi
+if [ ! -f $WORKDIR/jobby ];then
+cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $WORKDIR/run_jobby_on_snakemake_log
 fi
 
 #create log and stats folders
