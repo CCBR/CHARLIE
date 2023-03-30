@@ -868,8 +868,7 @@ python {params.script} \\
 # This part is redundant as it is already taken care of by get_nclscan_target_files function!
 fi
 """
-
-AWK_CIRCRNAFINDER=r"""-F"\t" -v OFS="\t" '{if ($5>=2) {print $1,$2,$3,$6,$5}}'"""
+q
 rule circrnafinder:
     input:
         bam=rules.star_circrnafinder.output.bam,
@@ -879,6 +878,7 @@ rule circrnafinder:
         chimericbam=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.Chimeric.out.sorted.bam")
     params:
         postProcessStarAlignment_script=join(config['circrnafinder_dir'],"postProcessStarAlignment.pl"),
+        bsj_min_nreads=config['minreadcount'],
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["perl"]["version"]
     shell:"""
@@ -898,7 +898,7 @@ outDir=$(dirname {output.bed})
     --outDir ${{outDir}}/
 
 echo -ne "chr\tstart\tend\tstrand\tread_count" > {output.ctf}
-awk {AWK_CIRCRNAFINDER} {output.bed} >> {output.ctf}
+awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_reads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' >> {output.ctf}
 
 """
 
