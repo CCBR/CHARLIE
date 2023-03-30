@@ -71,7 +71,7 @@ def _convert_to_int(variable):
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
 RESOURCES_DIR=config['resourcesdir']
-FASTAS_GTFS_DIR=config['fastas_gts_dir']
+FASTAS_GTFS_DIR=config['fastas_gtfs_dir']
 RUN_CLEAR=_is_true(config['run_clear'])
 RUN_DCC=_is_true(config['run_dcc'])
 RUN_MAPSPLICE=_is_true(config['run_mapsplice'])
