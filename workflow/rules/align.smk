@@ -373,7 +373,13 @@ rule star_circrnafinder:
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
     output:
-        bam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.out.bam")
+        chimericsam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.sam"),
+        chimericjunction=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.junction"),
+        sjouttab=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.SJ.out.tab"),
+# -rw-rw----  1 kopardevn kopardevn 2.0M Mar 30 00:16 GI1_T.Chimeric.out.sam
+# -rw-rw----  1 kopardevn kopardevn 289K Mar 30 00:16 GI1_T.Chimeric.out.junction
+# -rw-rw----  1 kopardevn kopardevn  87K Mar 30 00:16 GI1_T.SJ.out.tab
+        bam=temp(join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.out.bam"))
     params:
         sample="{sample}",
         memG=getmemG("star2p"),
@@ -440,20 +446,23 @@ fi
 
 sleep 120
 
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+# Used to sort the BAM file after effect , but realized that it is not required by circRNA_Finder scripts
+# Hence deleting it to save digital footprint by making it temp in output block 
 
-mv {output.bam} {params.sample}.tmp.Aligned.out.bam
+# if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-samtools sort \\
-    -l 9 \\
-    -T ${{TMPDIR}}/{params.randomstr}_1 \\
-    --write-index \\
-    -@ {threads} \\
-    --output-fmt BAM \\
-    -o {output.bam} {params.sample}.tmp.Aligned.out.bam && \\
-rm -f {params.sample}.tmp.Aligned.out.bam
+# mv {output.bam} {params.sample}.tmp.Aligned.out.bam
 
-rm -rf $TMPDIR
+# samtools sort \\
+#     -l 9 \\
+#     -T ${{TMPDIR}}/{params.randomstr}_1 \\
+#     --write-index \\
+#     -@ {threads} \\
+#     --output-fmt BAM \\
+#     -o {output.bam} {params.sample}.tmp.Aligned.out.bam && \\
+# rm -f {params.sample}.tmp.Aligned.out.bam
+
+# rm -rf $TMPDIR
 
 """
 
