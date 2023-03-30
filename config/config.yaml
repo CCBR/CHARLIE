@@ -29,10 +29,10 @@ nclscan_config: "WORKDIR/nclscan.config"
 
 
 # select references .... host + viruses(comma-separated):
-fasta_gtf_location: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
 # select host: # options are hg38 or mm39
 host: "hg38"
 additives: "ERCC" # options are ERCC and BAC16Insert
+viruses: "NC_009333.1"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
@@ -57,7 +57,6 @@ additives: "ERCC" # options are ERCC and BAC16Insert
 #  | KT899744         | KT899744                  | HSV-1 strain KOS                                             |
 #  | MH636806.1       | MH636806.1                | MHV68 (Murine herpesvirus 68 strain WUMS)                    |
 #
-viruses: "NC_009333.1"
 # comma separated list
 # STAR 1-pass junction filtering....
 # 1st pass of STAR generates a list of splice junctions which are filtered to be parsed to the second pass of STAR
@@ -129,7 +128,7 @@ cutadapt_n: 5
 cutadapt_max_n: 0.5
 cutadapt_O: 5
 cutadapt_q: 20
-fastas_gts_dir: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
+fastas_gtfs_dir: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
 annotation_lookups:
   hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
   mm39: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt"
