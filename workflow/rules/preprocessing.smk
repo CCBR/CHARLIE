@@ -61,7 +61,8 @@ if [ "{params.peorse}" == "PE" ];then
 	-j {threads} \\
 	-o ${{TMPDIR}}/${{of1bn}} -p ${{TMPDIR}}/${{of2bn}} \\
 	{input.R1} {input.R2}
-
+	
+# filter for average read quality
 	fastq-filter \\
 		-q {params.cutadapt_q} \\
 		-o {output.of1} -o {output.of2} \\
@@ -82,6 +83,7 @@ else
 	
 	touch {output.of2}
 
+# filter for average read quality
 	fastq-filter \\
 		-q {params.cutadapt_q} \\
 		-o {output.of1} \\
@@ -89,7 +91,7 @@ else
 
 fi
 
-# filter for average read quality
+
 
 
 """
