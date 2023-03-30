@@ -1,0 +1,3 @@
+sampleName	path_to_R1_fastq	path_to_R2_fastq
+GI1_N	/data/CCBR_Pipeliner/test_datasets/circRNA/human/GI1_N_ss.R1.fastq.gz	/data/CCBR_Pipeliner/test_datasets/circRNA/human/GI1_N_ss.R2.fastq.gz
+GI1_T	/data/CCBR_Pipeliner/test_datasets/circRNA/human/GI1_T_ss.R1.fastq.gz
