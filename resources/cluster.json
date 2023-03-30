@@ -65,7 +65,12 @@
     "star2p": {
         "mem": "200g",
         "threads": "56",
-        "time": "6:00:00",
+        "time": "6:00:00"
+    },
+    "star_circrnafinder": {
+        "mem": "200g",
+        "threads": "56",
+        "time": "6:00:00"        
     },
     "estimate_duplication": {
         "mem": "200g",
