@@ -182,13 +182,13 @@ rule all:
         # ## circRNA_finder
         get_circrnafinder_target_files(RUN_CIRCRNAFINDER),
         ## alignment stats
-        join(WORKDIR,"results","alignmentstats.txt"),
-        # expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"), sample=SAMPLES),
+        # join(WORKDIR,"results","alignmentstats.txt"),
+        # # expand(join(WORKDIR,"results","{sample}","alignmentstats.txt"), sample=SAMPLES),
 
-        # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
-        # ## master counts file
-        join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
+        # # ## merged counts per sample table of all counts/annotations from all circRNA callers
+        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        # # ## master counts file
+        # join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
         # join(WORKDIR,"results","circRNA_counts_matrix.tsv"),
         # # ## ciri BSJ bam
         # # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
@@ -227,6 +227,11 @@ include: "rules/post_align_processing.smk"
 include: "rules/findcircrna.smk"
 include: "rules/post_findcircrna_processing.smk"
 
+onsuccess:
+    shell("""sleep 10; ./workflow/scripts/jobby $(grep --color=never "^Submitted .* with external jobid" ./snakemake.log | awk '{{print $NF}}'  | sed "s/['.]//g" | sort | uniq | tr "\\n" " ") | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
+
+onerror:
+    shell("""sleep 10; ./workflow/scripts/jobby $(grep --color=never "^Submitted .* with external jobid" ./snakemake.log | awk '{{print $NF}}'  | sed "s/['.]//g" | sort | uniq | tr "\\n" " ") | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
 
 
 
