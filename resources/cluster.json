@@ -85,7 +85,7 @@
     "create_circExplorer_linear_spliced_bams":{
         "mem": "120g",
         "threads": "4",
-        "time": "4:00:00"
+        "time": "8:00:00"
     },
     "clear": {
         "time": "1:00:00"
