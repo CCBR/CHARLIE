@@ -7,7 +7,7 @@ on:
       - main
       - feature/issue57
   pull_request:
-    branches_ignore: []
+    branches-ignore: []
 
 jobs:
   Dryrun_Lint:
@@ -25,5 +25,5 @@ jobs:
         with:
           directory: '.'
           snakefile: 'workflow/Snakefile'
-          args: '--lint --config config/lint.config.yaml'
+          args: '--lint --configfile config/lint.config.yaml'
       - run: echo "STATUS --> ${{job.status}}"
