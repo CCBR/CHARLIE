@@ -44,7 +44,9 @@ def append_files_in_list(flist,ofile):
         with open(ofile, 'w') as outfile:
             for fname in flist:
                 with open(fname) as infile:
-                    outfile.write(infile.read())
+                    l=infile.read()
+                    l=l.strip()
+                    outfile.write("%s\n"%(l))
     return True
 
 ##### load config and sample sheets #####
