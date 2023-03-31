@@ -1,4 +1,4 @@
-run-name: ${{github.actor}} is running LINT
+run-name: ${{github.actor}} is running test.yaml
 
 on:
   push:
@@ -20,3 +20,5 @@ jobs:
       - run: |
           git branch -a
           git log |head
+          ls -alrth config
+          ls -alrth workflow
