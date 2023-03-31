@@ -13,12 +13,10 @@ jobs:
   Dryrun_Lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: docker://snakemake/snakemake:v5.24.2
-    - name: Lint Workflow
-      continue-on-error: true
-      run: |
-        docker run snakemake/snakemake:v5.24.2 ls -alrth && \
-        docker run snakemake/snakemake:v5.24.2 pwd && \
-        docker run snakemake/snakemake:v5.24.2 snakemake --lint --snakefile workflow/Snakefile --configfile config/lint.config.yaml || \
-        echo 'There may have been a few warnings or errors. Please read through the log to determine if its harmless.'
+    - uses: actions/checkout@v3
+    - name: Linting
+      uses: snakemake/snakemake-github-action@v1
+      with:
+        directory: '.'
+        snakefile: 'workflow/Snakefile'
+        args: '--lint --config config/lint.config.yaml'
