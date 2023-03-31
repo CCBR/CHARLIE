@@ -1,0 +1,22 @@
+run-name: ${{github.actor}} is running LINT
+
+on:
+  push:
+    branches:
+      - activeDev
+      - main
+      - feature/issue57
+  pull_request:
+    branches-ignore: []
+
+jobs:
+  Dryrun_Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Linting
+        uses: actions/checkout@v3
+        with:
+          ref: "feature/issue57"
+      - run: |
+          git branch -a
+          git log |head
