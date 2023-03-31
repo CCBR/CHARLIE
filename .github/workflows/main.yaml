@@ -23,6 +23,7 @@ jobs:
       - name: Running Lint
         uses: snakemake/snakemake-github-action@v1
         with:
+          ref: "feature/issue57"
           directory: '.'
           snakefile: 'workflow/Snakefile'
           args: '--lint --configfile config/lint.config.yaml'
