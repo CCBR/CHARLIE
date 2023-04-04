@@ -1,7 +1,8 @@
 AWK1 = r"""-F"/" '{print $NF}'"""
 rule create_index:
     input:
-        FASTAS_REGIONS_GTFS
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x:ancient(x),FASTAS_REGIONS_GTFS))
     output:
         genepred_w_geneid=join(REF_DIR,"ref.genes.genepred_w_geneid"),
         sa=join(REF_DIR,"STAR_no_GTF","SA"),
