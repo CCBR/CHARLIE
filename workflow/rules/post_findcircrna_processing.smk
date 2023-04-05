@@ -329,7 +329,7 @@ if RUN_MAPSPLICE:
     print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
     print_bam_results {input.star2bam_chimeric} "STAR_chimeric" >> {output.alignmentstats}
     print_bam_results {input.star2bam_non_chimeric} "STAR_non_chimeric" >> {output.alignmentstats}
-    print_bam_results {input.filtered_bam} "STAR_filtered" >> {output.alignmentstats}
+    # print_bam_results {input.filtered_bam} "STAR_non_chimeric_filtered" >> {output.alignmentstats}
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
     print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
@@ -385,8 +385,6 @@ else:
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
     print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
-    print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
-
     print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
     """
 
