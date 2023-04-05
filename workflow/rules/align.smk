@@ -395,10 +395,6 @@ rule star_circrnafinder:
         chimericsam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.sam"),
         chimericjunction=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.junction"),
         sjouttab=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.SJ.out.tab"),
-# -rw-rw----  1 kopardevn kopardevn 2.0M Mar 30 00:16 GI1_T.Chimeric.out.sam
-# -rw-rw----  1 kopardevn kopardevn 289K Mar 30 00:16 GI1_T.Chimeric.out.junction
-# -rw-rw----  1 kopardevn kopardevn  87K Mar 30 00:16 GI1_T.SJ.out.tab
-        bam=temp(join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Aligned.out.bam"))
     params:
         sample="{sample}",
         memG=getmemG("star2p"),
@@ -417,7 +413,7 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
-outdir=$(dirname {output.bam})
+outdir=$(dirname {output.chimericsam})
 if [ ! -d $outdir ];then mkdir -p $outdir;fi
 cd $outdir
 
@@ -463,8 +459,10 @@ else
 
 fi
 
+# cleanup
 rm -rf {params.sample}._STARgenome
 rm -rf {params.sample}._STARpass1
+rm -f {params.sample}.Aligned.out.bam
 
 sleep 120
 
