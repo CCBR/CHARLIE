@@ -21,7 +21,7 @@ def get_circrnafinder_target_files(runcircrnafinder):
     targetfiles=[]
     if runcircrnafinder:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".Aligned.out.bam"))
+            # targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".Aligned.out.bam"))
             targetfiles.append(join(WORKDIR,"results",s,"circRNA_finder",s+".filteredJunctions.bed"))
             targetfiles.append(join(WORKDIR,"results",s,"circRNA_finder",s+".circRNA_finder.counts_table.tsv.filtered"))
     return targetfiles
@@ -189,9 +189,9 @@ rule all:
         join(WORKDIR,"results","alignmentstats.txt"),
 
         # # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        # expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
         # # ## master counts file
-        # join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
+        join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
 
 
 
