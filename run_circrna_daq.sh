@@ -102,7 +102,7 @@ fi
 if [ ! -f $WORKDIR/jobby ];then
 cp ${PIPELINE_HOME}/workflow/scripts/jobby $WORKDIR && chmod a+x $WORKDIR/jobby
 fi
-if [ ! -f $WORKDIR/jobby ];then
+if [ ! -f $WORKDIR/run_jobby_on_snakemake_log ];then
 cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $WORKDIR/run_jobby_on_snakemake_log
 fi
 
