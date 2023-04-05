@@ -931,181 +931,213 @@ def _boolean2str(x): # "1" for True and "0" for False
 # | 12   | mapsplice_annotation                 | "fusion_type"##"entropy"; "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!                                                                                                |
 # | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |  
 
+rule merge_per_sample:
+    input:
+        unpack(get_per_sample_files_to_merge)
+    output:
+        merge_bash_script=join(WORKDIR,"results","{sample}","merge_per_sample.sh"),
+        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz")
+    params:
+        script=join(SCRIPTS_DIR,"_make_merge_per_sample_sh.py"),
+        pyscript=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+        sample="{sample}",
+        reffa=REF_FA,
+        sampledir=join(WORKDIR,"results","{sample}"),
+        ndcc=N_RUN_DCC,
+        nmapsplice=N_RUN_MAPSPLICE,
+        nnclscan=N_RUN_NCLSCAN,
+        minreadcount=config['minreadcount'], # this filter is redundant as inputs are already pre-filtered.
+        # ncirrnafinder=N_RUN_CIRCRNAFINDER
+    shell:"""
+python3 {params.script} \\
+        --pyscript {params.pyscript} \\
+        --dcc {params.ndcc} \\
+        --mapsplice {params.nmapsplice} \\
+        --nclscan {params.nnclscan} \\
+        --samplename {params.sample} \\
+        --min_read_count_reqd {params.minreadcount} \\
+        --reffa {params.reffa} \\
+        --sampledir {params.sampledir} \\
+        --outscript {output.merge_bash_script} \\
+        --pyscriptoutfile {output.merged_counts} 
+bash {output.merge_bash_script}
+"""
 
-if RUN_DCC and RUN_MAPSPLICE and RUN_NCLSCAN:
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    parameters="$parameters --dcc {input.DCC}"
-    parameters="$parameters --mapsplice {input.MapSplice}"
-    if [[ "{params.peorse}" == "PE" ]]; then    # NCLscan is run only if the sample is PE
-        parameters="$parameters --nclscan {input.NCLscan}"
-    fi
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+# if RUN_DCC and RUN_MAPSPLICE and RUN_NCLSCAN:
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
-elif RUN_DCC and not RUN_MAPSPLICE and not RUN_NCLSCAN:
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     parameters="$parameters --dcc {input.DCC}"
+#     parameters="$parameters --mapsplice {input.MapSplice}"
+#     if [[ "{params.peorse}" == "PE" ]]; then    # NCLscan is run only if the sample is PE
+#         parameters="$parameters --nclscan {input.NCLscan}"
+#     fi
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    parameters="$parameters --dcc {input.DCC}"
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
+# elif RUN_DCC and not RUN_MAPSPLICE and not RUN_NCLSCAN:
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
-elif RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     parameters="$parameters --dcc {input.DCC}"
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    parameters="$parameters --dcc {input.DCC}"
-    parameters="$parameters --mapsplice {input.MapSplice}"
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
+# elif RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
-elif not RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     parameters="$parameters --dcc {input.DCC}"
+#     parameters="$parameters --mapsplice {input.MapSplice}"
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    parameters="$parameters --mapsplice {input.MapSplice}"
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
+# elif not RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
-elif not RUN_DCC and not RUN_MAPSPLICE and RUN_NCLSCAN:
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     parameters="$parameters --mapsplice {input.MapSplice}"
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    if [[ "{params.peorse}" == "PE" ]]; then    # NCLscan is run only if the sample is PE
-        parameters="$parameters --nclscan {input.NCLscan}"
-    fi
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
+# elif not RUN_DCC and not RUN_MAPSPLICE and RUN_NCLSCAN:
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
-else: # DCC, MapSplice and NCLScan are all off!
-    rule merge_per_sample:
-        input:
-            unpack(get_per_sample_files_to_merge)
-        output:
-            merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
-        params:
-            script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
-            samplename="{sample}",
-            peorse=get_peorse,
-            reffa=REF_FA,
-            minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
-        envmodules:
-            TOOLS["python37"]["version"]
-        shell:"""
-    set -exo pipefail
-    outdir=$(dirname {output.merged_counts})
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     if [[ "{params.peorse}" == "PE" ]]; then    # NCLscan is run only if the sample is PE
+#         parameters="$parameters --nclscan {input.NCLscan}"
+#     fi
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-    parameters=" --circExplorer {input.circExplorer}"
-    parameters="$parameters --ciri {input.CIRI}"
-    parameters="$parameters --min_read_count_reqd {params.minreadcount}"
-    parameters="$parameters --reffa {params.reffa}"
-    parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
+# else: # DCC, MapSplice and NCLScan are all off!
+#     rule merge_per_sample:
+#         input:
+#             unpack(get_per_sample_files_to_merge)
+#         output:
+#             merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),
+#         params:
+#             script=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+#             samplename="{sample}",
+#             peorse=get_peorse,
+#             reffa=REF_FA,
+#             minreadcount=config['minreadcount'] # this filter is redundant as inputs are already pre-filtered.
+#         envmodules:
+#             TOOLS["python37"]["version"]
+#         shell:"""
+#     set -exo pipefail
+#     outdir=$(dirname {output.merged_counts})
 
-    echo "python {params.script} $parameters" 
-    python {params.script} $parameters
-    """
+#     parameters=" --circExplorer {input.circExplorer}"
+#     parameters="$parameters --ciri {input.CIRI}"
+#     parameters="$parameters --min_read_count_reqd {params.minreadcount}"
+#     parameters="$parameters --reffa {params.reffa}"
+#     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
+
+#     echo "python {params.script} $parameters" 
+#     python {params.script} $parameters
+#     """
 
 localrules: create_master_counts_file
 # rule create_master_counts_file:

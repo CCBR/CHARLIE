@@ -54,11 +54,25 @@ CircRNACount=pandas.read_csv(args.CircRNACount,sep="\t",header=0)
 # | 8 | OverallRegion |
 
 old_names = CircCoordinates.columns 
-new_names = ['chr', 'start', 'end', 'gene', 'junction_type', 'strand', 'start_end_region', 'overall_region']
+new_names = ['chr', 'start', 'end', 'gene', 'junction_type', 'strand2', 'start_end_region', 'overall_region']
 CircCoordinates.rename(columns=dict(zip(old_names, new_names)), inplace=True)
-CircCoordinates['dcc_annotation']=CircCoordinates['junction_type'].astype(str)+"##"+CircCoordinates['start_end_region'].astype(str)
+CircCoordinates[['junction_type']]=CircCoordinates[['junction_type']].astype(str)
+CircCoordinates.loc[CircCoordinates['junction_type']=="0",'junction_type']="Non-canonical"
+CircCoordinates.loc[CircCoordinates['junction_type']=="1",'junction_type']="GT/AG"
+CircCoordinates.loc[CircCoordinates['junction_type']=="2",'junction_type']="CT/AC"
+CircCoordinates.loc[CircCoordinates['junction_type']=="3",'junction_type']="GC/AG"
+CircCoordinates.loc[CircCoordinates['junction_type']=="4",'junction_type']="CT/GC"
+CircCoordinates.loc[CircCoordinates['junction_type']=="5",'junction_type']="AT/AC"
+CircCoordinates.loc[CircCoordinates['junction_type']=="6",'junction_type']="GT/AT"
+# strand is flipped in CircCoordinates file ... flipping it back
+CircCoordinates['strand']="."
+CircCoordinates.loc[CircCoordinates['strand2']=="-",'strand']="+"
+CircCoordinates.loc[CircCoordinates['strand2']=="+",'strand']="-"
+
+CircCoordinates['dcc_annotation']=CircCoordinates['gene'].astype(str)+"##"+CircCoordinates['junction_type'].astype(str)+"##"+CircCoordinates['start_end_region'].astype(str)
+
 CircCoordinates['circRNA_id']=CircCoordinates['chr'].astype(str)+"##"+CircCoordinates['start'].astype(str)+"##"+CircCoordinates['end'].astype(str)+"##"+CircCoordinates['strand'].astype(str)
-CircCoordinates.drop(['chr', 'start', 'end', 'strand', 'gene','junction_type','start_end_region','overall_region'],axis=1,inplace=True)
+CircCoordinates.drop(['chr', 'start', 'end', 'strand', 'strand2', 'gene','junction_type','start_end_region','overall_region'],axis=1,inplace=True)
 CircCoordinates.set_index(['circRNA_id'],inplace=True)
 # CircCoordinates.to_csv("tmp",sep="\t",header=True,index=True)
 

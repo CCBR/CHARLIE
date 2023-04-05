@@ -386,6 +386,7 @@ else:
     print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
     print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
+
     """
 
 
