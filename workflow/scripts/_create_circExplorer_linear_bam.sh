@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-module load parallel
-module load python/3.7
-module load bedtools
-module load ucsc
+# module load parallel
+# module load python/3.7
+# module load bedtools
+# module load ucsc
+# module load samtools
 
 threads=56
 alloccpu=$(sacct -j $SLURM_JOB_ID --format "AllocCPUS"|tail -n1|awk '{print $1}')
