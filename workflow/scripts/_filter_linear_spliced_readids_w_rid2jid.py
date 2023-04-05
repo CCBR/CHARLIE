@@ -90,9 +90,12 @@ def main():
                 outrl.write("%s\n"%k)
     outrl.close()
     countout=open(args.jidcounts,'w')
+    countout.write("#chrom\tstart\tend\tstrand\tlinear_same_strand\tspliced_same_strand\tlinear_opposite_strand\tspliced_opposite_strand\tlinear_unknown_strand\tspliced_unknown_strand\n")
     for k in lcount.keys():
         v1=lcount[k]
         v2=scount[k]
+        kstr=k.split("##")
+        k="\t".join(kstr)
         countout.write("%s\t%d\t%d\t%d\t%d\t%d\t%d\n"%(k,v1["SS"],v2["SS"],v1["OS"],v2["OS"],v1["Unknown"],v2["Unknown"]))
     countout.close()
 
