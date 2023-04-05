@@ -5,7 +5,7 @@ def get_alignment_stats_input(wildcards):
     d = dict()
     d['star2bam']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.bam")
     d['star2bam_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.chimeric.bam")
-    d['star2bam_nonchimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")
+    d['star2bam_non_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")
     d['filtered_bam']=join(WORKDIR,"results",sample,"circExplorer",sample+".bam")  
     d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
     d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
@@ -174,7 +174,7 @@ cd {params.outdir}
 #     echo "#3 --> PE or SE"
 #     echo "#4 --> known BSJs in bed.gz format"
 #     echo "#5 --> tmpdir"
-#     echo "#6 --> gzipped outputfilename eg.${sample_name}.rid2jid.tsv.gz"
+#     echo "#6 --> gzipped outputfilename eg.<sample_name>.rid2jid.tsv.gz"
 #     echo "#7 --> output filtered sample BAM"
 # 	echo "#8 --> gzip-ed list of linear BSJ readids"
 # 	echo "#9 --> gzip-ed list of linear spliced BSJ readids"
@@ -329,7 +329,7 @@ if RUN_MAPSPLICE:
     print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
     print_bam_results {input.star2bam_chimeric} "STAR_chimeric" >> {output.alignmentstats}
     print_bam_results {input.star2bam_non_chimeric} "STAR_non_chimeric" >> {output.alignmentstats}
-    print_bam_results {input.filterebam} "STAR_filtered" >> {output.alignmentstats}
+    print_bam_results {input.filtered_bam} "STAR_filtered" >> {output.alignmentstats}
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
     print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
@@ -381,7 +381,7 @@ else:
     print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
     print_bam_results {input.star2bam_chimeric} "STAR_chimeric" >> {output.alignmentstats}
     print_bam_results {input.star2bam_non_chimeric} "STAR_non_chimeric" >> {output.alignmentstats}
-    print_bam_results {input.filterebam} "STAR_filtered" >> {output.alignmentstats}
+    print_bam_results {input.filtered_bam} "STAR_filtered" >> {output.alignmentstats}
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
     print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
