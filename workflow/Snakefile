@@ -146,24 +146,24 @@ rule all:
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bam"),sample=SAMPLES),           # BSJ only alignments to BSJs on the sense strand
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bam"),sample=SAMPLES),          # BSJ only alignments to BSJs on the anti-sense strand
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bam"),sample=SAMPLES),             # linear reads in BSJ inclusion zone
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bam"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bam"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bam"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bam"),sample=SAMPLES),
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bam"),sample=SAMPLES),            # spliced-only alignments in the sample
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bam"),sample=SAMPLES),     # spliced-only linear alignments in BSJ inclusion zone
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bam"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bam"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bam"),sample=SAMPLES),     # spliced-only linear alignments in BSJ inclusion zone
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bam"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bam"),sample=SAMPLES),
         # ## circExplorer BWs
 
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bw"),sample=SAMPLES),                
+        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bw"),sample=SAMPLES),                
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bw"),sample=SAMPLES),           
         expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bw"),sample=SAMPLES),          
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bw"),sample=SAMPLES),             
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bw"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bw"),sample=SAMPLES),            
+        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bw"),sample=SAMPLES),             
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bw"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bw"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bw"),sample=SAMPLES),            
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bw"),sample=SAMPLES),     
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bw"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bw"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bw"),sample=SAMPLES),
+        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bw"),sample=SAMPLES),
 
         # ## circExplorer extra bams
         # unpack(get_extra_bams),
