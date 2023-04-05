@@ -240,7 +240,7 @@ onsuccess:
     shell("""sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
 
 onerror:
-    shell("""sleep 10; q > jobinfo.short""")
+    shell("""sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
 
 
 
