@@ -5,10 +5,10 @@ def get_alignment_stats_input(wildcards):
     d = dict()
     d['star2bam']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.bam")
     d['star2bam_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.chimeric.bam")
-    d['star2bam_nonchimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")  
+    d['star2bam_nonchimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")
+    d['filtered_bam']=join(WORKDIR,"results",sample,"circExplorer",sample+".bam")  
     d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
     d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
-    d['linearsplicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.spliced.bam") 
     d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
     d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.cram")
     if RUN_MAPSPLICE:
@@ -326,9 +326,11 @@ if RUN_MAPSPLICE:
 
     echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
     print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
-    print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
+    print_bam_results {input.star2bam_chimeric} "STAR_chimeric" >> {output.alignmentstats}
+    print_bam_results {input.star2bam_non_chimeric} "STAR_non_chimeric" >> {output.alignmentstats}
+    print_bam_results {input.filterebam} "STAR_filtered" >> {output.alignmentstats}
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
-    print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
+    print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
     print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
     print_bam_results {input.mapsplicebam} "MapSplice" >> {output.alignmentstats}
@@ -376,10 +378,14 @@ else:
 
     echo -ne "sample\\t{params.sample}\\n" > {output.alignmentstats}
     print_bam_results {input.star2bam} "STAR" >> {output.alignmentstats}
-    print_bam_results {input.splicedbam} "STAR_spliced" >> {output.alignmentstats}
+    print_bam_results {input.star2bam_chimeric} "STAR_chimeric" >> {output.alignmentstats}
+    print_bam_results {input.star2bam_non_chimeric} "STAR_non_chimeric" >> {output.alignmentstats}
+    print_bam_results {input.filterebam} "STAR_filtered" >> {output.alignmentstats}
     print_bam_results {input.linearbam} "CircExplorer_linear" >> {output.alignmentstats}
-    print_bam_results {input.linearsplicedbam} "CircExplorer_linear_spliced" >> {output.alignmentstats}
+    print_bam_results {input.splicedbam} "CircExplorer_spliced" >> {output.alignmentstats}
     print_bam_results {input.BSJbam} "CircExplorer_BSJ" >> {output.alignmentstats}
+    print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
+
     print_bam_results {input.ciribam} "CIRI" >> {output.alignmentstats}
     """
 
