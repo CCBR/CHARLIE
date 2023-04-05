@@ -21,6 +21,7 @@ rule star1p:
         chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
         mate1_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),
         mate2_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),
+        # bam=temp(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Aligned.out.bam")),
         # get_mate_outputs
     params:
         sample="{sample}",
@@ -76,6 +77,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
 
+    rm -rf {params.sample}_p1._STARgenome
+
     # mate1
     mkdir -p "{params.outdir}/mate1" && cd {params.outdir}/mate1
     STAR --genomeDir {params.starindexdir} \\
@@ -109,6 +112,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
 
+    rm -rf {params.sample}_mate1._STARgenome
+
     # mate2
     mkdir -p "{params.outdir}/mate2" && cd {params.outdir}/mate2
     STAR --genomeDir {params.starindexdir} \\
@@ -141,6 +146,8 @@ if [ "{params.peorse}" == "PE" ];then
     --sjdbGTFfile {input.gtf} \\
     --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
+
+    rm -rf {params.sample}_mate2._STARgenome
 
 else
 
@@ -182,8 +189,15 @@ else
     touch {output.mate1_chimeric_junctions}
     mkdir -p $(dirname {output.mate2_chimeric_junctions})
     touch {output.mate2_chimeric_junctions}
+
+    rm -rf {params.sample}_p1._STARgenome
 fi
-rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
+
+## cleanup
+# rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam # adding this to output and setting it as temp
+# UPDATE: outSAMtype is set to None ... so this file should not exist in the first place!
+
+
 """
 
 rule merge_SJ_tabs:
@@ -288,6 +302,9 @@ if [ "{params.peorse}" == "PE" ];then
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
+
+    rm -rf {params.sample}_p2._STARgenome
+
 else
 #single-end
     overhang=$(zcat {input.R1} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
@@ -329,6 +346,8 @@ else
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
+
+    rm -rf {params.sample}_p2._STARgenome
 fi
 sleep 120
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
@@ -444,25 +463,13 @@ else
 
 fi
 
+rm -rf {params.sample}._STARgenome
+rm -rf {params.sample}._STARpass1
+
 sleep 120
 
 # Used to sort the BAM file after effect , but realized that it is not required by circRNA_Finder scripts
 # Hence deleting it to save digital footprint by making it temp in output block 
-
-# if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-
-# mv {output.bam} {params.sample}.tmp.Aligned.out.bam
-
-# samtools sort \\
-#     -l 9 \\
-#     -T ${{TMPDIR}}/{params.randomstr}_1 \\
-#     --write-index \\
-#     -@ {threads} \\
-#     --output-fmt BAM \\
-#     -o {output.bam} {params.sample}.tmp.Aligned.out.bam && \\
-# rm -f {params.sample}.tmp.Aligned.out.bam
-
-# rm -rf $TMPDIR
 
 """
 
