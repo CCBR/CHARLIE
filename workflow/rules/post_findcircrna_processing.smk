@@ -127,25 +127,14 @@ rule create_circExplorer_linear_spliced_bams:
     output:
         rid2jid=join(WORKDIR,"results","{sample}","circExplorer","{sample}.rid2jid.tsv.gz"),
         filtered_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.bam"),
+        linear_readids=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.BSJ.readids.gz"),
+        spliced_readids=join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.BSJ.readids.gz"),
+        linear_spliced_counts=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear_spliced.counts.tsv"),
         linear_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bam"),                         # linear reads in BSJ inclusion zone
-        spliced_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bam"),                       # spliced-only alignments in the sample
-        linear_spliced_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bam"),         # spliced-only linear alignments in BSJ inclusion zone
-        linear_foundcounts=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.foundcounts.tsv"),
-# strand specific bams
-        linear_plus_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bam"),
-        linear_minus_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bam"),
-        linear_spliced_plus_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bam"), 
-        linear_spliced_minus_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bam"),
+        spliced_bam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bam"),                       # linear spliced-only alignments in the sample
 # bigwigs
-        # linear_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bw"),
-        linear_plus_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bw"),
-        linear_minus_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bw"),
-
-        # spliced_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bw"),
-
-        # linear_spliced_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bw"),
-        linear_spliced_plus_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bw"), 
-        linear_spliced_minus_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bw"),
+        linear_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bw"),
+        spliced_bw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bw"),
 
     params:
         sample="{sample}",
@@ -157,80 +146,62 @@ rule create_circExplorer_linear_spliced_bams:
         additives=ADDITIVES,
         viruses=VIRUSES,
         peorse=get_peorse,
-        bashscript=join(SCRIPTS_DIR,"_create_circExplorer_linear_bam_preprocess.sh"),
-        pythonscript=join(SCRIPTS_DIR,"_extract_circExplorer_linear_reads.py"),
-        bam2bwscript=join(SCRIPTS_DIR,"bam_to_bigwig.sh"),
+        bashscript=join(SCRIPTS_DIR,"_create_circExplorer_linear_bam.sh"),
+        # pythonscript=join(SCRIPTS_DIR,"_extract_circExplorer_linear_reads.py"),
+        # bam2bwscript=join(SCRIPTS_DIR,"bam_to_bigwig.sh"),
         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
         randomstr=str(uuid.uuid4())
-    envmodules: TOOLS["python37"]["version"],TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"]
+    envmodules: TOOLS["python37"]["version"],TOOLS["samtools"]["version"],TOOLS["bedtools"]["version"],TOOLS["ucsc"]["version"],TOOLS["parallel"]["version"]
     threads : getthreads("create_circExplorer_linear_spliced_bams")
     shell:"""
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
 else
     TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
 fi
+if [ -d $TMPDIR ];then rm -rf $TMPDIR;fi
+mkdir -p $TMPDIR
+
 cd {params.outdir}
 
 # get filtered bam (remove secondary/supplementary/etc.) and the rid2jid lookup files
+# inputs
+#     echo "16 arguments expected!"
+#     echo "#1 --> path to non-chimeric BAM file"
+#     echo "#2 --> sample name"
+#     echo "#3 --> PE or SE"
+#     echo "#4 --> known BSJs in bed.gz format"
+#     echo "#5 --> tmpdir"
+#     echo "#6 --> gzipped outputfilename eg.${sample_name}.rid2jid.tsv.gz"
+#     echo "#7 --> output filtered sample BAM"
+# 	echo "#8 --> gzip-ed list of linear BSJ readids"
+# 	echo "#9 --> gzip-ed list of linear spliced BSJ readids"
+# 	echo "#10 --> jid counts (linear and linear-spliced) per jid or BSJ"
+# 	echo "#11 --> linear BSJ readids in BAM"
+# 	echo "#12 --> linear-spliced BSJ readids in BAM"
+# 	echo "#13 --> .regions file eg. ref/ref.fa.regions"
+# 	echo "#14 --> host list comma separated .. no spaces"
+# 	echo "#15 --> additives list comma separated .. no spaces"
+# 	echo "#16 --> viruses list comma separated .. no spaces"
 
-bash {params.bashscript} {input.nonchimericbam} {params.sample} {params.peorse} {input.bsjbedgz} $TMPDIR {output.rid2jid} {output.filtered_bam}
-samtools index -@{threads} {output.filtered_bam}
-
-# extract linear, spliced, linear_sliced reads into individual BAMs using the filtered bam and rid2jid from above
-
-linear_bam_bn=$(basename {output.linear_bam})
-linear_plus_bam_bn=$(basename {output.linear_plus_bam})
-linear_minus_bam_bn=$(basename {output.linear_minus_bam})
-spliced_bam_bn=$(basename {output.spliced_bam})
-linear_spliced_bam_bn=$(basename {output.linear_spliced_bam})
-linear_spliced_plus_bam_bn=$(basename {output.linear_spliced_plus_bam})
-linear_spliced_minus_bam_bn=$(basename {output.linear_spliced_minus_bam})
-
-python3 {params.pythonscript} \\
-    --inbam {output.filtered_bam} \\
-    --rid2jid {output.rid2jid} \\
-    --sample_counts_table {input.countstable} \\
-    --sample_name {params.sample} \\
-    --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
-    --outbam ${{TMPDIR}}/$linear_bam_bn \\
-    --outplusbam ${{TMPDIR}}/$linear_plus_bam_bn \\
-    --outminusbam ${{TMPDIR}}/$linear_minus_bam_bn \\
-    --splicedbam ${{TMPDIR}}/$spliced_bam_bn \\
-    --splicedbsjbam ${{TMPDIR}}/$linear_spliced_bam_bn \\
-    --splicedbsjplusbam ${{TMPDIR}}/$linear_spliced_plus_bam_bn \\
-    --splicedbsjminusbam ${{TMPDIR}}/$linear_spliced_minus_bam_bn \\
-    --outputhostbams --outputvirusbams \\
-    --outdir {params.outdir} \\
-    --countsfound {output.linear_foundcounts}
-
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_bam} ${{TMPDIR}}/$linear_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_plus_bam} ${{TMPDIR}}/$linear_plus_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_minus_bam} ${{TMPDIR}}/$linear_minus_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.spliced_bam} ${{TMPDIR}}/$spliced_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_spliced_bam} ${{TMPDIR}}/$linear_spliced_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_spliced_plus_bam} ${{TMPDIR}}/$linear_spliced_plus_bam_bn
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.linear_spliced_minus_bam} ${{TMPDIR}}/$linear_spliced_minus_bam_bn
-
-# for b in {output.linear_bam} {output.linear_plus_bam} {output.linear_minus_bam} {output.spliced_bam} {output.linear_spliced_bam} {output.linear_spliced_plus_bam} {output.linear_spliced_minus_bam}
-for b in {output.linear_plus_bam} {output.linear_minus_bam} {output.linear_spliced_plus_bam} {output.linear_spliced_minus_bam}
-do
-    bash {params.bam2bwscript} $b
-done
-
-for regions in {params.refregions_host} {params.refregions_viruses};do
-while read a b;do 
-    samtools view -@{threads} --write-index -O BAM -o {params.sample}.${{a}}.linear.bam {output.linear_bam} $b 
-    samtools view -@{threads} --write-index -O BAM -o {params.sample}.${{a}}.spliced.bam {output.spliced_bam} $b
-    samtools view -@{threads} --write-index -O BAM -o {params.sample}.${{a}}.linear_spliced.bam {output.linear_spliced_bam} $b
-done < $regions
-done
-
+bash {params.bashscript} \
+    {input.nonchimericbam} \
+    {params.sample} \
+    {params.peorse} \
+    {input.bsjbedgz} \
+    $TMPDIR \
+    {output.rid2jid} \
+    {output.filtered_bam} \
+    {output.linear_readids} \
+    {output.spliced_readids} \
+    {output.linear_spliced_counts} \
+    {output.linear_bam} \
+    {output.spliced_bam} \
+    {params.refregions} \
+    {params.host} \
+    {params.additives} \
+    {params.viruses}
 cd $TMPDIR && rm -f *
 """
 
@@ -251,7 +222,7 @@ rule create_circExplorer_merged_found_counts_table:
     input:
         annotation_counts=rules.circExplorer.output.annotation_counts_table,
         bsj_found_counts=rules.create_circExplorer_BSJ_bam.output.BSJfoundcounts,
-        linear_found_counts=rules.create_circExplorer_linear_spliced_bams.output.linear_foundcounts
+        linear_spliced_counts=rules.create_circExplorer_linear_spliced_bams.output.linear_spliced_counts
     output:
         found_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.readcounts.tsv"),
         count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
@@ -271,7 +242,7 @@ else
 fi
 python3 {params.pythonscript} \\
     -b {input.bsj_found_counts} \\
-    -l {input.linear_found_counts} \\
+    -l {input.linear_spliced_counts} \\
     -o {output.found_counts_table}
 
 python3 {params.pythonscript2} \\
