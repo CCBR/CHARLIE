@@ -15,8 +15,8 @@ module purge
 #######
 EXTRA_SINGULARITY_BINDS="/lscratch"
 PYTHONVERSION="3.7"
-# SNAKEMAKEVERSION="7.3.7"
-SNAKEMAKEVERSION="5.24.1"
+SNAKEMAKEVERSION="7.19.1"
+# SNAKEMAKEVERSION="5.24.1"
 #######
 
 
@@ -290,6 +290,7 @@ snakemake -s $SNAKEFILE \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
@@ -321,6 +322,7 @@ snakemake $1 -s $SNAKEFILE \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
 --keep-going \
 --reason \
 --stats ${WORKDIR}/snakemake.stats
