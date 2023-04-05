@@ -25,6 +25,7 @@ rule create_circExplorer_BSJ_bam:
         minusBSJbam=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bam"),
         BSJbed=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bed.gz"),
         BSJfoundcounts=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.foundcounts.tsv"),
+        BSJbw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bw"),
         plusBSJbw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bw"),
         minusBSJbw=join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bw"),
     params:
@@ -95,19 +96,19 @@ samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.plusBS
 samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.minusBSJbam} ${{TMPDIR}}/{params.sample}.BSJ.minus.bam 
 samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.BSJbam} ${{TMPDIR}}/{params.sample}.BSJ.bam
 
-# for b in {output.plusBSJbam} {output.minusBSJbam} {output.BSJbam} 
-for b in {output.plusBSJbam} {output.minusBSJbam}
+for b in {output.plusBSJbam} {output.minusBSJbam} {output.BSJbam} 
+# for b in {output.plusBSJbam} {output.minusBSJbam}
 do
-    bash {params.bam2bwscript} $b
+    bash {params.bam2bwscript} $b $TMPDIR
 done
 
 for i in $(echo {params.host}|tr ',' ' ');do 
     samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam ${{TMPDIR}}/{params.sample}.${{i}}.BSJ.bam
-    # bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam
+    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam $TMPDIR
 done
 for i in $(echo {params.viruses}|tr ',' ' ');do 
     samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam ${{TMPDIR}}/{params.sample}.${{i}}.BSJ.bam
-    # bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam
+    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam $TMPDIR
 done
 
 python3 {params.flankscript} --reffa {params.reffa} --inbsjbedgz ${{TMPDIR}}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
