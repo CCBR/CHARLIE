@@ -902,7 +902,7 @@ if [ ! -d $outDir ];then mkdir -p $outDir;fi
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
 
-echo -ne "chr\tstart\tend\tstrand\tread_count" > {output.ctf}
+echo -ne "chr\tstart\tend\tstrand\tread_count\n" > {output.ctf}
 awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' {output.bed} >> {output.ctf}
 
 """
