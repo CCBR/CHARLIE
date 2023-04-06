@@ -12,8 +12,8 @@ def _get_counts_file_path(sampledir,s,prog):
         return join(sampledir,"MapSplice",s+".mapsplice.counts_table.tsv.filtered")
     elif prog=="nclscan":
         return join(sampledir,"NCLscan",s+".nclscan.counts_table.tsv.filtered")
-    # elif prog=="circrnafinder":
-    #     return join(sampledir,"DCC","{sample}.dcc.counts_table.tsv.filtered")
+    elif prog=="circrnafinder":
+        return join(sampledir,"circRNA_finder",s+".circRNA_finder.counts_table.tsv.filtered")
 
 
 def main() :
@@ -28,8 +28,8 @@ def main() :
         help='n_run_mapslice')
     parser.add_argument('--nclscan', dest='nclscan', type=int, required=False,default=0,
         help='n_run_nclscan')
-    # parser.add_argument('--circrnafinder', dest='circrnafinder', type=int, required=False, default=0,
-    #     help='n_run_circrnafinder')
+    parser.add_argument('--circrnafinder', dest='circrnafinder', type=int, required=False, default=0,
+        help='n_run_circrnafinder')
     parser.add_argument('--samplename', dest='samplename', type=str, required=True,
         help='Sample Name')
     parser.add_argument('--min_read_count_reqd', dest='minreads', type=int, required=False, default=2,
@@ -48,9 +48,9 @@ def main() :
     if args.dcc==1: parameters+=" --dcc "+_get_counts_file_path(sd,sn,'dcc')
     if args.mapsplice==1: parameters+=" --mapsplice "+_get_counts_file_path(sd,sn,'mapsplice')
     if args.nclscan==1: parameters+=" --nclscan "+_get_counts_file_path(sd,sn,'nclscan')
-    # if args.circrnafinder==1: parameters+=" --circrnafinder "+_get_counts_file_path(sd,sn,'circrnafinder')
+    if args.circrnafinder==1: parameters+=" --circrnafinder "+_get_counts_file_path(sd,sn,'circrnafinder')
     parameters+=" --reffa "+args.reffa
-    parameters+=" --min_reacd Gd_count_reqd "+str(args.minreads)
+    parameters+=" --min_read_count_reqd "+str(args.minreads)
     parameters+=" --samplename "+sn
     parameters+=" -o "+args.pyscriptoutfile
     

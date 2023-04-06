@@ -61,6 +61,8 @@ def main() :
         help='mapsplice per-sample counts table')
     parser.add_argument('--nclscan', dest='nclscan', type=str, required=False,
         help='nclscan per-sample counts table')
+    parser.add_argument('--circrnafinder', dest='circrnafinder', type=str, required=False,
+        help='circrnafinder per-sample counts table')
     parser.add_argument('--samplename', dest='samplename', type=str, required=True,
         help='Sample Name')
     parser.add_argument('--min_read_count_reqd', dest='minreads', type=int, required=False, default=2,
@@ -226,7 +228,7 @@ def main() :
     # load nclscan
     if args.nclscan:
         nclscan=pandas.read_csv(args.nclscan,sep="\t",header=0)
-        # output .mapslice.counts_table.tsv has the following columns:
+        # output nslscan table has the following columns:
         # | # | ColName              | Eg.              |
         # |---|----------------------|------------------|
         # | 1 | chrom                | chr1             |
@@ -256,6 +258,29 @@ def main() :
             if len(strcols) > 0: nclscan = _df_setcol_as_str(nclscan,strcols)  
 
         dfs.append(nclscan)
+
+    if args.circrnafinder:
+        circrnafinder=pandas.read_csv(args.circrnafinder,sep="\t",header=0)
+        # output circrnafinder table has the following columns:
+        # | # | ColName              | Eg.              |
+        # |---|----------------------|------------------|
+        # | 1 | chr                  | chr1             |
+        # | 2 | start                | 1223244          |
+        # | 3 | end                  | 1223968          |
+        # | 4 | strand               | -                |
+        # | 5 | read_count           | 26               |
+        circrnafinder['circRNA_id']=circrnafinder['chr'].astype(str)+"##"+circrnafinder['start'].astype(str)+"##"+circrnafinder['end'].astype(str)+"##"+circrnafinder['strand'].astype(str)
+        circrnafinder.rename({'read_count': 'circrnafinder_read_count'}, axis=1, inplace=True)
+        circrnafinder.set_index(['circRNA_id'],inplace=True)
+
+        circrnafinder.fillna(value=-1,inplace=True)
+
+        intcols = [ 'circrnafinder_read_count' ]
+        strcols = list ( set(circrnafinder.columns) - set(intcols) )
+        circrnafinder = _df_setcol_as_int(circrnafinder,intcols)
+        if len(strcols) > 0: circrnafinder = _df_setcol_as_str(circrnafinder,strcols)    
+
+        dfs.append(circrnafinder)
 
 
     # for df in dfs:
@@ -294,6 +319,9 @@ def main() :
     if args.nclscan and includenclscan:
         intcols.extend([ 'nclscan_read_count' ])
         annotation_cols.extend(['nclscan_annotation'])
+    
+    if args.circrnafinder:
+        intcols.extend(['circrnafinder_read_count'])
 
     intcols.extend(['ntools'])
     strcols = list ( ( set(merged_counts.columns) - set(intcols) ) - set(floatcols) )
@@ -310,6 +338,7 @@ def main() :
     if args.dcc: merged_counts.loc[merged_counts['dcc_read_count'] >= args.minreads, 'ntools'] += 1
     if args.mapsplice: merged_counts.loc[merged_counts['mapsplice_read_count'] >= args.minreads, 'ntools'] += 1
     if args.nclscan and includenclscan: merged_counts.loc[merged_counts['nclscan_read_count'] >= args.minreads, 'ntools'] += 1
+    if args.circrnafinder: merged_counts.loc[merged_counts['circrnafinder_read_count'] >= args.minreads, 'ntools'] += 1
     merged_counts[['chrom', 'start', 'end', 'strand']] = merged_counts['circRNA_id'].str.split('##', expand=True)
  
     merged_counts=_df_setcol_as_int(merged_counts,['start','end','ntools'])
@@ -353,12 +382,11 @@ def main() :
                         'dcc_linear_read_count'])
     # add MapSplice columns
     if args.mapsplice: outcols.append('mapsplice_read_count')
+    # add NCLscan columns
     if args.nclscan and includenclscan: outcols.append('nclscan_read_count')
+    # add circRNAfinder columns
+    if args.circrnafinder: outcols.append('circrnafinder_read_count')
     # add annotation columns
-    # outcols.extend(['circExplorer_annotation', 'ciri_annotation'])
-    # if args.dcc: outcols.extend(['dcc_gene','dcc_junction_type','dcc_annotation'])
-    # if args.mapsplice: outcols.extend(['mapsplice_annotation','mapsplice_entropy'])
-    # if args.nclscan and includenclscan: outcols.append('nclscan_annotation')
     outcols.extend(annotation_cols)
     merged_counts = merged_counts[outcols]
     merged_counts.to_csv(args.outfile,sep="\t",header=True,index=False,compression='gzip')

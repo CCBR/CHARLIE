@@ -43,6 +43,8 @@ def get_per_sample_files_to_merge(wildcards):
         filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv.filtered")
     if RUN_NCLSCAN:
         filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
+    if RUN_CIRCRNAFINDER:
+        filedict['circRNAFinder']join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered")
     return(filedict)
 
 
@@ -931,6 +933,7 @@ def _boolean2str(x): # "1" for True and "0" for False
 # | 12   | mapsplice_annotation                 | "fusion_type"##"entropy"; "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!                                                                                                |
 # | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |  
 
+localrules: merge_per_sample
 rule merge_per_sample:
     input:
         unpack(get_per_sample_files_to_merge)
@@ -946,14 +949,16 @@ rule merge_per_sample:
         ndcc=N_RUN_DCC,
         nmapsplice=N_RUN_MAPSPLICE,
         nnclscan=N_RUN_NCLSCAN,
+        ncirrnafinder=N_RUN_CIRCRNAFINDER,
         minreadcount=config['minreadcount'], # this filter is redundant as inputs are already pre-filtered.
-        # ncirrnafinder=N_RUN_CIRCRNAFINDER
+
     shell:"""
 python3 {params.script} \\
         --pyscript {params.pyscript} \\
         --dcc {params.ndcc} \\
         --mapsplice {params.nmapsplice} \\
         --nclscan {params.nnclscan} \\
+        --circrnafinder {params.ncirrnafinder} \\
         --samplename {params.sample} \\
         --min_read_count_reqd {params.minreadcount} \\
         --reffa {params.reffa} \\
