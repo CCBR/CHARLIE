@@ -44,7 +44,7 @@ def get_per_sample_files_to_merge(wildcards):
     if RUN_NCLSCAN:
         filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
     if RUN_CIRCRNAFINDER:
-        filedict['circRNAFinder']join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered")
+        filedict['circRNAFinder']=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered")
     return(filedict)
 
 
