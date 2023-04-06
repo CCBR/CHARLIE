@@ -1,7 +1,8 @@
 AWK1 = r"""-F"/" '{print $NF}'"""
 rule create_index:
     input:
-        FASTAS_REGIONS_GTFS
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x:ancient(x),FASTAS_REGIONS_GTFS))
     output:
         genepred_w_geneid=join(REF_DIR,"ref.genes.genepred_w_geneid"),
         sa=join(REF_DIR,"STAR_no_GTF","SA"),
@@ -31,12 +32,22 @@ samtools faidx {params.reffa} && \
 
 bwa index -p ref {params.reffa} > bwa_index.log
 
-gtfToGenePred -ignoreGroupsWithoutExons {params.refgtf} ref.genes.genepred && \
-    python {params.script1} {params.refgtf} ref.genes.genepred > {output.genepred_w_geneid}
+# NCLscan files
+python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
+gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
+touch {output.lncRNA_transcripts_fa}
+{params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
+
+gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \
+    python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
 
 stardir=$(dirname {output.sa})
-mkdir -p STAR_no_GTF && \
-    STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir $stardir --genomeFastaFiles {params.reffa} > STAR-build.log
+mkdir -p $stardir && \\
+STAR \\
+    --runThreadN {threads} \\
+    --runMode genomeGenerate \\
+    --genomeDir $stardir \\
+    --genomeFastaFiles {params.reffa}
 
 # MapSplice requires the {params.reffa} multifasta to be split into separate fastas
 bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
@@ -44,11 +55,7 @@ ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
 # may have to create bowtie1 index here.. has to be a separate rule ... see below
 
 
-# NCLscan files
-python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
-gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
-touch {output.lncRNA_transcripts_fa}
-{params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
+
 """
 
 TRSED = r"""tr '\n' ',' | sed 's/.$//g'"""

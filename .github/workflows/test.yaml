@@ -1,0 +1,30 @@
+run-name: ${{github.actor}} is running test.yaml
+
+on:
+  push:
+    branches:
+      - activeDev
+      - main
+      - feature/issue57
+  pull_request:
+    branches-ignore: []
+
+jobs:
+  Dryrun_Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Linting
+        uses: actions/checkout@v3
+        with:
+          ref: "feature/issue57"
+      - run: |
+          git branch -a
+          git log |head
+          ls -alrth config
+          ls -alrth workflow
+      - name: Running Lint
+        uses: snakemake/snakemake-github-action@v1
+        with:
+          directory: '.'
+          snakefile: 'workflow/Snakefile'
+          args: '--lint --configfile config/lint.config.yaml'
