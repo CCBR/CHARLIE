@@ -15,8 +15,8 @@ module purge
 #######
 EXTRA_SINGULARITY_BINDS="/lscratch"
 PYTHONVERSION="3.7"
-# SNAKEMAKEVERSION="7.3.7"
-SNAKEMAKEVERSION="5.24.1"
+SNAKEMAKEVERSION="7.19.1"
+# SNAKEMAKEVERSION="5.24.1"
 #######
 
 
@@ -90,9 +90,21 @@ if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
 mkdir -p $WORKDIR
 
 # copy config and samples files
+if [ ! -f $WORKDIR/config.yaml ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+fi
+if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
+fi
+if [ ! -f $WORKDIR/samples.tsv ];then
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
+fi
+if [ ! -f $WORKDIR/jobby ];then
+cp ${PIPELINE_HOME}/workflow/scripts/jobby $WORKDIR && chmod a+x $WORKDIR/jobby
+fi
+if [ ! -f $WORKDIR/run_jobby_on_snakemake_log ];then
+cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $WORKDIR/run_jobby_on_snakemake_log
+fi
 
 #create log and stats folders
 if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
@@ -104,7 +116,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv nclscan.config; do
+  for f in config.yaml samples.tsv nclscan.config jobby; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -278,6 +290,7 @@ snakemake -s $SNAKEFILE \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
@@ -290,10 +303,9 @@ if [ "\$?" -eq "0" ];then
 fi
 
 # bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
-
-sleep 60
-/data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
-
+# sleep 60
+# /data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
+# replacing the above with jobby in the Snakefile
 EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
@@ -310,6 +322,7 @@ snakemake $1 -s $SNAKEFILE \
 --cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
 --keep-going \
 --reason \
 --stats ${WORKDIR}/snakemake.stats

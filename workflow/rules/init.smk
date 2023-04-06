@@ -44,7 +44,9 @@ def append_files_in_list(flist,ofile):
         with open(ofile, 'w') as outfile:
             for fname in flist:
                 with open(fname) as infile:
-                    outfile.write(infile.read())
+                    l=infile.read()
+                    l=l.strip()
+                    outfile.write("%s\n"%(l))
     return True
 
 ##### load config and sample sheets #####
@@ -71,14 +73,16 @@ def _convert_to_int(variable):
 WORKDIR=config['workdir']
 SCRIPTS_DIR=config['scriptsdir']
 RESOURCES_DIR=config['resourcesdir']
-FASTAS_GTFS_DIR=config['fastas_gts_dir']
+FASTAS_GTFS_DIR=config['fastas_gtfs_dir']
 RUN_CLEAR=_is_true(config['run_clear'])
 RUN_DCC=_is_true(config['run_dcc'])
 RUN_MAPSPLICE=_is_true(config['run_mapsplice'])
+RUN_CIRCRNAFINDER=_is_true(config['run_circRNAFinder'])
 RUN_NCLSCAN=_is_true(config['run_nclscan'])
 N_RUN_CLEAR=_convert_to_int(RUN_CLEAR)
 N_RUN_DCC=_convert_to_int(RUN_DCC)
 N_RUN_MAPSPLICE=_convert_to_int(RUN_MAPSPLICE)
+N_RUN_CIRCRNAFINDER=_convert_to_int(RUN_CIRCRNAFINDER)
 N_RUN_NCLSCAN=_convert_to_int(RUN_NCLSCAN)
 MAPSPLICE_MIN_MAP_LEN=config['mapsplice_min_map_len']
 MAPSPLICE_FILTERING=config['mapsplice_filtering']

@@ -2,6 +2,7 @@ import pysam
 import sys
 import argparse
 import os
+import gzip
 # """
 # Script takes a BAM file with a list of readids, then 
 # filters the input BAM for those readids and outputs
@@ -11,7 +12,7 @@ import os
 # inputBAM: str (required)
 # 	path to input BAM file
 # readids: str (required)
-# 	path to file with list of readids, one readid per line
+# 	path to file with list of readids, one readid per line ... can be gzip-ed
 # @Outputs:
 # outputBAM: str (required)
 # 	path to output BAM file
@@ -25,14 +26,26 @@ parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
 parser.add_argument('--readids', dest='readids', type=str, required=True,
                     help='file with readids to keep (one readid per line)')
 args = parser.parse_args()
-rids = list(map(lambda x:x.strip(),open(args.readids,'r').readlines()))
-rids=list(set(rids))
+
+split_tup = os.path.splitext(args.readids)  
+# extract the file name and extension
+file_name = split_tup[0]
+file_extension = split_tup[1]
+
 rids_dict=dict()
-for rid in rids:
-    rids_dict[rid]=1
+if file_extension==".gz":
+	rids=list()
+	with gzip.open(args.readids,'rt') as readids:
+		for l in readids:
+			l = l.strip()
+			rids_dict[l]=1
+else:
+	rids = list(map(lambda x:x.strip(),open(args.readids,'r').readlines()))
+	rids = list(set(rids))
+	for rid in rids:
+		rids_dict[rid]=1
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
-# bigdict = dict()
 
 count=0
 for read in inBAM.fetch():
@@ -42,12 +55,5 @@ for read in inBAM.fetch():
 	qn=read.query_name
 	if qn in rids_dict:
 		outBAM.write(read)
-	# if not qn in bigdict:
-	# 	bigdict[qn]=list()
-	# bigdict[qn].append(read)
 inBAM.close()
-
-# for r in rids_dict:
-# 	for read in bigdict[r]:
-# 		outBAM.write(read)
 outBAM.close()

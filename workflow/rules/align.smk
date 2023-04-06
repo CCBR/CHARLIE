@@ -15,11 +15,13 @@ rule star1p:
         sa=rules.create_index.output.sa,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
     output:
         junction=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),
         chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),
         mate1_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),
         mate2_chimeric_junctions=join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),
+        # bam=temp(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Aligned.out.bam")),
         # get_mate_outputs
     params:
         sample="{sample}",
@@ -28,7 +30,6 @@ rule star1p:
         outdir=join(WORKDIR,"results","{sample}","STAR1p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-        gtf=REF_GTF,
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["star"]["version"]
     threads: getthreads("star1p")
@@ -72,9 +73,11 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
+
+    rm -rf {params.sample}_p1._STARgenome
 
     # mate1
     mkdir -p "{params.outdir}/mate1" && cd {params.outdir}/mate1
@@ -105,9 +108,11 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
+
+    rm -rf {params.sample}_mate1._STARgenome
 
     # mate2
     mkdir -p "{params.outdir}/mate2" && cd {params.outdir}/mate2
@@ -138,9 +143,11 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
+
+    rm -rf {params.sample}_mate2._STARgenome
 
 else
 
@@ -175,15 +182,22 @@ else
     --outSAMtype None \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
-    --outTmpDir=${{TMPDIR}} \\
+    --sjdbGTFfile {input.gtf} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang
     mkdir -p $(dirname {output.mate1_chimeric_junctions})
     touch {output.mate1_chimeric_junctions}
     mkdir -p $(dirname {output.mate2_chimeric_junctions})
     touch {output.mate2_chimeric_junctions}
+
+    rm -rf {params.sample}_p1._STARgenome
 fi
-rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam
+
+## cleanup
+# rm -rf {params.outdir}/{params.sample}_p1.Aligned.out.bam # adding this to output and setting it as temp
+# UPDATE: outSAMtype is set to None ... so this file should not exist in the first place!
+
+
 """
 
 rule merge_SJ_tabs:
@@ -217,6 +231,7 @@ rule star2p:
     input:
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
         pass1sjtab=rules.merge_SJ_tabs.output.pass1sjtab
     output:
         junction=join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),
@@ -233,7 +248,6 @@ rule star2p:
         outdir=join(WORKDIR,"results","{sample}","STAR2p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
-        gtf=REF_GTF,
         randomstr=str(uuid.uuid4())
     envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
     threads: getthreads("star2p")
@@ -282,12 +296,15 @@ if [ "{params.peorse}" == "PE" ];then
     --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
+    --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir=${{TMPDIR}} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
+
+    rm -rf {params.sample}_p2._STARgenome
+
 else
 #single-end
     overhang=$(zcat {input.R1} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
@@ -323,12 +340,14 @@ else
     --outSAMtype BAM Unsorted \\
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
-    --sjdbGTFfile {params.gtf} \\
+    --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir=${{TMPDIR}} \\
+    --outTmpDir ${{TMPDIR}} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
+
+    rm -rf {params.sample}_p2._STARgenome
 fi
 sleep 120
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
@@ -366,6 +385,92 @@ samtools sort \\
     -o {output.bam} {output.unsortedbam}
 """
 
+
+rule star_circrnafinder:
+    input:
+        R1=rules.cutadapt.output.of1,
+        R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
+    output:
+        chimericsam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.sam"),
+        chimericjunction=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.junction"),
+        sjouttab=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.SJ.out.tab"),
+    params:
+        sample="{sample}",
+        memG=getmemG("star2p"),
+        peorse=get_peorse,
+        workdir=WORKDIR,
+        starindexdir=STAR_INDEX_DIR,
+        alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
+        randomstr=str(uuid.uuid4())
+    envmodules: TOOLS["star"]["version"],TOOLS["sambamba"]["version"], TOOLS["samtools"]["version"]
+    threads: getthreads("star_circrnafinder")
+    shell:"""
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+outdir=$(dirname {output.chimericsam})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
+cd $outdir
+
+if [ "{params.peorse}" == "PE" ];then
+# paired-end
+    STAR --genomeDir {params.starindexdir} \\
+    --readFilesIn {input.R1} {input.R2} \\
+    --readFilesCommand  zcat \\
+    --runThreadN {threads} \\
+	--chimSegmentMin 20 \\
+	--chimScoreMin 1 \\
+	--alignIntronMax 1000000 \\
+	--outFilterMismatchNoverReadLmax 0.02 \\
+	--alignTranscriptsPerReadNmax 100000 \\
+	--twopassMode Basic \\
+	--outSAMtype BAM Unsorted \\
+	--chimOutType Junctions SeparateSAMold \\
+	--outFilterMultimapNmax 2 \\
+	--outFileNamePrefix {params.sample}. \\
+    --outBAMcompression 0 \\
+    --outTmpDir $TMPDIR \\
+	--sjdbGTFfile {input.gtf}
+
+else
+#single-end
+    STAR --genomeDir {params.starindexdir} \\
+    --readFilesIn {input.R1} \\
+    --readFilesCommand  zcat \\
+    --runThreadN {threads} \\
+	--chimSegmentMin 20 \\
+	--chimScoreMin 1 \\
+	--alignIntronMax 1000000 \\
+	--outFilterMismatchNoverReadLmax 0.02 \\
+	--alignTranscriptsPerReadNmax 100000 \\
+	--twopassMode Basic \\
+	--outSAMtype BAM Unsorted \\
+	--chimOutType Junctions SeparateSAMold \\
+	--outFilterMultimapNmax 2 \\
+	--outFileNamePrefix {params.sample}. \\
+    --outBAMcompression 0 \\
+    --outTmpDir $TMPDIR \\
+	--sjdbGTFfile {input.gtf}
+
+fi
+
+# cleanup
+rm -rf {params.sample}._STARgenome
+rm -rf {params.sample}._STARpass1
+rm -f {params.sample}.Aligned.out.bam
+
+sleep 120
+
+# Used to sort the BAM file after effect , but realized that it is not required by circRNA_Finder scripts
+# Hence deleting it to save digital footprint by making it temp in output block 
+
+"""
+
 rule estimate_duplication:
     input:
         bam=rules.star2p.output.bam
@@ -380,3 +485,5 @@ set -exo pipefail
 java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
 rm -f /dev/shm/{params.sample}*
 """
+
+
