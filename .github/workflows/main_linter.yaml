@@ -3,9 +3,7 @@ run-name: ${{github.actor}} is running test.yaml
 on:
   push:
     branches:
-      - activeDev
       - main
-      - feature/issue57
   pull_request:
     branches-ignore: []
 
@@ -15,11 +13,9 @@ jobs:
     steps:
       - name: Linting
         uses: actions/checkout@v3
-        with:
-          ref: "feature/issue57"
       - run: |
           git branch -a
-          git log |head
+          git log | head
           ls -alrth config
           ls -alrth workflow
       - name: Running Lint
