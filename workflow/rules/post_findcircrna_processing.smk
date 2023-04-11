@@ -203,7 +203,7 @@ bash {params.bashscript} \
     {params.host} \
     {params.additives} \
     {params.viruses}
-cd $TMPDIR && rm -f *
+rm -rf $TMPDIR
 """
 
 # rule create_circExplorer_merged_found_counts_table:
