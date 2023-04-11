@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - activeDev
-      - main
   pull_request:
     branches-ignore: []
 
@@ -15,7 +14,7 @@ jobs:
       - name: Linting
         uses: actions/checkout@v3
         with:
-          ref: "feature/issue57"
+          ref: "activeDev"
       - run: echo "repo cloned --> ${{github.repository}}"
       - run: echo "github workspace --> ${{github.workspace}}"
       - name: Listing the repo
