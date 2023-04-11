@@ -10,70 +10,146 @@ from snakemake.utils import min_version
 min_version("5.24")
 
 # no truncations during print pandas data frames
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', None)
+pd.set_option("display.max_rows", None)
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", None)
+pd.set_option("display.max_colwidth", None)
+
 
 include: "rules/init.smk"
 
+
 def get_circrnafinder_target_files(runcircrnafinder):
-    targetfiles=[]
+    targetfiles = []
     if runcircrnafinder:
         for s in SAMPLES:
             # targetfiles.append(join(WORKDIR,"results",s,"STAR_circRNAFinder",s+".Aligned.out.bam"))
-            targetfiles.append(join(WORKDIR,"results",s,"circRNA_finder",s+".filteredJunctions.bed"))
-            targetfiles.append(join(WORKDIR,"results",s,"circRNA_finder",s+".circRNA_finder.counts_table.tsv.filtered"))
+            targetfiles.append(
+                join(
+                    WORKDIR,
+                    "results",
+                    s,
+                    "circRNA_finder",
+                    s + ".filteredJunctions.bed",
+                )
+            )
+            targetfiles.append(
+                join(
+                    WORKDIR,
+                    "results",
+                    s,
+                    "circRNA_finder",
+                    s + ".circRNA_finder.counts_table.tsv.filtered",
+                )
+            )
     return targetfiles
+
 
 def get_clear_target_files(runclear):
-    targetfiles=[]
+    targetfiles = []
     if runclear:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt"))
-            targetfiles.append(join(WORKDIR,"results",s,"CLEAR","quant.txt.annotated"))
+            targetfiles.append(join(WORKDIR, "results", s, "CLEAR", "quant.txt"))
+            targetfiles.append(
+                join(WORKDIR, "results", s, "CLEAR", "quant.txt.annotated")
+            )
     return targetfiles
+
 
 def get_dcc_target_files(rundcc):
-    targetfiles=[]
+    targetfiles = []
     if rundcc:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"DCC","CircRNACount"))
-            targetfiles.append(join(WORKDIR,"results",s,"DCC","LinearCount"))
-            targetfiles.append(join(WORKDIR,"results",s,"DCC",s+".dcc.counts_table.tsv.filtered"))
+            targetfiles.append(join(WORKDIR, "results", s, "DCC", "CircRNACount"))
+            targetfiles.append(join(WORKDIR, "results", s, "DCC", "LinearCount"))
+            targetfiles.append(
+                join(WORKDIR, "results", s, "DCC", s + ".dcc.counts_table.tsv.filtered")
+            )
     return targetfiles
+
 
 def get_mapsplice_target_files(runmapslice):
-    targetfiles=[]
+    targetfiles = []
     if runmapslice:
         for s in SAMPLES:
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice","circular_RNAs.txt"))
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapsplice.cram"))
-            targetfiles.append(join(WORKDIR,"results",s,"MapSplice",s+".mapsplice.counts_table.tsv.filtered"))
+            targetfiles.append(
+                join(WORKDIR, "results", s, "MapSplice", "circular_RNAs.txt")
+            )
+            targetfiles.append(
+                join(WORKDIR, "results", s, "MapSplice", s + ".mapsplice.cram")
+            )
+            targetfiles.append(
+                join(
+                    WORKDIR,
+                    "results",
+                    s,
+                    "MapSplice",
+                    s + ".mapsplice.counts_table.tsv.filtered",
+                )
+            )
     return targetfiles
 
+
 def get_nclscan_target_files(runnclscan):
-    targetfiles=[]
-    if not os.path.exists(join(WORKDIR,"results")): os.mkdir(join(WORKDIR,"results"))
-    if runnclscan==True or runnclscan=="True" or runnclscan=="TRUE":
+    targetfiles = []
+    if not os.path.exists(join(WORKDIR, "results")):
+        os.mkdir(join(WORKDIR, "results"))
+    if runnclscan == True or runnclscan == "True" or runnclscan == "TRUE":
         for s in SAMPLES:
-            if not os.path.exists(join(WORKDIR,"results",s)): os.mkdir(join(WORKDIR,"results",s))
-            if not os.path.exists(join(WORKDIR,"results",s,"NCLscan")): os.mkdir(join(WORKDIR,"results",s,"NCLscan"))
-            if SAMPLESDF.loc[[s],"PEorSE"][0]=="SE":
-                resultfile=join(WORKDIR,"results",s,"NCLscan",s+".result")
-                ctable=join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv")
-                fctable=join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv.filtered")
+            if not os.path.exists(join(WORKDIR, "results", s)):
+                os.mkdir(join(WORKDIR, "results", s))
+            if not os.path.exists(join(WORKDIR, "results", s, "NCLscan")):
+                os.mkdir(join(WORKDIR, "results", s, "NCLscan"))
+            if SAMPLESDF.loc[[s], "PEorSE"][0] == "SE":
+                resultfile = join(WORKDIR, "results", s, "NCLscan", s + ".result")
+                ctable = join(
+                    WORKDIR, "results", s, "NCLscan", s + ".nclscan.counts_table.tsv"
+                )
+                fctable = join(
+                    WORKDIR,
+                    "results",
+                    s,
+                    "NCLscan",
+                    s + ".nclscan.counts_table.tsv.filtered",
+                )
                 if not os.path.exists(resultfile):
-                    Path(join(WORKDIR,"results",s,"NCLscan",s+".result")).touch() # nclscan cannot run for se 
+                    Path(
+                        join(WORKDIR, "results", s, "NCLscan", s + ".result")
+                    ).touch()  # nclscan cannot run for se
                 if not os.path.exists(ctable):
-                    with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv"),'w') as f:
-                        f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
+                    with open(
+                        join(
+                            WORKDIR,
+                            "results",
+                            s,
+                            "NCLscan",
+                            s + ".nclscan.counts_table.tsv",
+                        ),
+                        "w",
+                    ) as f:
+                        f.write(
+                            "chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n"
+                        )  # create empty file
                 if not os.path.exists(fctable):
-                    with open(join(WORKDIR,"results",s,"NCLscan",s+".nclscan.counts_table.tsv.filtered"),'w') as f:
-                        f.write("chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n") # create empty file
+                    with open(
+                        join(
+                            WORKDIR,
+                            "results",
+                            s,
+                            "NCLscan",
+                            s + ".nclscan.counts_table.tsv.filtered",
+                        ),
+                        "w",
+                    ) as f:
+                        f.write(
+                            "chrom\tend\tstart\tstrand\tread_count\tnclscan_annotation\n"
+                        )  # create empty file
             else:
-                targetfiles.append(join(WORKDIR,"results",s,"NCLscan",s+".result"))
+                targetfiles.append(
+                    join(WORKDIR, "results", s, "NCLscan", s + ".result")
+                )
     return targetfiles
+
 
 # def get_extra_bams(wildcards):
 #     files=dict()
@@ -92,90 +168,246 @@ def get_nclscan_target_files(runnclscan):
 #         l.append(join(WORKDIR,"results",s,"circExplorer",s+"."+f+".spliced.bam"))
 #     return l
 
-localrules: multiqc, annotate_clear_output, merge_genecounts
+
+localrules:
+    multiqc,
+    annotate_clear_output,
+    merge_genecounts,
+
 
 rule all:
     input:
         ## index
-        join(REF_DIR,"ref.genes.genepred_w_geneid"),
-        join(STAR_INDEX_DIR,"SA"),
-        join(REF_DIR,"ref.sa"),
-
+        join(REF_DIR, "ref.genes.genepred_w_geneid"),
+        join(STAR_INDEX_DIR, "SA"),
+        join(REF_DIR, "ref.sa"),
         ## cutadapt
         ## cutadapt files are now temp() to save space
-        expand(join(WORKDIR,"results","{sample}","trim","{sample}.R1.trim.fastq.gz"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","trim","{sample}.R2.trim.fastq.gz"),sample=SAMPLES),
-
+        expand(
+            join(WORKDIR, "results", "{sample}", "trim", "{sample}.R1.trim.fastq.gz"),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(WORKDIR, "results", "{sample}", "trim", "{sample}.R2.trim.fastq.gz"),
+            sample=SAMPLES,
+        ),
         ## fastqc
-        expand(join(WORKDIR,"qc","fastqc","{sample}.R1.trim_fastqc.zip"),sample=SAMPLES),
-
+        expand(
+            join(WORKDIR, "qc", "fastqc", "{sample}.R1.trim_fastqc.zip"),
+            sample=SAMPLES,
+        ),
         ## star1p
-        expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.SJ.out.tab"),sample=SAMPLES),
-        
+        expand(
+            join(WORKDIR, "results", "{sample}", "STAR1p", "{sample}_p1.SJ.out.tab"),
+            sample=SAMPLES,
+        ),
         ## star 1p outputs required for DCC
-        expand(join(WORKDIR,"results","{sample}","STAR1p","{sample}_p1.Chimeric.out.junction"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),sample=SAMPLES),
-        
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR1p",
+                "{sample}_p1.Chimeric.out.junction",
+            ),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR1p",
+                "mate1",
+                "{sample}" + "_mate1.Chimeric.out.junction",
+            ),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR1p",
+                "mate2",
+                "{sample}" + "_mate2.Chimeric.out.junction",
+            ),
+            sample=SAMPLES,
+        ),
         ## merge junctions
-        join(WORKDIR,"results","pass1.out.tab"),
-        
+        join(WORKDIR, "results", "pass1.out.tab"),
         # ## star2p
-        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.Chimeric.out.junction"),sample=SAMPLES),     # required by circExplorer
-        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.chimeric.bam"),sample=SAMPLES),              # required to create BSJ bam
-        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.non_chimeric.bam"),sample=SAMPLES),          # required to extract linear reads
-        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab"),sample=SAMPLES),      # per-sample gene counts
-        
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR2p",
+                "{sample}_p2.Chimeric.out.junction",
+            ),
+            sample=SAMPLES,
+        ),  # required by circExplorer
+        expand(
+            join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.chimeric.bam"),
+            sample=SAMPLES,
+        ),  # required to create BSJ bam
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR2p",
+                "{sample}_p2.non_chimeric.bam",
+            ),
+            sample=SAMPLES,
+        ),  # required to extract linear reads
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR2p",
+                "{sample}_p2.ReadsPerGene.out.tab",
+            ),
+            sample=SAMPLES,
+        ),  # per-sample gene counts
         # ## star gene counts matrix
-        join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),                                                     # multi-sample counts matrix
-        
+        join(WORKDIR, "results", "stranded_STAR_GeneCounts.tsv"),  # multi-sample counts matrix
         # ## picard MarkDuplicates metrics
-        expand(join(WORKDIR,"qc","picard_MarkDuplicates","{sample}.MarkDuplicates.metrics.txt"),sample=SAMPLES),    # required to estimate duplication stats    
+        expand(
+            join(
+                WORKDIR,
+                "qc",
+                "picard_MarkDuplicates",
+                "{sample}.MarkDuplicates.metrics.txt",
+            ),
+            sample=SAMPLES,
+        ),  # required to estimate duplication stats    
         ## circExplorer --> we run circExplorer2
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.annotation_counts.tsv"),sample=SAMPLES),
-
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer",
+                "{sample}.circularRNA_known.txt",
+            ),
+            sample=SAMPLES,
+        ),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer",
+                "{sample}.circExplorer.annotation_counts.tsv",
+            ),
+            sample=SAMPLES,
+        ),
         ## circExplorer ... polished BSJ output
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bed.gz"),sample=SAMPLES),             # filtered BSJs with additional columns like :
-                                                                                                                    # 1. (combination of SAM bitflags in the alignment), eg. 339##419##2385 
-                                                                                                                    # 2. comma-separated list of readids (with HI number) supporting the BSJ, eg. J00170:207:H73WTBBXY:2:1108:8197:34266##2,J00170:207:H73WTBBXY:2:1108:6126:34371##2
-                                                                                                                    # 3. splice-site flanking 2 bps eg. GG##CT
-
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bed.gz"
+            ),
+            sample=SAMPLES,
+        ),  # filtered BSJs with additional columns like :
+        # 1. (combination of SAM bitflags in the alignment), eg. 339##419##2385 
+        # 2. comma-separated list of readids (with HI number) supporting the BSJ, eg. J00170:207:H73WTBBXY:2:1108:8197:34266##2,J00170:207:H73WTBBXY:2:1108:6126:34371##2
+        # 3. splice-site flanking 2 bps eg. GG##CT
         ## circExplorer ... get various BAMs
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bam"),sample=SAMPLES),                # use called circExplorer circRNA and the chimeric BAM to extract BSJ only alignments
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bam"),sample=SAMPLES),           # BSJ only alignments to BSJs on the sense strand
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bam"),sample=SAMPLES),          # BSJ only alignments to BSJs on the anti-sense strand
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bam"),sample=SAMPLES),             # linear reads in BSJ inclusion zone
+        expand(
+            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bam"),
+            sample=SAMPLES,
+        ),  # use called circExplorer circRNA and the chimeric BAM to extract BSJ only alignments
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bam"
+            ),
+            sample=SAMPLES,
+        ),  # BSJ only alignments to BSJs on the sense strand
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer",
+                "{sample}.BSJ.minus.bam",
+            ),
+            sample=SAMPLES,
+        ),  # BSJ only alignments to BSJs on the anti-sense strand
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bam"
+            ),
+            sample=SAMPLES,
+        ),  # linear reads in BSJ inclusion zone
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bam"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bam"),sample=SAMPLES),            # spliced-only alignments in the sample
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bam"
+            ),
+            sample=SAMPLES,
+        ),  # spliced-only alignments in the sample
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bam"),sample=SAMPLES),     # spliced-only linear alignments in BSJ inclusion zone
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bam"),sample=SAMPLES),
         # ## circExplorer BWs
-
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.bw"),sample=SAMPLES),                
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.plus.bw"),sample=SAMPLES),           
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.BSJ.minus.bw"),sample=SAMPLES),          
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.bw"),sample=SAMPLES),             
+        expand(
+            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bw"),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bw"
+            ),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.minus.bw"
+            ),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bw"),
+            sample=SAMPLES,
+        ),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bw"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bw"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.spliced.bw"),sample=SAMPLES),            
+        expand(
+            join(
+                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bw"
+            ),
+            sample=SAMPLES,
+        ),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bw"),sample=SAMPLES),     
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bw"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bw"),sample=SAMPLES),
-
         # ## circExplorer extra bams
         # unpack(get_extra_bams),
-
         ## circExplorer ... found read counts table
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.readcounts.tsv"),sample=SAMPLES),         # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
-        
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer",
+                "{sample}.readcounts.tsv",
+            ),
+            sample=SAMPLES,
+        ),  # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
         # ## CLEAR quant output --> CLEAR is nothing but circExplorer3
         get_clear_target_files(RUN_CLEAR),
         # ## ciri
-        expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.bam"),sample=SAMPLES),
+        expand(
+            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.out.filtered"),
+            sample=SAMPLES,
+        ),
+        expand(
+            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.bam"),
+            sample=SAMPLES,
+        ),
         # ## DCC
         # # expand(join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),sample=SAMPLES),
         get_dcc_target_files(RUN_DCC),
@@ -186,19 +418,14 @@ rule all:
         # ## circRNA_finder
         get_circrnafinder_target_files(RUN_CIRCRNAFINDER),
         ## alignment stats
-        join(WORKDIR,"results","alignmentstats.txt"),
-
+        join(WORKDIR, "results", "alignmentstats.txt"),
         # # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        expand(
+            join(WORKDIR, "results", "{sample}", "{sample}.circRNA_counts.txt.gz"),
+            sample=SAMPLES,
+        ),
         # # ## master counts file
-        join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
-
-
-
-
-
-
-
+        join(WORKDIR, "results", "circRNA_master_counts.tsv.gz"),
         # # ## ciri BSJ bam
         # # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
         # # ## BSJ bams and bigwigs
@@ -219,7 +446,6 @@ rule all:
         # # # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
         # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
-
         # # ## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
         # # expand(join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),sample=SAMPLES),
         # # expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),
@@ -227,6 +453,7 @@ rule all:
         # # expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES),
         # ## multiqc report
         # join(WORKDIR,"multiqc_report.html")
+
 
 include: "rules/create_index.smk"
 include: "rules/preprocessing.smk"
@@ -236,17 +463,14 @@ include: "rules/post_align_processing.smk"
 include: "rules/findcircrna.smk"
 include: "rules/post_findcircrna_processing.smk"
 
+
 onsuccess:
-    shell("""sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
+    shell(
+        """sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short"""
+    )
+
 
 onerror:
-    shell("""sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short""")
-
-
-
-
-
-
-
-    
-    
+    shell(
+        """sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short"""
+    )
