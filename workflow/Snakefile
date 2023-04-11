@@ -405,7 +405,7 @@ rule all:
             sample=SAMPLES,
         ),
         expand(
-            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.cram"),
+            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.bam"),
             sample=SAMPLES,
         ),
         # ## DCC

@@ -53,6 +53,7 @@ def check_writeaccess(filename):
 
 def append_files_in_list(flist, ofile):
     if not os.path.exists(ofile):
+        print("FILE %s does not exist! Creating it!"%(ofile),flush=True)
         with open(ofile, "w") as outfile:
             for fname in flist:
                 with open(fname) as infile:
