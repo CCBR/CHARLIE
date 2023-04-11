@@ -206,7 +206,7 @@ rule ciri:
     output:
         cirilog=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.log"),
         bwalog=join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.log"),
-        ciribam=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.cram"),
+        ciribam=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.bam"),
         ciriout=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),
         cirioutfiltered=join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),
     params:
@@ -259,7 +259,8 @@ perl {params.ciripl} \\
 -F {params.reffa} \\
 -A {input.gtf} \\
 -G {output.cirilog} -T {threads}
-samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o {output.ciribam} -
+# samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o {output.ciribam} -
+samtools view -@{threads} -bS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.ciribam} -
 rm -rf {params.sample}.bwa.sam
 python {params.script} \\
     --ciriout {output.ciriout} \\

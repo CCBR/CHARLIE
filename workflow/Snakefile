@@ -175,7 +175,7 @@ rule all:
         get_clear_target_files(RUN_CLEAR),
         # ## ciri
         expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out.filtered"),sample=SAMPLES),
-        expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.cram"),sample=SAMPLES),
+        expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.bam"),sample=SAMPLES),
         # ## DCC
         # # expand(join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),sample=SAMPLES),
         get_dcc_target_files(RUN_DCC),
