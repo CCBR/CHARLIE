@@ -4,24 +4,14 @@
 def get_alignment_stats_input(wildcards):
     sample = wildcards.sample
     d = dict()
-    d["star2bam"] = join(WORKDIR, "results", sample, "STAR2p", sample + "_p2.bam")
-    d["star2bam_chimeric"] = join(
-        WORKDIR, "results", sample, "STAR2p", sample + "_p2.chimeric.bam"
-    )
-    d["star2bam_non_chimeric"] = join(
-        WORKDIR, "results", sample, "STAR2p", sample + "_p2.non_chimeric.bam"
-    )
-    d["filtered_bam"] = join(
-        WORKDIR, "results", sample, "circExplorer", sample + ".bam"
-    )
-    d["linearbam"] = join(
-        WORKDIR, "results", sample, "circExplorer", sample + ".linear.bam"
-    )
-    d["splicedbam"] = join(
-        WORKDIR, "results", sample, "circExplorer", sample + ".spliced.bam"
-    )
-    d["BSJbam"] = join(WORKDIR, "results", sample, "circExplorer", sample + ".BSJ.bam")
-    d["ciribam"] = join(WORKDIR, "results", sample, "ciri", sample + ".ciri.cram")
+    d['star2bam']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.bam")
+    d['star2bam_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.chimeric.bam")
+    d['star2bam_non_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")
+    d['filtered_bam']=join(WORKDIR,"results",sample,"circExplorer",sample+".bam")  
+    d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
+    d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
+    d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
+    d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.bam")
     if RUN_MAPSPLICE:
         d["mapsplicebam"] = join(
             WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram"
@@ -273,7 +263,7 @@ bash {params.bashscript} \
     {params.host} \
     {params.additives} \
     {params.viruses}
-cd $TMPDIR && rm -f *
+rm -rf $TMPDIR
 """
 
 

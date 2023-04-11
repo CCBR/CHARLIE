@@ -211,7 +211,10 @@ python3 ${SCRIPT_DIR}/_filter_linear_spliced_readids_w_rid2jid.py \
 	--jidcounts ${jidcounts}
 
 
-rm -rf ${tmpdir}/${sample_name}.readends.part.*
+# rm -rf ${tmpdir}/${sample_name}.readends.part.*
+# the above statement leads to /usr/bin/rm: Argument list too long
+# hence,
+find ${tmpdir} -maxdepth 1 -name "${sample_name}.readends.part.*" -print0 | xargs -0 rm -f
 
 ###################################################################################################
 # create BAMS from readids
