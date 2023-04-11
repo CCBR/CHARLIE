@@ -1,9 +1,10 @@
-run-name: ${{github.actor}} is running test.yaml
+run-name: ${{github.actor}} is running LINT on main/master branch
 
 on:
   push:
     branches:
       - main
+      - master
   pull_request:
     branches-ignore: []
 
