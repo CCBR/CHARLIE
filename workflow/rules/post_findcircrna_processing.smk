@@ -10,7 +10,7 @@ def get_alignment_stats_input(wildcards):
     d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
     d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
     d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
-    d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.cram")
+    d['ciribam']=join(WORKDIR,"results",sample,"ciri",sample+".ciri.bam")
     if RUN_MAPSPLICE:
         d['mapsplicebam']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram")
     return d
