@@ -1,4 +1,4 @@
-run-name: ${{github.actor}} is running LINT
+run-name: ${{github.actor}} is running LINT on activeDev branch!
 
 on:
   push:
