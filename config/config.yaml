@@ -115,7 +115,9 @@ maxsize_virus:  5000
 scriptsdir: "PIPELINE_HOME/workflow/scripts"
 resourcesdir: "PIPELINE_HOME/resources"
 tools: "PIPELINE_HOME/resources/tools.yaml"
-cluster: "PIPELINE_HOME/resources/cluster.json"
+# default cluster
+# cluster: "PIPELINE_HOME/resources/cluster.json"
+cluster: "WORKDIR/cluster.json"
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table

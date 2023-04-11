@@ -11,9 +11,13 @@
 set -eo pipefail
 module purge
 
-# you may want to re-set these
+# Some set up
 #######
-EXTRA_SINGULARITY_BINDS="/lscratch"
+CLUSTER_SBATCH_CMD="sbatch --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
+if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
+  EXTRA_SINGULARITY_BINDS="/lscratch"
+  CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
+fi
 PYTHONVERSION="3.7"
 SNAKEMAKEVERSION="7.19.1"
 # SNAKEMAKEVERSION="5.24.1"
@@ -137,18 +141,6 @@ function err() { cat <<< "
 #
 " && usage && exit 1 1>&2; }
 
-# function check_arguments() {
-#   if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
-#   if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
-#   WORKDIR=$2
-# # echo $WORKDIR
-# # x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
-# # if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
-#   WORKDIR=$(readlink -f "$WORKDIR")
-#   echo "Working Dir: $WORKDIR"
-#   # exit 1
-# }
-
 function init() {
 
 # create output folder
@@ -156,20 +148,23 @@ if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
 mkdir -p $WORKDIR
 
 # copy config and samples files
-if [ ! -f $WORKDIR/config.yaml ];then
-sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+if [ ! -f $CONFIGFILE ];then
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 fi
+if [ ! -f $CLUSTERFILE ];then
+cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
+fi
 if [ ! -f $WORKDIR/samples.tsv ];then
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
 fi
-if [ ! -f $WORKDIR/jobby ];then
-cp ${PIPELINE_HOME}/workflow/scripts/jobby $WORKDIR && chmod a+x $WORKDIR/jobby
+if [ ! -f $JOBBY ];then
+cp ${PIPELINE_HOME}/workflow/scripts/jobby $JOBBY && chmod a+x $JOBBY
 fi
-if [ ! -f $WORKDIR/run_jobby_on_snakemake_log ];then
-cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $WORKDIR/run_jobby_on_snakemake_log
+if [ ! -f $JOBBY2 ];then
+cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $JOBBY2
 fi
 
 #create log and stats folders
@@ -182,7 +177,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv nclscan.config jobby; do
+  for f in config.yaml samples.tsv nclscan.config jobby cluster.json; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -204,9 +199,12 @@ function runcheck(){
 function dryrun() {
   runcheck
   timestamp=$(date +"%y%m%d%H%M%S")
-  for f in $(ls ${WORKDIR}/dryrun.*.log);do
-    mv $f ${WORKDIR}/stats
-  done
+  nfiles=$(find ${WORKDIR} -maxdepth 1 -name "dryrun.*.log"|wc -l)
+  if [ "$nfiles" != "0" ];then
+    for f in $(ls ${WORKDIR}/dryrun.*.log);do
+      mv $f ${WORKDIR}/stats/
+    done
+  fi
   run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
@@ -314,7 +312,7 @@ function run() {
   --singularity-args "$SINGULARITY_BINDS" \
   --use-envmodules \
   --latency-wait 120 \
-  --configfile ${WORKDIR}/config.yaml \
+  --configfile $CONFIGFILE \
   --cores all \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
@@ -323,7 +321,7 @@ function run() {
     snakemake -s $SNAKEFILE \
     --report ${WORKDIR}/runlocal_snakemake_report.html \
     --directory $WORKDIR \
-    --configfile ${WORKDIR}/config.yaml
+    --configfile $CONFIGFILE
   fi
 
   elif [ "$1" == "slurm" ];then
@@ -351,12 +349,13 @@ snakemake -s $SNAKEFILE \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
---configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/resources/cluster.json \
---cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
+--configfile $CONFIGFILE \
+--cluster-config $CLUSTERFILE \
+--cluster "$CLUSTER_SBATCH_CMD" \
 -j 500 \
 --rerun-incomplete \
 --rerun-triggers input \
+--retries 2 \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
@@ -365,13 +364,9 @@ if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
-  --configfile ${WORKDIR}/config.yaml 
+  --configfile $CONFIGFILE 
 fi
 
-# bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
-# sleep 60
-# /data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
-# replacing the above with jobby in the Snakefile
 EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
@@ -383,9 +378,9 @@ snakemake $1 -s $SNAKEFILE \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
---configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/resources/cluster.json \
---cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
+--configfile $CONFIGFILE \
+--cluster-config $CLUSTERFILE \
+--cluster "$CLUSTER_SBATCH_CMD" \
 -j 500 \
 --rerun-incomplete \
 --rerun-triggers input \
@@ -431,11 +426,12 @@ function main(){
   done
   WORKDIR=$(readlink -f "$WORKDIR")
   echo "Working Dir: $WORKDIR"
-  # echo SCRIPTNAME = ${SCRIPTNAME}
-  # echo RUNMODE = ${RUNMODE}
-  # echo WORKDIR = ${WORKDIR}
-  # exit;
 
+  # required files
+  CONFIGFILE="${WORKDIR}/config.yaml"
+  CLUSTERFILE="${WORKDIR}/cluster.json"
+  JOBBY="${WORKDIR}/jobby"
+  JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
 
   case $RUNMODE in
     init) init && exit 0;;
