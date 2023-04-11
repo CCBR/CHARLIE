@@ -20,32 +20,62 @@
 #         filelist.append(join(WORKDIR,"results",s,"STAR1p","mate2",s+"_mate2.Chimeric.out.junction"))
 #     return filelist
 
+
 def get_nclscan_target_files_per_sample(wildcards):
-    targetfiles=dict()
-    s=wildcards.sample
-    if SAMPLESDF.loc[[s],"PEorSE"][0]=="PE": # SE is already take care of by function get_nclscan_target_files
-        targetfiles['fixed_gtf']=join(REF_DIR,"ref.fixed.gtf")
-        targetfiles['ndx']=join(REF_DIR,"NCLscan_index","AllRef.ndx")
-        targetfiles['R1']=join(WORKDIR,"results",s,"trim",s+".R1.trim.fastq.gz")
-        targetfiles['R2']=join(WORKDIR,"results",s,"trim",s+".R2.trim.fastq.gz")
-    return targetfiles # empty if SE and will not run the rule at all!
+    targetfiles = dict()
+    s = wildcards.sample
+    if (
+        SAMPLESDF.loc[[s], "PEorSE"][0] == "PE"
+    ):  # SE is already take care of by function get_nclscan_target_files
+        targetfiles["fixed_gtf"] = join(REF_DIR, "ref.fixed.gtf")
+        targetfiles["ndx"] = join(REF_DIR, "NCLscan_index", "AllRef.ndx")
+        targetfiles["R1"] = join(WORKDIR, "results", s, "trim", s + ".R1.trim.fastq.gz")
+        targetfiles["R2"] = join(WORKDIR, "results", s, "trim", s + ".R2.trim.fastq.gz")
+    return targetfiles  # empty if SE and will not run the rule at all!
+
 
 def get_per_sample_files_to_merge(wildcards):
-    filedict={}
-    s=wildcards.sample
-    filedict['circExplorer']=join(WORKDIR,"results",s,"circExplorer",s+".circExplorer.counts_table.tsv")
-    filedict['CIRI']=join(WORKDIR,"results",s,"ciri",s+".ciri.out.filtered")
+    filedict = {}
+    s = wildcards.sample
+    filedict["circExplorer"] = join(
+        WORKDIR, "results", s, "circExplorer", s + ".circExplorer.counts_table.tsv"
+    )
+    filedict["CIRI"] = join(WORKDIR, "results", s, "ciri", s + ".ciri.out.filtered")
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
     if RUN_DCC:
-        filedict['DCC']=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered")
+        filedict["DCC"] = join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "DCC",
+            "{sample}.dcc.counts_table.tsv.filtered",
+        )
     if RUN_MAPSPLICE:
-        filedict['MapSplice']=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv.filtered")
+        filedict["MapSplice"] = join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "MapSplice",
+            "{sample}.mapsplice.counts_table.tsv.filtered",
+        )
     if RUN_NCLSCAN:
-        filedict['NCLscan']=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered")
+        filedict["NCLscan"] = join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "NCLscan",
+            "{sample}.nclscan.counts_table.tsv.filtered",
+        )
     if RUN_CIRCRNAFINDER:
-        filedict['circRNAFinder']=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered")
-    return(filedict)
+        filedict["circRNAFinder"] = join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circRNA_finder",
+            "{sample}.circRNA_finder.counts_table.tsv.filtered",
+        )
+    return filedict
 
 
 ## rules
@@ -100,6 +130,7 @@ def get_per_sample_files_to_merge(wildcards):
 # | 7 | leftInfo  | Gene:Isoform:Index of left exon     |
 # | 8 | rightInfo | Gene:Isoform:Index of right exon    |
 
+
 # STEPS:
 # 1. parse the chimeric junctions file from STAR to CircExplorer2 'parse' to generate the back_spliced_junction BED file
 # 2. parse the back_spliced_junction BED from above along with known splicing annotations to CircExplorer2 'parse' to create
@@ -117,21 +148,39 @@ def get_per_sample_files_to_merge(wildcards):
 # | 6 | known_novel |
 # known_novel can have 3 different values:
 # a. known ... BSJ is around a known gene-exon
-# b. novel ... BSJ is not around a known gene-exon ... it is absent in circularRNA_known.txt or low_conf_circularRNA_known.txt files 
+# b. novel ... BSJ is not around a known gene-exon ... it is absent in circularRNA_known.txt or low_conf_circularRNA_known.txt files
 #       but present in ack_spliced_junction BED
 # c. low_conf ... BSJ is around a known gene-exon but circExplorer called it with low-confidence.
 # ref: https://circexplorer2.readthedocs.io/en/latest/
 rule circExplorer:
     input:
-        junctionfile=rules.star2p.output.junction
+        junctionfile=rules.star2p.output.junction,
     output:
-        backsplicedjunctions=join(WORKDIR,"results","{sample}","circExplorer","{sample}.back_spliced_junction.bed"),
-        annotations=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),
-        annotation_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.annotation_counts.tsv")
+        backsplicedjunctions=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer",
+            "{sample}.back_spliced_junction.bed",
+        ),
+        annotations=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer",
+            "{sample}.circularRNA_known.txt",
+        ),
+        annotation_counts_table=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer",
+            "{sample}.circExplorer.annotation_counts.tsv",
+        ),
     params:
         sample="{sample}",
-        bsj_min_nreads=config['circexplorer_bsj_circRNA_min_reads'], # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
-        outdir=join(WORKDIR,"results","{sample}","circExplorer"),
+        bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],  # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+        outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
         refregions=REF_REGIONS,
@@ -142,10 +191,12 @@ rule circExplorer:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR,"circExplorer_get_annotated_counts_per_sample.py") # this produces an annotated counts table to which counts found in BAMs need to be appended
+        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
-    envmodules: TOOLS["circexplorer"]["version"]
-    shell:"""
+    envmodules:
+        TOOLS["circexplorer"]["version"],
+    shell:
+        """
 set -exo pipefail
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 cd {params.outdir}
@@ -212,13 +263,13 @@ rule ciri:
     params:
         sample="{sample}",
         memG=getmemG("ciri"),
-        outdir=join(WORKDIR,"results","{sample}","ciri"),
+        outdir=join(WORKDIR, "results", "{sample}", "ciri"),
         peorse=get_peorse,
         genepred=rules.create_index.output.genepred_w_geneid,
         reffa=REF_FA,
         bwaindex=BWA_INDEX,
-        ciripl=config['ciri_perl_script'],
-        bsj_min_nreads=config['minreadcount'],
+        ciripl=config["ciri_perl_script"],
+        bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         host=HOST,
         additives=ADDITIVES,
@@ -227,11 +278,14 @@ rule ciri:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR,"filter_ciriout.py"),
+        script=join(SCRIPTS_DIR, "filter_ciriout.py"),
         randomstr=str(uuid.uuid4()),
     threads: getthreads("ciri")
-    envmodules: TOOLS["bwa"]["version"], TOOLS["samtools"]["version"]
-    shell:"""
+    envmodules:
+        TOOLS["bwa"]["version"],
+        TOOLS["samtools"]["version"],
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -277,44 +331,61 @@ python {params.script} \\
 """
 
 
-
-rule create_ciri_count_matrix:
 # DEPRECATED
+rule create_ciri_count_matrix:
     input:
-        expand(join(WORKDIR,"results","{sample}","ciri","{sample}.ciri.out"),sample=SAMPLES)
+        expand(
+            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.out"),
+            sample=SAMPLES,
+        ),
     output:
-        matrix=join(WORKDIR,"results","ciri_count_matrix.txt")
+        matrix=join(WORKDIR, "results", "ciri_count_matrix.txt"),
     params:
-        script=join(SCRIPTS_DIR,"Create_ciri_count_matrix.py"),
+        script=join(SCRIPTS_DIR, "Create_ciri_count_matrix.py"),
         lookup=ANNOTATION_LOOKUP,
-        outdir=join(WORKDIR,"results"),
-        hostID=HOST+"ID"
-    envmodules: TOOLS["python37"]["version"]
-    shell:"""
+        outdir=join(WORKDIR, "results"),
+        hostID=HOST + "ID",
+    envmodules:
+        TOOLS["python37"]["version"],
+    shell:
+        """
 set -exo pipefail
 cd {params.outdir}
 python {params.script} {params.lookup} {params.hostID}
 """
 
-rule create_circexplorer_count_matrix:
+
 # DEPRECATED
+rule create_circexplorer_count_matrix:
     input:
-        expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.circularRNA_known.txt"),sample=SAMPLES)
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer",
+                "{sample}.circularRNA_known.txt",
+            ),
+            sample=SAMPLES,
+        ),
     output:
-        matrix=join(WORKDIR,"results","circExplorer_count_matrix.txt"),
-        matrix2=join(WORKDIR,"results","circExplorer_BSJ_count_matrix.txt")
+        matrix=join(WORKDIR, "results", "circExplorer_count_matrix.txt"),
+        matrix2=join(WORKDIR, "results", "circExplorer_BSJ_count_matrix.txt"),
     params:
-        script=join(SCRIPTS_DIR,"Create_circExplorer_count_matrix.py"),
-        script2=join(SCRIPTS_DIR,"Create_circExplorer_BSJ_count_matrix.py"),
+        script=join(SCRIPTS_DIR, "Create_circExplorer_count_matrix.py"),
+        script2=join(SCRIPTS_DIR, "Create_circExplorer_BSJ_count_matrix.py"),
         lookup=ANNOTATION_LOOKUP,
-        outdir=join(WORKDIR,"results"),
-        hostID=HOST+"ID"
-    envmodules: TOOLS["python37"]["version"]
-    shell:"""
+        outdir=join(WORKDIR, "results"),
+        hostID=HOST + "ID",
+    envmodules:
+        TOOLS["python37"]["version"],
+    shell:
+        """
 cd {params.outdir}
 python {params.script} {params.lookup} {params.hostID}
 python {params.script2} {params.lookup} {params.hostID}
 """
+
 
 # rule clear:
 # quantify circRNAs using CLEAR
@@ -322,9 +393,9 @@ python {params.script2} {params.lookup} {params.hostID}
 # Hence, not considered as a separate method for detecting circRNAs
 # CLEAR (aka. CircExplorer3) is run for completeness of the circExplorer pipeline
 # and to extract "Relative expression of circRNA" for downstream purposes
-# CLEAR does not quantify "Relative expression of circRNA" for novel circRNA, ie., 
+# CLEAR does not quantify "Relative expression of circRNA" for novel circRNA, ie.,
 # circRNAs not labeled as "known" possible due to poor genome annotation.
-# circRNA is labled as "known" if its coordinates match with exons of known genes! 
+# circRNA is labled as "known" if its coordinates match with exons of known genes!
 # quant.txt is a TSV with the following columns:
 # | #  | ColName     | Description                         |
 # |----|-------------|-------------------------------------|
@@ -354,12 +425,14 @@ rule clear:
         bam=rules.star2p.output.bam,
         circexplorerout=rules.circExplorer.output.annotations,
     output:
-        quantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt")
+        quantfile=join(WORKDIR, "results", "{sample}", "CLEAR", "quant.txt"),
     params:
         genepred=rules.create_index.output.genepred_w_geneid,
-    container: "docker://nciccbr/ccbr_clear:latest"
+    container:
+        "docker://nciccbr/ccbr_clear:latest"
     threads: getthreads("clear")
-    shell:"""
+    shell:
+        """
 set -exo pipefail
 circ_quant \\
 -c {input.circexplorerout} \\
@@ -368,6 +441,7 @@ circ_quant \\
 -r {params.genepred} \\
 -o {output.quantfile}
 """
+
 
 # rule annotate_clear_output:
 # annotate CLEAR output with circRNA databases
@@ -407,18 +481,24 @@ circ_quant \\
 # | 31 | best.transcript    |
 # | 32 | gene.symbol        |
 # | 33 | circRNA.study      |
-localrules: annotate_clear_output
+localrules:
+    annotate_clear_output,
+
+
 rule annotate_clear_output:
     input:
-        quantfile=rules.clear.output.quantfile
+        quantfile=rules.clear.output.quantfile,
     output:
-        annotatedquantfile=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
+        annotatedquantfile=join(
+            WORKDIR, "results", "{sample}", "CLEAR", "quant.txt.annotated"
+        ),
     params:
-        script=join(SCRIPTS_DIR,"annotate_clear_quant.py"),
+        script=join(SCRIPTS_DIR, "annotate_clear_quant.py"),
         lookup=ANNOTATION_LOOKUP,
-        cleardir=join(WORKDIR,"results","{sample}","CLEAR"),
-        hostID=HOST+"ID"
-    shell:"""
+        cleardir=join(WORKDIR, "results", "{sample}", "CLEAR"),
+        hostID=HOST + "ID",
+    shell:
+        """
 set -exo pipefail
 ## cleanup quant.txt* dirs before annotation
 find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {{}} \;
@@ -428,19 +508,44 @@ python {params.script} {params.lookup} {input.quantfile} {params.hostID}
 else
 touch {output.annotatedquantfile}
 fi
-"""		
+"""
 
-localrules: dcc_create_samplesheets
+
+localrules:
+    dcc_create_samplesheets,
+
+
 rule dcc_create_samplesheets:
     input:
-        f1=join(WORKDIR,"results","{sample}","STAR1p","{sample}"+"_p1.Chimeric.out.junction"),
-        f2=join(WORKDIR,"results","{sample}","STAR1p","mate1","{sample}"+"_mate1.Chimeric.out.junction"),
-        f3=join(WORKDIR,"results","{sample}","STAR1p","mate2","{sample}"+"_mate2.Chimeric.out.junction"),
+        f1=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "STAR1p",
+            "{sample}" + "_p1.Chimeric.out.junction",
+        ),
+        f2=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "STAR1p",
+            "mate1",
+            "{sample}" + "_mate1.Chimeric.out.junction",
+        ),
+        f3=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "STAR1p",
+            "mate2",
+            "{sample}" + "_mate2.Chimeric.out.junction",
+        ),
     output:
-        ss=join(WORKDIR,"results","{sample}","DCC","samplesheet.txt"),
-        m1=join(WORKDIR,"results","{sample}","DCC","mate1.txt"),
-        m2=join(WORKDIR,"results","{sample}","DCC","mate2.txt"),
-    shell:"""
+        ss=join(WORKDIR, "results", "{sample}", "DCC", "samplesheet.txt"),
+        m1=join(WORKDIR, "results", "{sample}", "DCC", "mate1.txt"),
+        m2=join(WORKDIR, "results", "{sample}", "DCC", "mate2.txt"),
+    shell:
+        """
 set -exo pipefail
 outdir=$(dirname {output.ss})
 if [ ! -d $outdir ];then mkdir -p $outdir;fi
@@ -448,6 +553,7 @@ echo "{input.f1}" > {output.ss}
 echo "{input.f2}" > {output.m1}
 echo "{input.f3}" > {output.m2}
 """
+
 
 # rule dcc:
 # output files
@@ -472,6 +578,7 @@ echo "{input.f3}" > {output.m2}
 # | 7 | Start-End Region | eg. intron-intergenic, exon-exon, intergenic-intron, etc.                    |
 # | 8 | OverallRegion    | the genomic features circRNA coordinates interval covers                     |
 
+
 # output dcc.counts_table.tsv has the following columns:
 # | # | ColName        |
 # |---|----------------|
@@ -489,21 +596,28 @@ rule dcc:
         bam=rules.star2p.output.bam,
         gtf=rules.create_index.output.fixed_gtf,
     output:
-        cr=join(WORKDIR,"results","{sample}","DCC","CircRNACount"),
-        cc=join(WORKDIR,"results","{sample}","DCC","CircCoordinates"),
-        linear=join(WORKDIR,"results","{sample}","DCC","LinearCount"),
-        ct=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),
-        ctf=join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv.filtered"),
+        cr=join(WORKDIR, "results", "{sample}", "DCC", "CircRNACount"),
+        cc=join(WORKDIR, "results", "{sample}", "DCC", "CircCoordinates"),
+        linear=join(WORKDIR, "results", "{sample}", "DCC", "LinearCount"),
+        ct=join(WORKDIR, "results", "{sample}", "DCC", "{sample}.dcc.counts_table.tsv"),
+        ctf=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "DCC",
+            "{sample}.dcc.counts_table.tsv.filtered",
+        ),
     threads: getthreads("dcc")
-    envmodules: TOOLS["python27"]["version"]
+    envmodules:
+        TOOLS["python27"]["version"],
     params:
         peorse=get_peorse,
-        dcc_strandedness=config['dcc_strandedness'],
+        dcc_strandedness=config["dcc_strandedness"],
         rep=REPEATS_GTF,
         fa=REF_FA,
         randomstr=str(uuid.uuid4()),
-        script=join(SCRIPTS_DIR,"create_dcc_per_sample_counts_table.py"),
-        bsj_min_nreads=config['minreadcount'],
+        script=join(SCRIPTS_DIR, "create_dcc_per_sample_counts_table.py"),
+        bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         host=HOST,
         additives=ADDITIVES,
@@ -512,8 +626,9 @@ rule dcc:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script2=join(SCRIPTS_DIR,"filter_dcc.py")
-    shell:"""
+        script2=join(SCRIPTS_DIR, "filter_dcc.py"),
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -643,25 +758,27 @@ python {params.script2} \\
 # | 62 | annotated_gene_acceptor         | SDF4,                     |
 rule mapsplice:
     input:
-        bwt=rules.create_mapsplice_index.output.rev1ebwt, 
+        bwt=rules.create_mapsplice_index.output.rev1ebwt,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
     output:
         # rev1ebwt=join(REF_DIR,"separate_fastas_index.rev.1.ebwt"),
-        sam=temp(join(WORKDIR,"results","{sample}","MapSplice","alignments.sam")),
-        circRNAs=join(WORKDIR,"results","{sample}","MapSplice","circular_RNAs.txt"),
+        sam=temp(join(WORKDIR, "results", "{sample}", "MapSplice", "alignments.sam")),
+        circRNAs=join(WORKDIR, "results", "{sample}", "MapSplice", "circular_RNAs.txt"),
     params:
         peorse=get_peorse,
         minmaplen=MAPSPLICE_MIN_MAP_LEN,
         filtering=MAPSPLICE_FILTERING,
-        separate_fastas=join(REF_DIR,"separate_fastas"),
-        ebwt=join(REF_DIR,"separate_fastas_index"),
-        outdir=join(WORKDIR,"results","{sample}","MapSplice"),
+        separate_fastas=join(REF_DIR, "separate_fastas"),
+        ebwt=join(REF_DIR, "separate_fastas_index"),
+        outdir=join(WORKDIR, "results", "{sample}", "MapSplice"),
         randomstr=str(uuid.uuid4()),
     threads: getthreads("mapsplice")
-    container: "docker://cgrlab/mapsplice2:latest"
-    shell:"""
+    container:
+        "docker://cgrlab/mapsplice2:latest"
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -715,6 +832,7 @@ python $MSHOME/mapsplice.py \
 fi
 """
 
+
 # rule mapsplice_postprocess:
 # the above file is filtered to only include the following columns:
 # | # | ColName              | Eg.              |
@@ -724,25 +842,41 @@ fi
 # | 3 | end                  | 1223968          |
 # | 4 | strand               | -                |
 # | 5 | read_count           | 26               |
-# | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy" 
+# | 6 | mapsplice_annotation | normal##2.811419 | <--"fusion_type"##"entropy"
 # "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!
 # mapsplice output contains an alignment.sam file which can be really large. Hence converting it to a sorted bam
 # to save space
 rule mapsplice_postprocess:
     input:
         sam=rules.mapsplice.output.sam,
-        circRNAs=rules.mapsplice.output.circRNAs
+        circRNAs=rules.mapsplice.output.circRNAs,
     output:
-        ct=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv"),
-        ctf=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.counts_table.tsv.filtered"),
-        bam=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram"),
-        bai=join(WORKDIR,"results","{sample}","MapSplice","{sample}.mapsplice.cram.crai"),
-    envmodules: TOOLS["samtools"]["version"], TOOLS["python27"]["version"]
+        ct=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "MapSplice",
+            "{sample}.mapsplice.counts_table.tsv",
+        ),
+        ctf=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "MapSplice",
+            "{sample}.mapsplice.counts_table.tsv.filtered",
+        ),
+        bam=join(WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram"),
+        bai=join(
+            WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram.crai"
+        ),
+    envmodules:
+        TOOLS["samtools"]["version"],
+        TOOLS["python27"]["version"],
     params:
-        script=join(SCRIPTS_DIR,"create_mapsplice_per_sample_counts_table.py"),
+        script=join(SCRIPTS_DIR, "create_mapsplice_per_sample_counts_table.py"),
         memG=getmemG("mapsplice_postprocess"),
         randomstr=str(uuid.uuid4()),
-        bsj_min_nreads=config['minreadcount'],
+        bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         reffa=REF_FA,
         host=HOST,
@@ -753,7 +887,8 @@ rule mapsplice_postprocess:
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
     threads: getthreads("mapsplice_postprocess")
-    shell:"""
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -785,7 +920,7 @@ rsync -az --progress alignments.cram.crai {output.bai}
 # result.txt output file has the following columns:
 # ref: https://github.com/TreesLab/NCLscan
 # | #  | Description                                | ColName
-# |----|--------------------------------------------|------------ 
+# |----|--------------------------------------------|------------
 # | 1  | Chromosome name of the donor side (5'ss)   | chrd
 # | 2  | Junction coordinate of the donor side      | coordd
 # | 3  | Strand of the donor side                   | strandd
@@ -809,23 +944,35 @@ rsync -az --progress alignments.cram.crai {output.bai}
 # | 6 | nclscan_annotation   | 1                | <--1+1 for intragenic 0+1 for intergenic
 rule nclscan:
     input:
-        unpack(get_nclscan_target_files_per_sample)
+        unpack(get_nclscan_target_files_per_sample),
     output:
-        result=join(WORKDIR,"results","{sample}","NCLscan","{sample}.result"),
-        ct=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv"),
-        ctf=join(WORKDIR,"results","{sample}","NCLscan","{sample}.nclscan.counts_table.tsv.filtered"),
+        result=join(WORKDIR, "results", "{sample}", "NCLscan", "{sample}.result"),
+        ct=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "NCLscan",
+            "{sample}.nclscan.counts_table.tsv",
+        ),
+        ctf=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "NCLscan",
+            "{sample}.nclscan.counts_table.tsv.filtered",
+        ),
     envmodules:
-        TOOLS["ncl_required_modules"]
+        TOOLS["ncl_required_modules"],
     threads: getthreads("nclscan")
     params:
         workdir=WORKDIR,
         sample="{sample}",
         peorse=get_peorse,
-        nclscan_dir=config['nclscan_dir'],
-        nclscan_config=config['nclscan_config'],
-        script=join(SCRIPTS_DIR,"create_nclscan_per_sample_counts_table.py"),
+        nclscan_dir=config["nclscan_dir"],
+        nclscan_config=config["nclscan_config"],
+        script=join(SCRIPTS_DIR, "create_nclscan_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),
-        bsj_min_nreads=config['minreadcount'],
+        bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         host=HOST,
         additives=ADDITIVES,
@@ -834,7 +981,8 @@ rule nclscan:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-    shell:"""
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -872,21 +1020,59 @@ python {params.script} \\
 fi
 """
 
+
 rule circrnafinder:
     input:
-        chimericsam=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.sam"),
-        chimericjunction=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.Chimeric.out.junction"),
-        sjouttab=join(WORKDIR,"results","{sample}","STAR_circRNAFinder","{sample}.SJ.out.tab"),
+        chimericsam=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "STAR_circRNAFinder",
+            "{sample}.Chimeric.out.sam",
+        ),
+        chimericjunction=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "STAR_circRNAFinder",
+            "{sample}.Chimeric.out.junction",
+        ),
+        sjouttab=join(
+            WORKDIR, "results", "{sample}", "STAR_circRNAFinder", "{sample}.SJ.out.tab"
+        ),
     output:
-        bed=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.filteredJunctions.bed"),
-        ctf=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.circRNA_finder.counts_table.tsv.filtered"),
-        chimericbam=join(WORKDIR,"results","{sample}","circRNA_finder","{sample}.Chimeric.out.sorted.bam")
+        bed=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circRNA_finder",
+            "{sample}.filteredJunctions.bed",
+        ),
+        ctf=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circRNA_finder",
+            "{sample}.circRNA_finder.counts_table.tsv.filtered",
+        ),
+        chimericbam=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circRNA_finder",
+            "{sample}.Chimeric.out.sorted.bam",
+        ),
     params:
-        postProcessStarAlignment_script=join(config['circrnafinder_dir'],"postProcessStarAlignment.pl"),
-        bsj_min_nreads=config['minreadcount'],
-        randomstr=str(uuid.uuid4())
-    envmodules: TOOLS["perl"]["version"],TOOLS["samtools"]["version"]
-    shell:"""
+        postProcessStarAlignment_script=join(
+            config["circrnafinder_dir"], "postProcessStarAlignment.pl"
+        ),
+        bsj_min_nreads=config["minreadcount"],
+        randomstr=str(uuid.uuid4()),
+    envmodules:
+        TOOLS["perl"]["version"],
+        TOOLS["samtools"]["version"],
+    shell:
+        """
 set -exo pipefail
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
@@ -910,11 +1096,13 @@ awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads
 
 """
 
-def _boolean2str(x): # "1" for True and "0" for False
-    if x==True:
+
+def _boolean2str(x):  # "1" for True and "0" for False
+    if x == True:
         return "1"
     else:
         return "0"
+
 
 # rule merge_per_sample:
 # The output file looks like this:
@@ -932,28 +1120,34 @@ def _boolean2str(x): # "1" for True and "0" for False
 # | 10   | ciri_annotation                      | options are exon, intron, intergenic_region                                                                                                                                                                        |
 # | 11   | dcc_annotation                       | JunctionType##Start-End Region from CircCoordinates file; 0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5: AT/AC, 6: GT/AT;Start-End Region eg. intron-intergenic, exon-exon, intergenic-intron, etc.  |
 # | 12   | mapsplice_annotation                 | "fusion_type"##"entropy"; "fusion_type" is either "normal" or "overlapping" ... higher "entropy" values are better!                                                                                                |
-# | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |  
+# | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |
 
-localrules: merge_per_sample
+
+localrules:
+    merge_per_sample,
+
+
 rule merge_per_sample:
     input:
-        unpack(get_per_sample_files_to_merge)
+        unpack(get_per_sample_files_to_merge),
     output:
-        merge_bash_script=join(WORKDIR,"results","{sample}","merge_per_sample.sh"),
-        merged_counts=join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz")
+        merge_bash_script=join(WORKDIR, "results", "{sample}", "merge_per_sample.sh"),
+        merged_counts=join(
+            WORKDIR, "results", "{sample}", "{sample}.circRNA_counts.txt.gz"
+        ),
     params:
-        script=join(SCRIPTS_DIR,"_make_merge_per_sample_sh.py"),
-        pyscript=join(SCRIPTS_DIR,"_merge_per_sample_counts_table.py"),
+        script=join(SCRIPTS_DIR, "_make_merge_per_sample_sh.py"),
+        pyscript=join(SCRIPTS_DIR, "_merge_per_sample_counts_table.py"),
         sample="{sample}",
         reffa=REF_FA,
-        sampledir=join(WORKDIR,"results","{sample}"),
+        sampledir=join(WORKDIR, "results", "{sample}"),
         ndcc=N_RUN_DCC,
         nmapsplice=N_RUN_MAPSPLICE,
         nnclscan=N_RUN_NCLSCAN,
         ncirrnafinder=N_RUN_CIRCRNAFINDER,
-        minreadcount=config['minreadcount'], # this filter is redundant as inputs are already pre-filtered.
-
-    shell:"""
+        minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
+    shell:
+        """
 python3 {params.script} \\
         --pyscript {params.pyscript} \\
         --dcc {params.ndcc} \\
@@ -999,7 +1193,7 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 # elif RUN_DCC and not RUN_MAPSPLICE and not RUN_NCLSCAN:
@@ -1027,7 +1221,7 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 # elif RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
@@ -1056,7 +1250,7 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 # elif not RUN_DCC and RUN_MAPSPLICE and not RUN_NCLSCAN:
@@ -1084,7 +1278,7 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 # elif not RUN_DCC and not RUN_MAPSPLICE and RUN_NCLSCAN:
@@ -1114,7 +1308,7 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 # else: # DCC, MapSplice and NCLScan are all off!
@@ -1141,25 +1335,33 @@ bash {output.merge_bash_script}
 #     parameters="$parameters --reffa {params.reffa}"
 #     parameters="$parameters --samplename {params.samplename} -o {output.merged_counts}"
 
-#     echo "python {params.script} $parameters" 
+#     echo "python {params.script} $parameters"
 #     python {params.script} $parameters
 #     """
 
-localrules: create_master_counts_file
+
+localrules:
+    create_master_counts_file,
+
+
 # rule create_master_counts_file:
 # merge all per-sample counts tables into a single giant counts matrix and annotate it with known circRNA databases
 rule create_master_counts_file:
     input:
-        expand(join(WORKDIR,"results","{sample}","{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        expand(
+            join(WORKDIR, "results", "{sample}", "{sample}.circRNA_counts.txt.gz"),
+            sample=SAMPLES,
+        ),
     output:
-        matrix=join(WORKDIR,"results","circRNA_master_counts.tsv.gz")
+        matrix=join(WORKDIR, "results", "circRNA_master_counts.tsv.gz"),
     params:
-        script=join(SCRIPTS_DIR,"_make_master_counts_table.py"),
-        resultsdir=join(WORKDIR,"results"),
-        lookup_table=ANNOTATION_LOOKUP
+        script=join(SCRIPTS_DIR, "_make_master_counts_table.py"),
+        resultsdir=join(WORKDIR, "results"),
+        lookup_table=ANNOTATION_LOOKUP,
     envmodules:
-        TOOLS['python37']['version']
-    shell:"""
+        TOOLS["python37"]["version"],
+    shell:
+        """
 set -exo pipefail
 count=0
 for f in {input};do
