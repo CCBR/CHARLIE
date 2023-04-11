@@ -19,6 +19,7 @@ def get_attributes(attstr):
 		key = x.pop(0)
 		key = key.replace(":","")
 		value = " ".join(x)
+		value = value.replace(":","_")
 		att[key] = value
 	return att
 
