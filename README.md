@@ -1,7 +1,7 @@
 # CHARLIE
 ![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)
 
-### **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
+ **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
 
 
 Things to know about CHARLIE:
