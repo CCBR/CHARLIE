@@ -54,7 +54,7 @@ viruses: "NC_009333.1"
 #
 #  | RefSeq  Sequence | RefSeq assembly accession | Notes                                                        |
 #  | ---------------- | ------------------------- | ------------------------------------------------------------ |
-#  | KT899744         | KT899744                  | HSV-1 strain KOS                                             |
+#  | KT899744.1       | KT899744.1                | HSV-1 strain KOS                                             |
 #  | MH636806.1       | MH636806.1                | MHV68 (Murine herpesvirus 68 strain WUMS)                    |
 #
 # comma separated list
