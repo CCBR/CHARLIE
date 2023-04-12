@@ -1,11 +1,10 @@
-run-name: ${{github.actor}} is running test.yaml
+run-name: ${{github.actor}} is running LINT on main/master branch
 
 on:
   push:
     branches:
-      - activeDev
       - main
-      - feature/issue57
+      - master
   pull_request:
     branches-ignore: []
 
@@ -15,11 +14,9 @@ jobs:
     steps:
       - name: Linting
         uses: actions/checkout@v3
-        with:
-          ref: "feature/issue57"
       - run: |
           git branch -a
-          git log |head
+          git log | head
           ls -alrth config
           ls -alrth workflow
       - name: Running Lint

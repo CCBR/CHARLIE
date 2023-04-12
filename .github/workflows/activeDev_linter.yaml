@@ -1,11 +1,9 @@
-run-name: ${{github.actor}} is running LINT
+run-name: ${{github.actor}} is running LINT on activeDev branch!
 
 on:
   push:
     branches:
       - activeDev
-      - main
-      - feature/issue57
   pull_request:
     branches-ignore: []
 
@@ -16,7 +14,7 @@ jobs:
       - name: Linting
         uses: actions/checkout@v3
         with:
-          ref: "feature/issue57"
+          ref: "activeDev"
       - run: echo "repo cloned --> ${{github.repository}}"
       - run: echo "github workspace --> ${{github.workspace}}"
       - name: Listing the repo
