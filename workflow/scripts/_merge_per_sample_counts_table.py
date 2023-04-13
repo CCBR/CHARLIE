@@ -105,7 +105,7 @@ def main() :
                 'linear_unknown_strand' : 'circExplorer_found_linear_BSJ_unknown_strand_counts',
                 'spliced_unknown_strand' : 'circExplorer_found_linear_spliced_BSJ_unknown_strand_counts'}, axis=1, inplace=True)
     circE.drop(['#chrom','start', 'end','strand'], axis = 1,inplace=True)
-    circE.set_index(['circRNA_id'],inplace=True)
+    circE.set_index(['circRNA_id'],inplace=True,drop=True)
     
     circE.fillna(value=-1,inplace=True)
 
@@ -147,7 +147,7 @@ def main() :
                     '#non_junction_reads' : 'ciri_linear_read_count', 
                     'circRNA_type': 'ciri_annotation'}, axis=1, inplace=True)
     ciri.drop(['chr','circRNA_start', 'circRNA_end','strand'], axis = 1,inplace=True)
-    ciri.set_index(['circRNA_id'],inplace=True)
+    ciri.set_index(['circRNA_id'],inplace=True,drop=True)
 
     ciri.fillna(value=-1,inplace=True)
 
@@ -180,7 +180,7 @@ def main() :
         dcc[['dcc_gene', 'dcc_junction_type', 'dcc_annotation2']] = dcc['dcc_annotation'].apply(lambda x: pandas.Series(str(x).split("##")))
         dcc.drop(['chr','start', 'end','strand','dcc_annotation'], axis = 1,inplace=True)
         dcc.rename({'dcc_annotation2': 'dcc_annotation'}, axis=1, inplace=True)
-        dcc.set_index(['circRNA_id'],inplace=True)
+        dcc.set_index(['circRNA_id'],inplace=True,drop=True)
 
         dcc.fillna(value=-1,inplace=True)
 
@@ -212,7 +212,7 @@ def main() :
         mapsplice[['mapsplice_annotation2', 'mapsplice_entropy']] = mapsplice['mapsplice_annotation'].apply(lambda x: pandas.Series(str(x).split("##")))
         mapsplice.drop(['chrom','start', 'end','strand','mapsplice_annotation'], axis = 1,inplace=True)
         mapsplice.rename({'mapsplice_annotation2': 'mapsplice_annotation'}, axis=1, inplace=True)
-        mapsplice.set_index(['circRNA_id'],inplace=True)
+        mapsplice.set_index(['circRNA_id'],inplace=True,drop=True)
 
         mapsplice.fillna(value=-1,inplace=True)
 
@@ -248,7 +248,7 @@ def main() :
             nclscan.loc[nclscan['nclscan_annotation']=="1", 'nclscan_annotation'] = "Intragenic"
             nclscan.loc[nclscan['nclscan_annotation']=="0", 'nclscan_annotation'] = "Intergenic"
             # nclscan.loc[nclscan['nclscan_annotation']!="0" and nclscan['nclscan_annotation']!="1" , 'nclscan_annotation'] = "Unknown"
-            nclscan.set_index(['circRNA_id'],inplace=True)
+            nclscan.set_index(['circRNA_id'],inplace=True,drop=True)
 
             nclscan.fillna(value=-1,inplace=True)
 
@@ -271,7 +271,8 @@ def main() :
         # | 5 | read_count           | 26               |
         circrnafinder['circRNA_id']=circrnafinder['chr'].astype(str)+"##"+circrnafinder['start'].astype(str)+"##"+circrnafinder['end'].astype(str)+"##"+circrnafinder['strand'].astype(str)
         circrnafinder.rename({'read_count': 'circrnafinder_read_count'}, axis=1, inplace=True)
-        circrnafinder.set_index(['circRNA_id'],inplace=True)
+        circrnafinder.drop(['chr','start', 'end','strand'], axis = 1,inplace=True)
+        circrnafinder.set_index(['circRNA_id'],inplace=True,drop=True)
 
         circrnafinder.fillna(value=-1,inplace=True)
 
@@ -286,10 +287,39 @@ def main() :
     # for df in dfs:
     #     print(df.columns)
 
-    merged_counts=pandas.concat(dfs,axis=1,join="outer",sort=False)
-    merged_counts['circRNA_id']=merged_counts.index
+
+    # merged_counts=pandas.concat(dfs,axis=1,join="outer",sort=False)
+    # merged_counts['circRNA_id']=merged_counts.index
+
+# above pandas.concat not working as expected
+# giving error
+#   File "/vf/users/Ziegelbauer_lab/Pipelines/circRNA/230406_activeDev_20284a3/workflow/scripts/_merge_per_sample_counts_table.py", line 396, in <module>
+#     main()
+#   File "/vf/users/Ziegelbauer_lab/Pipelines/circRNA/230406_activeDev_20284a3/workflow/scripts/_merge_per_sample_counts_table.py", line 289, in main
+#     merged_counts=pandas.concat(dfs,axis=1,join="outer",sort=False)
+#   File "/usr/local/Anaconda/envs/py3.7/lib/python3.7/site-packages/pandas/util/_decorators.py", line 311, in wrapper
+#     return func(*args, **kwargs)
+#   File "/usr/local/Anaconda/envs/py3.7/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 307, in concat
+#     return op.get_result()
+#   File "/usr/local/Anaconda/envs/py3.7/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 528, in get_result
+#     indexers[ax] = obj_labels.get_indexer(new_labels)
+#   File "/usr/local/Anaconda/envs/py3.7/lib/python3.7/site-packages/pandas/core/indexes/base.py", line 3442, in get_indexer
+#     raise InvalidIndexError(self._requires_unique_msg)
+# pandas.errors.InvalidIndexError: Reindexing only valid with uniquely valued Index objects
+# HENCE, replacing concat with this:
+
+    for i,df in enumerate(dfs):
+        if i==0:
+            merged_counts=df
+            merged_counts['circRNA_id']=merged_counts.index
+            merged_counts.reset_index(inplace=True,drop=True)
+        else:
+            df['circRNA_id']=df.index
+            df.reset_index(inplace=True,drop=True)
+            merged_counts=pandas.merge(merged_counts,df,how='outer',on=['circRNA_id'])
+    # merged_counts.set_index(['circRNA_id'],inplace=True,drop=True)
+
     merged_counts.fillna(-1,inplace=True)
-    # print(merged_counts.columns)
     merged_counts[ 'ntools'] = 0
 
     annotation_cols=['circExplorer_annotation','ciri_annotation']
@@ -343,19 +373,14 @@ def main() :
  
     merged_counts=_df_setcol_as_int(merged_counts,['start','end','ntools'])
     merged_counts=_df_setcol_as_str(merged_counts,['chrom','strand'])
-    # merged_counts.drop(['circRNA_id'],axis=1,inplace=True)
-    # merged_counts['circRNA_id']=merged_counts['chrom'].astype(str)+":"+merged_counts['start'].astype(str)+"-"+merged_counts['end'].astype(str)
 
     # adding flanking sites
     merged_counts['flanking_sites']="-1"
 
     sequences = dict((s[1], s[0]) for s in HTSeq.FastaReader(args.reffa, raw_iterator=True))
     for index, row in merged_counts.iterrows():
-        # print(index,row)
         bsj = BSJ(chrom=row['chrom'],start=row['start'],end=row['end'],strand=row['strand'])
         bsj.add_flanks(sequences)
-        # print(bsj.get_flanks())
-        # merged_counts[index]['flanking_sites'] = bsj.get_flanks()
         merged_counts.loc[index, 'flanking_sites'] = bsj.get_flanks()
 
     # add samplename
