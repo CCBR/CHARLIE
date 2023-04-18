@@ -121,6 +121,7 @@ cluster: "WORKDIR/cluster.json"
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
+flanksize: 18 # 18bp flank on either side of the BSJ .. used by multiple BSJ callers
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
 circrnafinder_dir: "/data/Ziegelbauer_lab/tools/circRNA_finder-1.2"
