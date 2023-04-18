@@ -195,7 +195,7 @@ rule all:
         ## index
         join(REF_DIR, "ref.genes.genepred_w_geneid"),
         join(STAR_INDEX_DIR, "SA"),
-        join(REF_DIR, "ref.sa"),
+        join(REF_DIR, "ref.bwt"),
         ## cutadapt
         ## cutadapt files are now temp() to save space
         expand(
