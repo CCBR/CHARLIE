@@ -105,6 +105,7 @@ N_RUN_CIRCRNAFINDER = _convert_to_int(RUN_CIRCRNAFINDER)
 N_RUN_NCLSCAN = _convert_to_int(RUN_NCLSCAN)
 MAPSPLICE_MIN_MAP_LEN = config["mapsplice_min_map_len"]
 MAPSPLICE_FILTERING = config["mapsplice_filtering"]
+FLANKSIZE = config['flanksize']
 
 REF_DIR = join(WORKDIR, "ref")
 if not os.path.exists(REF_DIR):

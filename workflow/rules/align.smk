@@ -49,6 +49,7 @@ rule star1p:
         sample="{sample}",
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR1p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
@@ -90,7 +91,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_p1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -125,7 +127,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_mate1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -160,7 +163,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_mate2. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -199,7 +203,8 @@ else
     --outFileNamePrefix {params.sample}_p1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -295,6 +300,7 @@ rule star2p:
         memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR2p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
@@ -342,7 +348,8 @@ if [ "{params.peorse}" == "PE" ];then
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimOutType Junctions WithinBAM \\
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
@@ -386,7 +393,8 @@ else
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimOutType Junctions WithinBAM \\
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
@@ -468,6 +476,7 @@ rule star_circrnafinder:
         memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
@@ -497,6 +506,8 @@ if [ "{params.peorse}" == "PE" ];then
     --runThreadN {threads} \\
     --chimSegmentMin 20 \\
     --chimScoreMin 1 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --alignIntronMax 1000000 \\
     --outFilterMismatchNoverReadLmax 0.02 \\
     --alignTranscriptsPerReadNmax 100000 \\
@@ -517,6 +528,8 @@ else
     --runThreadN {threads} \\
     --chimSegmentMin 20 \\
     --chimScoreMin 1 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --alignIntronMax 1000000 \\
     --outFilterMismatchNoverReadLmax 0.02 \\
     --alignTranscriptsPerReadNmax 100000 \\
