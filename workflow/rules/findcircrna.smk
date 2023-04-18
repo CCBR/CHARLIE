@@ -250,7 +250,7 @@ python {params.script} \\
 # ref: https://ciri-cookbook.readthedocs.io/en/latest/CIRI2.html#an-example-of-running-ciri2
 rule ciri:
     input:
-        bwt=rules.create_index.output.bwt,
+        bwt=rules.create_bwa_index.output.bwt,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
