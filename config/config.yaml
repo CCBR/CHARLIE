@@ -26,6 +26,9 @@ run_circRNAFinder: True
 run_nclscan: True
 nclscan_config: "WORKDIR/nclscan.config"
 #
+# Should we also run find_circ? True or False WITHOUT quotes
+run_findcirc: True
+
 
 
 # select references .... host + viruses(comma-separated):
@@ -125,6 +128,7 @@ flanksize: 18 # 18bp flank on either side of the BSJ .. used by multiple BSJ cal
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
 circrnafinder_dir: "/data/Ziegelbauer_lab/tools/circRNA_finder-1.2"
+find_circ_dir: "/data/Ziegelbauer_lab/tools/find_circ"
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded
 cutadapt_min_length: 15
 cutadapt_n: 5

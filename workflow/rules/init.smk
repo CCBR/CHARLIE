@@ -98,14 +98,17 @@ RUN_DCC = _is_true(config["run_dcc"])
 RUN_MAPSPLICE = _is_true(config["run_mapsplice"])
 RUN_CIRCRNAFINDER = _is_true(config["run_circRNAFinder"])
 RUN_NCLSCAN = _is_true(config["run_nclscan"])
+RUN_FINDCIRC = _is_true(config["run_findcirc"])
 N_RUN_CLEAR = _convert_to_int(RUN_CLEAR)
 N_RUN_DCC = _convert_to_int(RUN_DCC)
 N_RUN_MAPSPLICE = _convert_to_int(RUN_MAPSPLICE)
 N_RUN_CIRCRNAFINDER = _convert_to_int(RUN_CIRCRNAFINDER)
 N_RUN_NCLSCAN = _convert_to_int(RUN_NCLSCAN)
+N_RUN_FINDCIRC = _convert_to_int(RUN_FINDCIRC)
 MAPSPLICE_MIN_MAP_LEN = config["mapsplice_min_map_len"]
 MAPSPLICE_FILTERING = config["mapsplice_filtering"]
 FLANKSIZE = config['flanksize']
+FIND_CIRC_DIR = config['find_circ_dir']
 
 REF_DIR = join(WORKDIR, "ref")
 if not os.path.exists(REF_DIR):

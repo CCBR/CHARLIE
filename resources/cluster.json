@@ -19,6 +19,16 @@
         "threads": "4",
         "time": "4:00:00"
     },
+    "find_circ_align": {
+        "mem": "120g",
+        "threads": "56",
+        "time": "6:00:00"        
+    },
+    "find_circ": {
+        "mem": "120g",
+        "threads": "56",
+        "time": "6:00:00"        
+    },
     "mapsplice": {
         "mem": "200g",
         "threads": "56",

@@ -44,6 +44,21 @@ def get_circrnafinder_target_files(runcircrnafinder):
             )
     return targetfiles
 
+def get_find_circ_target_files(runfindcirc):
+    targetfiles=[]
+    if runfindcirc:
+        for s in SAMPLES:
+            targetfiles.append(
+                join(
+                WORKDIR,
+                "results",
+                s,
+                "find_circ",
+                s+".find_circ.bed.filtered"
+                )
+            )
+    return targetfiles
+
 
 def get_clear_target_files(runclear):
     targetfiles = []
@@ -417,6 +432,8 @@ rule all:
         get_nclscan_target_files(RUN_NCLSCAN),
         # ## circRNA_finder
         get_circrnafinder_target_files(RUN_CIRCRNAFINDER),
+        # ## find_circ
+        get_find_circ_target_files(RUN_FINDCIRC),
         ## alignment stats
         join(WORKDIR, "results", "alignmentstats.txt"),
         # # ## merged counts per sample table of all counts/annotations from all circRNA callers

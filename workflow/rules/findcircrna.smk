@@ -1096,6 +1096,69 @@ awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads
 
 """
 
+rule find_circ:
+    input:
+        bt2=rules.create_bowtie2_index.output.bt2,
+        anchorsfq=rules.find_circ_align.output.anchorsfq,
+    output:
+        find_circ_bsj_bed=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "find_circ",
+            "{sample}.find_circ.bed"
+        ),
+        find_circ_bsj_bed_filtered=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "find_circ",
+            "{sample}.find_circ.bed.filtered"
+        )
+    params:
+        sample="{sample}",
+        reffa=REF_FA,
+        find_cir_dir=FIND_CIRC_DIR,
+        min_reads=config['circexplorer_bsj_circRNA_min_reads'],
+        randomstr=str(uuid.uuid4()),
+    envmodules:
+        TOOLS["bowtie2"]["version"],
+        TOOLS["samtools"]["version"],
+    threads: getthreads("find_circ")
+    shell:
+        """
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+refdir=$(dirname {params.bt2})
+
+bowtie2 -p {threads} \\
+    --score-min=C,-15.0 \\
+    --reorder --mm \\
+    -q -U {input.anchorsfq} \\
+    -x ${{refdir}}/ref | \\
+{params.find_cir_dir}/find_circ.py \\
+    --genome={params.reffa} \\
+    --prefix={params.sample}.find_circ \\
+    --name={params.sample} \\
+    --noncanonical \\
+    --allhits \\
+    --stats={params.sample}.bowtie2_stats.txt \\
+    --reads={params.sample}.bowtie2_spliced_reads.fa \\
+    > {params.sample}.splice_sites.bed
+
+grep CIRCULAR {params.sample}.splice_sites.bed | \\
+    grep ANCHOR_UNIQUE \\
+    > {output.find_circ_bsj_bed}
+
+awk -F"\t" -v m={params.min_reads} -v OFS="\t" '{{if (\$5>v) {{print}}}}' {output.find_circ_bsj_bed} \\
+    > {output.find_circ_bsj_bed_filtered}
+"""
+
 
 def _boolean2str(x):  # "1" for True and "0" for False
     if x == True:
