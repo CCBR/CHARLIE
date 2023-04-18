@@ -1,4 +1,5 @@
-**/.*
+**/.kop*
+**/.snakemake
 !.editorconfig
 !.gitignore
 !.gitattributes
@@ -11,7 +12,6 @@ resources/mm10ToMm39.over.chain.gz
 resources/mm39.circBase.bed
 resources/mm39.circBase.bed.unmap
 resources/mm39.circBase.collapsed.bed
-resources/mm39_circBase_annotation_lookup.txt
 resources/mm9.circBase.bed
 resources/mm9.circBase.txt
 resources/mm9ToMm10.over.chain.gz
@@ -20,4 +20,5 @@ resources/mmu_mm9_circRNA.bed
 resources/mmu_mm9_circRNA.txt
 resources/mouse_mm9_circRNAs_putative_spliced_sequence.fa.gz
 workflow/scripts/copy_strand_info.py
+.tests/lint_workdir
 **/tmp*

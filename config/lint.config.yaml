@@ -1,12 +1,12 @@
 ## you probably need to change or comment/uncomment some of these
 #
-# The working dir... output will be in the results subfolder of the workdir
-workdir: "WORKDIR"
+# The working dir... output will be in the results subfolder of the .tests/lint_workdir
+workdir: ".tests/lint_workdir"
 #
 # tab delimited samples file ... should have the following 3 columns
 # sampleName	path_to_R1_fastq	path_to_R2_fastq
 #
-samples: "WORKDIR/samples.tsv"
+samples: ".tests/lint/samples.tsv"
 #
 # Should the CLEAR pipeline be run? True or False WITHOUT quotes
 run_clear: True
@@ -15,7 +15,7 @@ run_clear: True
 run_dcc: True
 #
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
-run_mapsplice: False
+run_mapsplice: True
 mapsplice_min_map_len: 50
 mapsplice_filtering: 2  # 1=less stringent 2=default
 #
@@ -24,15 +24,15 @@ run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
 run_nclscan: True
-nclscan_config: "WORKDIR/nclscan.config"
+nclscan_config: ".tests/lint_workdir/nclscan.config"
 #
 
 
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
-host: "hg38"
-additives: "ERCC" # options are ERCC and BAC16Insert
-viruses: "NC_009333.1"
+host: "host"
+additives: "additive" # options are ERCC and BAC16Insert
+viruses: "virus"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
@@ -54,7 +54,7 @@ viruses: "NC_009333.1"
 #
 #  | RefSeq  Sequence | RefSeq assembly accession | Notes                                                        |
 #  | ---------------- | ------------------------- | ------------------------------------------------------------ |
-#  | KT899744.1       | KT899744.1                | HSV-1 strain KOS                                             |
+#  | KT899744         | KT899744                  | HSV-1 strain KOS                                             |
 #  | MH636806.1       | MH636806.1                | MHV68 (Murine herpesvirus 68 strain WUMS)                    |
 #
 # comma separated list
@@ -112,13 +112,11 @@ maxsize_virus:  5000
 
 
 ## you most probably dont need to change these
-scriptsdir: "PIPELINE_HOME/workflow/scripts"
-resourcesdir: "PIPELINE_HOME/resources"
-tools: "PIPELINE_HOME/resources/tools.yaml"
-# default cluster
-# cluster: "PIPELINE_HOME/resources/cluster.json"
-cluster: "WORKDIR/cluster.json"
-adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
+scriptsdir: "workflow/scripts"
+resourcesdir: "resources"
+tools: "resources/tools.yaml"
+cluster: "resources/cluster.json"
+adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
 circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
 ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
@@ -130,7 +128,8 @@ cutadapt_n: 5
 cutadapt_max_n: 0.5
 cutadapt_O: 5
 cutadapt_q: 20
-fastas_gtfs_dir: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
+fastas_gtfs_dir: ".tests/lint/fasta_gtf"
 annotation_lookups:
-  hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
-  mm39: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt"
+  hg38: "resources/hg38_2_hg19_lookup.txt"
+  mm39: "resources/mm39_circBase_annotation_lookup.txt"
+  host: "resources/dummy"

@@ -1,4 +1,3 @@
-
 # rule split_splice_reads_BAM_create_BW:
 #     input:
 #         bam=rules.create_spliced_reads_bam.output.bam
@@ -41,7 +40,7 @@
 # rm -f $bdg $sizes
 # done < {params.regions}
 # cd $TMPDIR && rm -f *
-# """	
+# """
 
 # rule split_linear_reads_BAM_create_BW:
 # # This rule is identical to split_splice_reads_BAM_create_BW, "spliced_reads" is replaced by "linear_reads"
@@ -86,22 +85,36 @@
 # rm -f $bdg $sizes
 # done < {params.regions}
 # cd $TMPDIR && rm -f *
-# """	
+# """
 
 
-localrules: merge_genecounts
+localrules:
+    merge_genecounts,
+
+
 rule merge_genecounts:
     input:
-        expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}_p2.ReadsPerGene.out.tab"),sample=SAMPLES)
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "STAR2p",
+                "{sample}_p2.ReadsPerGene.out.tab",
+            ),
+            sample=SAMPLES,
+        ),
     output:
-        join(WORKDIR,"results","unstranded_STAR_GeneCounts.tsv"),
-        join(WORKDIR,"results","stranded_STAR_GeneCounts.tsv"),
-        join(WORKDIR,"results","revstranded_STAR_GeneCounts.tsv")
+        join(WORKDIR, "results", "unstranded_STAR_GeneCounts.tsv"),
+        join(WORKDIR, "results", "stranded_STAR_GeneCounts.tsv"),
+        join(WORKDIR, "results", "revstranded_STAR_GeneCounts.tsv"),
     params:
-        outdir=join(WORKDIR,"results"),
-        rscript=join(SCRIPTS_DIR,"merge_ReadsPerGene_counts.R")
-    envmodules: TOOLS["R"]["version"]
-    shell:"""
+        outdir=join(WORKDIR, "results"),
+        rscript=join(SCRIPTS_DIR, "merge_ReadsPerGene_counts.R"),
+    envmodules:
+        TOOLS["R"]["version"],
+    shell:
+        """
 set -exo pipefail
 cd {params.outdir}
 Rscript {params.rscript}

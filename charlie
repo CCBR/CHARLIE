@@ -11,12 +11,16 @@
 set -eo pipefail
 module purge
 
-# you may want to re-set these
+# Some set up
 #######
-EXTRA_SINGULARITY_BINDS="/lscratch"
+CLUSTER_SBATCH_CMD="sbatch --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
+if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
+  EXTRA_SINGULARITY_BINDS="/lscratch"
+  CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
+fi
 PYTHONVERSION="3.7"
-# SNAKEMAKEVERSION="7.3.7"
-SNAKEMAKEVERSION="5.24.1"
+SNAKEMAKEVERSION="7.19.1"
+# SNAKEMAKEVERSION="5.24.1"
 #######
 
 
@@ -34,30 +38,96 @@ function get_git_commitid_tag() {
 
 # ## setting PIPELINE_HOME
 PIPELINE_HOME=$(readlink -f $(dirname "$0"))
-echo "Pipeline Dir: $PIPELINE_HOME"
+# echo "Pipeline Dir: $PIPELINE_HOME"
 # set snakefile
 SNAKEFILE="${PIPELINE_HOME}/workflow/Snakefile"
 
 # get github commit tag
 GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
-echo "Git Commit/Tag: $GIT_COMMIT_TAG"
+# echo "Git Commit/Tag: $GIT_COMMIT_TAG"
 
 function usage() { cat << EOF
 
-${SCRIPTBASENAME}
---> run circRNA Detection Annotation Quantification Pipeline
+##########################################################################################
+
+Welcome to 
+ _______  __   __  _______  ______    ___      ___   _______ 
+|       ||  | |  ||   _   ||    _ |  |   |    |   | |       |
+|       ||  |_|  ||  |_|  ||   | ||  |   |    |   | |    ___|
+|       ||       ||       ||   |_||_ |   |    |   | |   |___ 
+|      _||       ||       ||    __  ||   |___ |   | |    ___|
+|     |_ |   _   ||   _   ||   |  | ||       ||   | |   |___ 
+|_______||__| |__||__| |__||___|  |_||_______||___| |_______|
+
+C_ircrnas in H_ost A_nd vi_R_uses ana_L_ysis p_I_p_E_line
+
+##########################################################################################
+
+This pipeline was built by CCBR (https://bioinformatics.ccr.cancer.gov/ccbr)
+Please contact Vishal Koparde for comments/questions (vishal.koparde@nih.gov)
+
+##########################################################################################
+
+CHARLIE can be used to DAQ(Detect/Annotate/Quantify) circRNAs in hosts and viruses.
+
+Here is the list of hosts and viruses that are currently supported:
+
+HOSTS:
+  * hg38          [Human]
+  * mm39          [Mouse]
+
+ADDITIVES:
+  * ERCC          [External RNA Control Consortium sequences]
+  * BAC16Insert   [insert from rKSHV.219-derived BAC clone of the full-length KSHV genome]
+
+VIRUSES:
+  * NC_007605.1   [Human gammaherpesvirus 4 (Epstein-Barr virus)]
+  * NC_006273.2   [Human betaherpesvirus 5 (Cytomegalovirus )]
+  * NC_001664.4   [Human betaherpesvirus 6A (HHV-6A)]
+  * NC_000898.1   [Human betaherpesvirus 6B (HHV-6B)]
+  * NC_001716.2   [Human betaherpesvirus 7 (HHV-7)]
+  * NC_009333.1   [Human gammaherpesvirus 8 (KSHV)]
+  * NC_045512.2   [Severe acute respiratory syndrome(SARS)-related coronavirus]
+  * MN485971.1    [HIV from Belgium]
+  * NC_001806.2   [Human alphaherpesvirus 1 (Herpes simplex virus type 1)](strain 17) (HSV-1)]
+  * KT899744.1    [HSV-1 strain KOS]
+  * MH636806.1    [MHV68 (Murine herpesvirus 68 strain WUMS)]
+
+##########################################################################################
 
 USAGE:
-  bash ${SCRIPTNAME} -m/--runmode=<RUNMODE> -w/--workdir=<WORKDIR>
+  bash ${SCRIPTNAME} -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
+
 Required Arguments:
-1.  RUNMODE: [Type: String] Valid options:
-    *) init : initialize workdir
-    *) run : run with slurm
-    *) reset : DELETE workdir dir and re-init it
-    *) dryrun : dry run snakemake to generate DAG
-    *) unlock : unlock workdir if locked by snakemake
-    *) runlocal : run without submitting to sbatch
-2.  WORKDIR: [Type: String]: Absolute or relative path to the output folder with write permissions.
+1.  WORKDIR     : [Type: String]: Absolute or relative path to the output folder with write permissions.
+
+2.  RUNMODE     : [Type: String] Valid options:
+    * init      : initialize workdir
+    * dryrun    : dry run snakemake to generate DAG
+    * run       : run with slurm
+    * runlocal  : run without submitting to sbatch
+    * help      : print this help
+    ADVANCED RUNMODES (use with caution!!)
+    * unlock    : unlock WORKDIR if locked by snakemake NEVER UNLOCK WORKDIR WHERE PIPELINE IS CURRENTLY RUNNING!
+    * reconfig  : recreate config file in WORKDIR (debugging option) EDITS TO config.yaml WILL BE LOST!
+    * reset     : DELETE workdir dir and re-init it (debugging option) EDITS TO ALL FILES IN WORKDIR WILL BE LOST!
+    * printbinds: print singularity binds (paths)
+    * local     : same as runlocal
+
+Example commands:
+  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=init
+  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=dryrun
+  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=run
+
+##########################################################################################
+
+VersionInfo: 
+  python          : $PYTHONVERSION 
+  snakemake       : $SNAKEMAKEVERSION 
+  pipeline_home   : $PIPELINE_HOME
+  git commit/tag  : $GIT_COMMIT_TAG
+
+##########################################################################################
 EOF
 }
 
@@ -71,18 +141,6 @@ function err() { cat <<< "
 #
 " && usage && exit 1 1>&2; }
 
-# function check_arguments() {
-#   if [ "$#" -eq "1" ]; then err "init needs an absolute path to the working dir"; usage; exit 1; fi
-#   if [ "$#" -gt "2" ]; then err "init takes only one more argument"; usage; exit 1;fi
-#   WORKDIR=$2
-# # echo $WORKDIR
-# # x=$(echo $WORKDIR|awk '{print substr($1,1,1)}')
-# # if [ "$x" != "/" ]; then err "working dir should be supplied as an absolute path"; usage; exit 1; fi
-#   WORKDIR=$(readlink -f "$WORKDIR")
-#   echo "Working Dir: $WORKDIR"
-#   # exit 1
-# }
-
 function init() {
 
 # create output folder
@@ -90,9 +148,24 @@ if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
 mkdir -p $WORKDIR
 
 # copy config and samples files
-sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $WORKDIR/config.yaml
+if [ ! -f $CONFIGFILE ];then
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
+fi
+if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
+fi
+if [ ! -f $CLUSTERFILE ];then
+cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
+fi
+if [ ! -f $WORKDIR/samples.tsv ];then
 cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
+fi
+if [ ! -f $JOBBY ];then
+cp ${PIPELINE_HOME}/workflow/scripts/jobby $JOBBY && chmod a+x $JOBBY
+fi
+if [ ! -f $JOBBY2 ];then
+cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $JOBBY2
+fi
 
 #create log and stats folders
 if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
@@ -104,7 +177,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv nclscan.config; do
+  for f in config.yaml samples.tsv nclscan.config jobby cluster.json; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -126,9 +199,12 @@ function runcheck(){
 function dryrun() {
   runcheck
   timestamp=$(date +"%y%m%d%H%M%S")
-  for f in $(ls ${WORKDIR}/dryrun.*.log);do
-    mv $f ${WORKDIR}/stats
-  done
+  nfiles=$(find ${WORKDIR} -maxdepth 1 -name "dryrun.*.log"|wc -l)
+  if [ "$nfiles" != "0" ];then
+    for f in $(ls ${WORKDIR}/dryrun.*.log);do
+      mv $f ${WORKDIR}/stats/
+    done
+  fi
   run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
@@ -236,7 +312,7 @@ function run() {
   --singularity-args "$SINGULARITY_BINDS" \
   --use-envmodules \
   --latency-wait 120 \
-  --configfile ${WORKDIR}/config.yaml \
+  --configfile $CONFIGFILE \
   --cores all \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
@@ -245,7 +321,7 @@ function run() {
     snakemake -s $SNAKEFILE \
     --report ${WORKDIR}/runlocal_snakemake_report.html \
     --directory $WORKDIR \
-    --configfile ${WORKDIR}/config.yaml
+    --configfile $CONFIGFILE
   fi
 
   elif [ "$1" == "slurm" ];then
@@ -273,11 +349,13 @@ snakemake -s $SNAKEFILE \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
---configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/resources/cluster.json \
---cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
+--configfile $CONFIGFILE \
+--cluster-config $CLUSTERFILE \
+--cluster "$CLUSTER_SBATCH_CMD" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
+--retries 2 \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
@@ -286,13 +364,8 @@ if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
-  --configfile ${WORKDIR}/config.yaml 
+  --configfile $CONFIGFILE 
 fi
-
-# bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats_biowulf.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
-
-sleep 60
-/data/CCBR_Pipeliner/bin/Tools/Biowulf/jobinfo -s ${WORKDIR}/snakemake.log -o ${WORKDIR}/snakemake.log.jobinfo 2>${WORKDIR}/snakemake.log.jobinfo.short
 
 EOF
 
@@ -305,11 +378,12 @@ snakemake $1 -s $SNAKEFILE \
 --use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
---configfile ${WORKDIR}/config.yaml \
---cluster-config ${PIPELINE_HOME}/resources/cluster.json \
---cluster "sbatch --gres {cluster.gres} --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}" \
+--configfile $CONFIGFILE \
+--cluster-config $CLUSTERFILE \
+--cluster "$CLUSTER_SBATCH_CMD" \
 -j 500 \
 --rerun-incomplete \
+--rerun-triggers input \
 --keep-going \
 --reason \
 --stats ${WORKDIR}/snakemake.stats
@@ -342,6 +416,9 @@ function main(){
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
       ;;
+      -h|--help)
+        usage && exit 0;
+      ;;
       *)
         err "Unknown argument $i!"    # unknown option
       ;;
@@ -349,11 +426,12 @@ function main(){
   done
   WORKDIR=$(readlink -f "$WORKDIR")
   echo "Working Dir: $WORKDIR"
-  # echo SCRIPTNAME = ${SCRIPTNAME}
-  # echo RUNMODE = ${RUNMODE}
-  # echo WORKDIR = ${WORKDIR}
-  # exit;
 
+  # required files
+  CONFIGFILE="${WORKDIR}/config.yaml"
+  CLUSTERFILE="${WORKDIR}/cluster.json"
+  JOBBY="${WORKDIR}/jobby"
+  JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
 
   case $RUNMODE in
     init) init && exit 0;;
@@ -366,6 +444,7 @@ function main(){
     local) runlocal && exit 0;;                  # hidden option
     reconfig) reconfig && exit 0;;               # hidden option for debugging
     printbinds) printbinds && exit 0;;           # hidden option
+    help) usage && exit 0;;                      # print help
     *) err "Unknown RUNMODE \"$RUNMODE\"";;
   esac
 }

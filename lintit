@@ -1,0 +1,2 @@
+#!/bin/bash
+snakemake --lint --snakefile workflow/Snakefile --configfile config/lint.config.yaml
