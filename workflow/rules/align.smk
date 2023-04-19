@@ -573,7 +573,8 @@ rule find_circ_align:
     params:
         sample="{sample}",
         reffa=REF_FA,
-        find_cir_dir=FIND_CIRC_DIR,
+        peorse=get_peorse,
+        find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
     envmodules:
         TOOLS["bowtie2"]["version"],
@@ -591,6 +592,7 @@ fi
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.anchorsfq})
 
+if [ "{params.peorse}" == "PE" ];then
 bowtie2 \\
     -p {threads} \\
     --very-sensitive \\
@@ -599,8 +601,19 @@ bowtie2 \\
     -x ${{refdir}}/ref \\
     -q \\
     -1 {input.R1} \\
-    -2 {input.R2} 2> {params.sample}.bowtie2.log \\
+    -2 {input.R2} \\
     > ${{TMPDIR}}/{params.sample}.sam
+else 
+bowtie2 \\
+    -p {threads} \\
+    --very-sensitive \\
+    --score-min=C,-15,0 \\
+    --mm \\
+    -x ${{refdir}}/ref \\
+    -q \\
+    -U {input.R1} \\
+    > ${{TMPDIR}}/{params.sample}.sam
+fi
 
 samtools view -@{threads} -hbuS -o ${{TMPDIR}}/{params.sample}.unsorted.bam ${{TMPDIR}}/{params.sample}.sam
 
@@ -618,7 +631,7 @@ samtools view -@{threads} \\
     -f4 \\
     ${{TMPDIR}}/{params.sample}.sorted.bam
 
-{params.find_circ_dir}}/unmapped2anchors.py \\
+{params.find_circ_dir}/unmapped2anchors.py \\
     ${{outdir}}/{params.sample}.unmapped.bam | \
 	gzip -c - > {output.anchorsfq}
 

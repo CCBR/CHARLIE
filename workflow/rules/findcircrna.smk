@@ -1134,7 +1134,7 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
-refdir=$(dirname {params.bt2})
+refdir=$(dirname {input.bt2})
 
 bowtie2 -p {threads} \\
     --score-min=C,-15.0 \\
