@@ -330,6 +330,84 @@ python {params.script} \\
     -o {output.cirioutfiltered}
 """
 
+rule circExplorer_bwa:
+    input:
+        ciribam=rules.ciri.output.ciribam,
+    output:
+        backsplicedjunctions=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.back_spliced_junction.bed",
+        ),
+        annotations=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.circularRNA_known.txt",
+        ),
+        annotation_counts_table=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.circExplorer_bwa.annotation_counts.tsv",
+        ),
+    params:
+        sample="{sample}",
+        bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],  # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+        outdir=join(WORKDIR, "results", "{sample}", "circExplorer_BWA"),
+        genepred=rules.create_index.output.genepred_w_geneid,
+        reffa=REF_FA,
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+    threads: getthreads("circExplorer")
+    envmodules:
+        TOOLS["circexplorer"]["version"],
+    shell:
+        """
+set -exo pipefail
+if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
+cd {params.outdir}
+
+CIRCexplorer2 parse \\
+    -t BWA \\
+    {input.ciribam} > {params.sample}_circexplorer_bwa_parse.log 2>&1
+mv back_spliced_junction.bed {output.backsplicedjunctions}
+
+CIRCexplorer2 annotate \\
+-r {params.genepred} \\
+-g {params.reffa} \\
+-b {output.backsplicedjunctions} \\
+-o $(basename {output.annotations}) \\
+--low-confidence
+
+python {params.script} \\
+    --back_spliced_bed {output.backsplicedjunctions} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --circularRNA_known {output.annotations} \\
+    --low_conf low_conf_$(basename {output.annotations}) \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
+    -o {output.annotation_counts_table}
+"""
+
+
 
 # DEPRECATED
 rule create_ciri_count_matrix:
