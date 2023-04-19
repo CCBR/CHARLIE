@@ -592,6 +592,7 @@ if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.anchorsfq})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
 
 if [ "{params.peorse}" == "PE" ];then
 bowtie2 \\

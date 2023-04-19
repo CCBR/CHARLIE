@@ -1155,7 +1155,7 @@ grep CIRCULAR {params.sample}.splice_sites.bed | \\
     grep ANCHOR_UNIQUE \\
     > {output.find_circ_bsj_bed}
 
-awk -F"\t" -v m={params.min_reads} -v OFS="\t" '{{if (\$5>v) {{print}}}}' {output.find_circ_bsj_bed} \\
+awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>v) {{print}}}}' {output.find_circ_bsj_bed} \\
     > {output.find_circ_bsj_bed_filtered}
 """
 
