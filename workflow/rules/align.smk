@@ -588,6 +588,7 @@ if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
 else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.anchorsfq})
