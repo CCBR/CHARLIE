@@ -412,6 +412,27 @@ rule all:
             ),
             sample=SAMPLES,
         ),  # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
+        ## circExplorer_BWA
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer_BWA",
+                "{sample}.circularRNA_known.txt",
+            ),
+            sample=SAMPLES,
+        ),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
+        expand(
+            join(
+                WORKDIR,
+                "results",
+                "{sample}",
+                "circExplorer_BWA",
+                "{sample}.circExplorer_bwa.annotation_counts.tsv",
+            ),
+            sample=SAMPLES,
+        ),
         # ## CLEAR quant output --> CLEAR is nothing but circExplorer3
         get_clear_target_files(RUN_CLEAR),
         # ## ciri
