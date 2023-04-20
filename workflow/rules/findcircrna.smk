@@ -40,9 +40,14 @@ def get_per_sample_files_to_merge(wildcards):
     filedict["circExplorer"] = join(
         WORKDIR, "results", s, "circExplorer", s + ".circExplorer.counts_table.tsv"
     )
+    filedict["circExplorer_BWA"] = join(
+        WORKDIR, "results", s, "circExplorer_BWA", s + ".circExplorer_bwa.annotation_counts.tsv"
+    )
     filedict["CIRI"] = join(WORKDIR, "results", s, "ciri", s + ".ciri.out.filtered")
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
+    if RUN_FINDCIRC:
+        filedict["findcirc"] = join(WORKDIR,"results",s,"find_circ",s+".find_circ.bed.filtered")
     if RUN_DCC:
         filedict["DCC"] = join(
             WORKDIR,
@@ -1174,6 +1179,29 @@ awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads
 
 """
 
+
+# rule find_circ output has these columns
+# | #  | short_name      | description
+# | -- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+# | 1  | chrom           | chromosome/contig name                                                                                           |
+# | 2  | start           | left splice site (zero-based)                                                                                    |
+# | 3  | end             | right splice site (zero-based). (Always: end > start. 5' 3' depends on strand)                                   |
+# | 4  | name            | (provisional) running number/name assigned to junction                                                           |
+# | 5  | n_reads         | number of reads supporting the junction (BED 'score')                                                            |
+# | 6  | strand          | genomic strand (+ or -)                                                                                          |
+# | 7  | n_uniq          | number of distinct read sequences supporting the junction                                                        |
+# | 8  | uniq_bridges    | number of reads with both anchors aligning uniquely                                                              |
+# | 9  | best_qual_left  | alignment score margin of the best anchor alignment supporting the left splice junction (max=2 \* anchor_length) |
+# | 10 | best_qual_right | same for the right splice site                                                                                   |
+# | 11 | tissues         | comma-separated, alphabetically sorted list of tissues/samples with this junction                                |
+# | 12 | tiss_counts     | comma-separated list of corresponding read-counts                                                                |
+# | 13 | edits           | number of mismatches in the anchor extension process                                                             |
+# | 14 | anchor_overlap  | number of nucleotides the breakpoint resides within one anchor                                                   |
+# | 15 | breakpoints     | number of alternative ways to break the read with flanking GT/AG                                                 |
+# | 16 | signal          | flanking dinucleotide splice signal (normally GT/AG)                                                             |
+# | 17 | strandmatch     | 'MATCH', 'MISMATCH' or 'NA' for non-stranded analysis                                                            |
+# | 18 | category        | list of keywords describing the junction. Useful for quick grep filtering                                        |
+
 rule find_circ:
     input:
         bt2=rules.create_bowtie2_index.output.bt2,
@@ -1233,8 +1261,9 @@ grep CIRCULAR {params.sample}.splice_sites.bed | \\
     grep ANCHOR_UNIQUE \\
     > {output.find_circ_bsj_bed}
 
+echo -ne "chrom\tstart\tend\tname\tn_reads\tstrand\tn_uniq\tuniq_bridges\tbest_qual_left\tbest_qual_right\ttissues\ttiss_counts\tedits\tanchor_overlap\tbreakpoints\tsignal\tstrandmatch\tcategory\n" > {output.find_circ_bsj_bed_filtered}
 awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>v) {{print}}}}' {output.find_circ_bsj_bed} \\
-    > {output.find_circ_bsj_bed_filtered}
+    >> {output.find_circ_bsj_bed_filtered}
 """
 
 
@@ -1286,6 +1315,7 @@ rule merge_per_sample:
         nmapsplice=N_RUN_MAPSPLICE,
         nnclscan=N_RUN_NCLSCAN,
         ncirrnafinder=N_RUN_CIRCRNAFINDER,
+        nfindcirc=N_RUN_FINDCIRC,
         minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
     shell:
         """
@@ -1295,6 +1325,7 @@ python3 {params.script} \\
         --mapsplice {params.nmapsplice} \\
         --nclscan {params.nnclscan} \\
         --circrnafinder {params.ncirrnafinder} \\
+        --findcirc {params.nfindcirc} \\
         --samplename {params.sample} \\
         --min_read_count_reqd {params.minreadcount} \\
         --reffa {params.reffa} \\
