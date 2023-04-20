@@ -1262,7 +1262,7 @@ grep CIRCULAR {params.sample}.splice_sites.bed | \\
     > {output.find_circ_bsj_bed}
 
 echo -ne "chrom\tstart\tend\tname\tn_reads\tstrand\tn_uniq\tuniq_bridges\tbest_qual_left\tbest_qual_right\ttissues\ttiss_counts\tedits\tanchor_overlap\tbreakpoints\tsignal\tstrandmatch\tcategory\n" > {output.find_circ_bsj_bed_filtered}
-awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>v) {{print}}}}' {output.find_circ_bsj_bed} \\
+awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>m) {{print}}}}' {output.find_circ_bsj_bed} \\
     >> {output.find_circ_bsj_bed_filtered}
 """
 
