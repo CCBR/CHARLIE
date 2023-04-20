@@ -33,9 +33,12 @@ run_findcirc: True
 
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
-host: "hg38"
-additives: "ERCC" # options are ERCC and BAC16Insert
-viruses: "NC_009333.1"
+# host:       "hg38"
+# additives:  "ERCC" # options are ERCC and BAC16Insert
+# viruses:    "NC_009333.1"
+host:       "HOST"
+additives:  "ADDITIVES"
+viruses:    "VIRUSES"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
