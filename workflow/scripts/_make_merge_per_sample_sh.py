@@ -58,7 +58,7 @@ def main() :
     if args.mapsplice==1: parameters+=" --mapsplice "+_get_counts_file_path(sd,sn,'mapsplice')
     if args.nclscan==1: parameters+=" --nclscan "+_get_counts_file_path(sd,sn,'nclscan')
     if args.circrnafinder==1: parameters+=" --circrnafinder "+_get_counts_file_path(sd,sn,'circrnafinder')
-    if args.findcirc==1: parameters+="--findcirc "+_get_counts_file_path(sd,sn,'findcirc')
+    if args.findcirc==1: parameters+=" --findcirc "+_get_counts_file_path(sd,sn,'findcirc')
     parameters+=" --reffa "+args.reffa
     parameters+=" --min_read_count_reqd "+str(args.minreads)
     parameters+=" --samplename "+sn
