@@ -244,7 +244,7 @@ function runlocal() {
 function runslurm() {
   runcheck
   set_singularity_binds
-  run "slurm"
+  run "--dry-run " && run "slurm"
 }
 
 function create_runinfo {
@@ -314,6 +314,10 @@ function run() {
   --latency-wait 120 \
   --configfile $CONFIGFILE \
   --cores all \
+  --rerun-incomplete \
+  --rerun-triggers input \
+  --retries 2 \
+  --keep-going \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
 
