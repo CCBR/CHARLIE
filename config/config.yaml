@@ -23,7 +23,7 @@ mapsplice_filtering: 2  # 1=less stringent 2=default
 run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
-run_nclscan: True
+run_nclscan: False
 nclscan_config: "WORKDIR/nclscan.config"
 #
 # Should we also run find_circ? True or False WITHOUT quotes
