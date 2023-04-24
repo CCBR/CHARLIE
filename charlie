@@ -411,7 +411,7 @@ function run() {
 
   cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
-#SBATCH --job-name="circRNA_DAQ"
+#SBATCH --job-name="charlie"
 #SBATCH --mem=40g
 #SBATCH --partition="ccr,norm"
 #SBATCH --time=96:00:00
