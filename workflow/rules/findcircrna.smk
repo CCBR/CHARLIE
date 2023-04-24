@@ -1240,7 +1240,11 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
+
+cd $TMPDIR
+
 refdir=$(dirname {input.bt2})
+outdir=$(dirname {output.find_circ_bsj_bed})
 
 bowtie2 -p {threads} \\
     --score-min=C,-15.0 \\
@@ -1253,11 +1257,11 @@ bowtie2 -p {threads} \\
     --name={params.sample} \\
     --noncanonical \\
     --allhits \\
-    --stats={params.sample}.bowtie2_stats.txt \\
-    --reads={params.sample}.bowtie2_spliced_reads.fa \\
-    > {params.sample}.splice_sites.bed
+    --stats=${{outdir}}/{params.sample}.bowtie2_stats.txt \\
+    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.fa \\
+    > ${{TMPDIR}}/{params.sample}.splice_sites.bed
 
-grep CIRCULAR {params.sample}.splice_sites.bed | \\
+grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
     grep ANCHOR_UNIQUE \\
     > {output.find_circ_bsj_bed}
 
@@ -1293,8 +1297,8 @@ def _boolean2str(x):  # "1" for True and "0" for False
 # | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |
 
 
-localrules:
-    merge_per_sample,
+# localrules:
+#     merge_per_sample,
 
 
 rule merge_per_sample:
@@ -1512,8 +1516,8 @@ bash {output.merge_bash_script}
 #     """
 
 
-localrules:
-    create_master_counts_file,
+# localrules:
+#     create_master_counts_file,
 
 
 # rule create_master_counts_file:
