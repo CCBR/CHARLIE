@@ -53,8 +53,12 @@ def main() :
     parser = argparse.ArgumentParser(description='Merge per sample Counts from different circRNA detection tools')
     parser.add_argument('--circExplorer', dest='circE', type=str, required=True,
         help='circExplorer2 per-sample counts table')
+    parser.add_argument('--circExplorerbwa', dest='circEbwa', type=str, required=True,
+        help='circExplorer2_bwa per-sample counts table')
     parser.add_argument('--ciri', dest='ciri', type=str, required=True,
         help='ciri2 per-sample output')
+    parser.add_argument('--findcirc', dest='findcirc', type=str, required=False,
+        help='findcirc per-sample counts table')
     parser.add_argument('--dcc', dest='dcc', type=str, required=False,
         help='dcc per-sample counts table')
     parser.add_argument('--mapsplice', dest='mapsplice', type=str, required=False,
@@ -123,6 +127,25 @@ def main() :
 
     dfs.append(circE)
 
+    #chrom  start   end     strand  read_count      known_novel
+    # circExplorer2 with BWA
+
+    circEbwa=pandas.read_csv(args.circEbwa,sep="\t",header=0)
+    circEbwa['circRNA_id']=circEbwa['#chrom'].astype(str)+"##"+circEbwa['start'].astype(str)+"##"+circEbwa['end'].astype(str)+"##"+circEbwa['strand'].astype(str)
+    circEbwa.rename({'known_novel' : 'circExplorer_bwa_annotation',
+                    'read_count' : 'circExplorer_bwa_read_count'}, axis=1, inplace=True)
+    circEbwa.drop(['#chrom','start', 'end','strand'], axis = 1,inplace=True)
+    circEbwa.set_index(['circRNA_id'],inplace=True,drop=True)
+    
+    circEbwa.fillna(value=-1,inplace=True)
+
+    intcols = [ 'circExplorer_bwa_read_count' ]
+    strcols = list ( set(circEbwa.columns) - set(intcols) )
+    circEbwa = _df_setcol_as_int(circEbwa,intcols)
+    circEbwa = _df_setcol_as_str(circEbwa,strcols)
+
+    dfs.append(circEbwa)
+
     # load ciri
     ciri=pandas.read_csv(args.ciri,sep="\t",header=0,usecols=['chr', 'circRNA_start', 'circRNA_end', '#junction_reads', '#non_junction_reads', 'circRNA_type', 'strand'])
     # columns are:
@@ -157,8 +180,44 @@ def main() :
     ciri = _df_setcol_as_int(ciri,intcols)
     if len(strcols) > 0: ciri = _df_setcol_as_str(ciri,strcols)
     
-
     dfs.append(ciri)
+
+    if args.findcirc:
+        findcirc=pandas.read_csv(args.findcirc,sep="\t",header=0)
+# add find_circ
+# | #  | short_name      | description
+# | -- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+# | 1  | chrom           | chromosome/contig name                                                                                           |
+# | 2  | start           | left splice site (zero-based)                                                                                    |
+# | 3  | end             | right splice site (zero-based). (Always: end > start. 5' 3' depends on strand)                                   |
+# | 4  | name            | (provisional) running number/name assigned to junction                                                           |
+# | 5  | n_reads         | number of reads supporting the junction (BED 'score')                                                            |
+# | 6  | strand          | genomic strand (+ or -)                                                                                          |
+# | 7  | n_uniq          | number of distinct read sequences supporting the junction                                                        |
+# | 8  | uniq_bridges    | number of reads with both anchors aligning uniquely                                                              |
+# | 9  | best_qual_left  | alignment score margin of the best anchor alignment supporting the left splice junction (max=2 \* anchor_length) |
+# | 10 | best_qual_right | same for the right splice site                                                                                   |
+# | 11 | tissues         | comma-separated, alphabetically sorted list of tissues/samples with this junction                                |
+# | 12 | tiss_counts     | comma-separated list of corresponding read-counts                                                                |
+# | 13 | edits           | number of mismatches in the anchor extension process                                                             |
+# | 14 | anchor_overlap  | number of nucleotides the breakpoint resides within one anchor                                                   |
+# | 15 | breakpoints     | number of alternative ways to break the read with flanking GT/AG                                                 |
+# | 16 | signal          | flanking dinucleotide splice signal (normally GT/AG)                                                             |
+# | 17 | strandmatch     | 'MATCH', 'MISMATCH' or 'NA' for non-stranded analysis                                                            |
+# | 18 | category        | list of keywords describing the junction. Useful for quick grep filtering                                        |
+        findcirc['circRNA_id']=findcirc['chrom'].astype(str)+"##"+findcirc['start'].astype(str)+"##"+findcirc['end'].astype(str)+"##"+findcirc['strand'].astype(str)
+        findcirc = findcirc.loc[:, ['circRNA_id', 'n_reads']]
+        findcirc.rename({'n_reads': 'findcirc_read_count'}, axis=1, inplace=True)
+        findcirc.set_index(['circRNA_id'],inplace=True,drop=True)
+
+        findcirc.fillna(value=-1,inplace=True)
+
+        intcols = [ 'findcirc_read_count' ]
+        strcols = list ( set(findcirc.columns) - set(intcols) )
+        findcirc = _df_setcol_as_int(findcirc,intcols)
+        if len(strcols) > 0: findcirc = _df_setcol_as_str(findcirc,strcols)    
+
+        dfs.append(findcirc)
 
     # load dcc
     if args.dcc:
@@ -336,6 +395,12 @@ def main() :
     intcols.extend([ 'ciri_read_count',
                 'ciri_linear_read_count' ])
     
+    intcols.extend(['circExplorer_bwa_read_count'])
+    annotation_cols.extend(['circExplorer_bwa_annotation'])
+
+    if args.findcirc:
+        intcols.extend(['findcirc_read_count'])
+    
     if args.dcc:
         intcols.extend([ 'dcc_read_count',
                     'dcc_linear_read_count' ])
@@ -365,6 +430,8 @@ def main() :
 
     merged_counts.loc[merged_counts['circExplorer_read_count'] >= args.minreads, 'ntools'] += 1
     merged_counts.loc[merged_counts['ciri_read_count'] >= args.minreads, 'ntools'] += 1
+    merged_counts.loc[merged_counts['circExplorer_bwa_read_count'] >= args.minreads, 'ntools'] += 1
+    if args.findcirc: merged_counts.loc[merged_counts['findcirc_read_count'] >= args.minreads, 'ntools'] += 1
     if args.dcc: merged_counts.loc[merged_counts['dcc_read_count'] >= args.minreads, 'ntools'] += 1
     if args.mapsplice: merged_counts.loc[merged_counts['mapsplice_read_count'] >= args.minreads, 'ntools'] += 1
     if args.nclscan and includenclscan: merged_counts.loc[merged_counts['nclscan_read_count'] >= args.minreads, 'ntools'] += 1
@@ -387,7 +454,7 @@ def main() :
     merged_counts['sample_name'] = args.samplename
     merged_counts=_df_setcol_as_str(merged_counts,['sample_name','flanking_sites'])
 
-    # prepare output
+    # prepare output ... reorder columns
     outcols=['chrom', 'start', 'end', 'strand', 'flanking_sites', 'sample_name', 'ntools']
     # add circExplorer columns
     outcols.extend(['circExplorer_read_count',
@@ -401,6 +468,10 @@ def main() :
     # add ciri columns
     outcols.extend(['ciri_read_count',
                     'ciri_linear_read_count'])
+    # add circExplorer_BWA columns
+    outcols.extend(['circExplorer_bwa_read_count'])
+    # add find_circ columns
+    outcols.extend(['findcirc_read_count'])
     # add DCC columns
     if args.dcc: 
         outcols.extend(['dcc_read_count',

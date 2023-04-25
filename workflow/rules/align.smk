@@ -49,6 +49,7 @@ rule star1p:
         sample="{sample}",
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR1p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
@@ -90,7 +91,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_p1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -125,7 +127,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_mate1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -160,7 +163,8 @@ if [ "{params.peorse}" == "PE" ];then
     --outFileNamePrefix {params.sample}_mate2. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -199,7 +203,8 @@ else
     --outFileNamePrefix {params.sample}_p1. \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimMultimapNmax 10 \\
     --chimOutType Junctions \\
     --alignTranscriptsPerReadNmax {params.alignTranscriptsPerReadNmax} \\
@@ -295,6 +300,7 @@ rule star2p:
         memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR2p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
@@ -342,7 +348,8 @@ if [ "{params.peorse}" == "PE" ];then
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimOutType Junctions WithinBAM \\
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
@@ -386,7 +393,8 @@ else
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
-    --chimJunctionOverhangMin 15 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --chimOutType Junctions WithinBAM \\
     --chimMultimapNmax 10 \\
     --limitSjdbInsertNsj $limitSjdbInsertNsj \\
@@ -468,6 +476,7 @@ rule star_circrnafinder:
         memG=getmemG("star2p"),
         peorse=get_peorse,
         workdir=WORKDIR,
+        flanksize=FLANKSIZE,
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
@@ -497,6 +506,8 @@ if [ "{params.peorse}" == "PE" ];then
     --runThreadN {threads} \\
     --chimSegmentMin 20 \\
     --chimScoreMin 1 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --alignIntronMax 1000000 \\
     --outFilterMismatchNoverReadLmax 0.02 \\
     --alignTranscriptsPerReadNmax 100000 \\
@@ -517,6 +528,8 @@ else
     --runThreadN {threads} \\
     --chimSegmentMin 20 \\
     --chimScoreMin 1 \\
+    --chimJunctionOverhangMin {params.flanksize} \\
+    --chimScoreJunctionNonGTAG 0 \\
     --alignIntronMax 1000000 \\
     --outFilterMismatchNoverReadLmax 0.02 \\
     --alignTranscriptsPerReadNmax 100000 \\
@@ -541,6 +554,90 @@ sleep 120
 # Used to sort the BAM file after effect , but realized that it is not required by circRNA_Finder scripts
 # Hence deleting it to save digital footprint by making it temp in output block 
 
+"""
+
+rule find_circ_align:
+    input:
+        bt2=rules.create_bowtie2_index.output.bt2,
+        R1=rules.cutadapt.output.of1,
+        R2=rules.cutadapt.output.of2,
+        gtf=rules.create_index.output.fixed_gtf,
+    output:
+        anchorsfq=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "find_circ",
+            "{sample}_anchors.fastq.gz",
+        ),        
+    params:
+        sample="{sample}",
+        reffa=REF_FA,
+        peorse=get_peorse,
+        find_circ_dir=FIND_CIRC_DIR,
+        randomstr=str(uuid.uuid4()),
+    envmodules:
+        TOOLS["bowtie2"]["version"],
+        TOOLS["samtools"]["version"],
+    threads: getthreads("find_circ_align")
+    shell:
+        """
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+
+refdir=$(dirname {input.bt2})
+outdir=$(dirname {output.anchorsfq})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
+
+if [ "{params.peorse}" == "PE" ];then
+bowtie2 \\
+    -p {threads} \\
+    --very-sensitive \\
+    --score-min=C,-15,0 \\
+    --mm \\
+    -x ${{refdir}}/ref \\
+    -q \\
+    -1 {input.R1} \\
+    -2 {input.R2} \\
+    > ${{TMPDIR}}/{params.sample}.sam
+else 
+bowtie2 \\
+    -p {threads} \\
+    --very-sensitive \\
+    --score-min=C,-15,0 \\
+    --mm \\
+    -x ${{refdir}}/ref \\
+    -q \\
+    -U {input.R1} \\
+    > ${{TMPDIR}}/{params.sample}.sam
+fi
+
+samtools view -@{threads} -hbuS -o ${{TMPDIR}}/{params.sample}.unsorted.bam ${{TMPDIR}}/{params.sample}.sam
+
+samtools sort -@{threads} \\
+    -u \\
+    --write-index \\
+    --output-fmt BAM \\
+    -T ${{TMPDIR}}/{params.sample}.samtoolssort \\
+    -o ${{TMPDIR}}/{params.sample}.sorted.bam ${{TMPDIR}}/{params.sample}.unsorted.bam
+
+samtools view -@{threads} \\
+    --output-fmt BAM \\
+    --write-index \\
+    -o ${{outdir}}/{params.sample}.unmapped.bam \\
+    -f4 \\
+    ${{TMPDIR}}/{params.sample}.sorted.bam
+
+{params.find_circ_dir}/unmapped2anchors.py \\
+    ${{outdir}}/{params.sample}.unmapped.bam | \
+	gzip -c - > {output.anchorsfq}
+
+rm -rf $TMPDIR
 """
 
 

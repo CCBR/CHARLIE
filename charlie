@@ -2,32 +2,14 @@
 # Author: Vishal Koparde, Ph.D.
 # CCBR, NCI
 # (c) 2021
-#
-#
-# cirna_daq
-# d=detection
-# a=annotation
-# q=quantification
+# CHARLIE
+
 set -eo pipefail
 module purge
 
-# Some set up
-#######
-CLUSTER_SBATCH_CMD="sbatch --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
-if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
-  EXTRA_SINGULARITY_BINDS="/lscratch"
-  CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
-fi
-PYTHONVERSION="3.7"
-SNAKEMAKEVERSION="7.19.1"
-# SNAKEMAKEVERSION="5.24.1"
-#######
-
-
-SCRIPTNAME="$0"
-SCRIPTDIRNAME=$(readlink -f $(dirname $0))
-SCRIPTBASENAME=$(basename $0)
-
+##########################################################################################
+# functions
+##########################################################################################
 
 function get_git_commitid_tag() {
   cd $1
@@ -36,15 +18,46 @@ function get_git_commitid_tag() {
   echo -ne "$gid\t$tag"
 }
 
-# ## setting PIPELINE_HOME
+##########################################################################################
+# initial setup
+##########################################################################################
+
+# set PIPELINE_HOME
 PIPELINE_HOME=$(readlink -f $(dirname "$0"))
-# echo "Pipeline Dir: $PIPELINE_HOME"
+
 # set snakefile
 SNAKEFILE="${PIPELINE_HOME}/workflow/Snakefile"
 
 # get github commit tag
 GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
-# echo "Git Commit/Tag: $GIT_COMMIT_TAG"
+
+##########################################################################################
+# Some more set up
+##########################################################################################
+
+CLUSTER_SBATCH_CMD="sbatch --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
+if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
+  EXTRA_SINGULARITY_BINDS="/lscratch"
+  CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
+fi
+PYTHONVERSION="3.7"
+SNAKEMAKEVERSION="7.19.1"
+# SNAKEMAKEVERSION="5.24.1"
+
+# set defaults
+HOST="hg38"
+ADDITIVES="ERCC"
+VIRUSES="NC_009333.1"
+MANIFEST="${PIPELINE_HOME}/config/samples.tsv"
+
+# set variables
+SCRIPTNAME="$0"
+SCRIPTDIRNAME=$(readlink -f $(dirname $0))
+SCRIPTBASENAME=$(basename $0)
+
+##########################################################################################
+# USAGE
+##########################################################################################
 
 function usage() { cat << EOF
 
@@ -131,15 +144,23 @@ VersionInfo:
 EOF
 }
 
-function err() { cat <<< "
+##########################################################################################
+# ERR
+##########################################################################################
+
+function err() { usage && cat <<< "
 #
-#
+# ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR
 #
   $@
 #
+# ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR
 #
-#
-" && usage && exit 1 1>&2; }
+" && exit 1 1>&2; }
+
+##########################################################################################
+# INIT
+##########################################################################################
 
 function init() {
 
@@ -149,7 +170,12 @@ mkdir -p $WORKDIR
 
 # copy config and samples files
 if [ ! -f $CONFIGFILE ];then
-sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
+    -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
+    -e "s/HOST/${HOST}/g" \
+    -e "s/ADDITIVES/${ADDITIVES}/g" \
+    -e "s/VIRUSES/${VIRUSES}/g" \
+    ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
@@ -158,7 +184,7 @@ if [ ! -f $CLUSTERFILE ];then
 cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
 fi
 if [ ! -f $WORKDIR/samples.tsv ];then
-cp ${PIPELINE_HOME}/config/samples.tsv $WORKDIR/
+cp $MANIFEST $WORKDIR/samples.tsv
 fi
 if [ ! -f $JOBBY ];then
 cp ${PIPELINE_HOME}/workflow/scripts/jobby $JOBBY && chmod a+x $JOBBY
@@ -175,12 +201,20 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 }
 
+##########################################################################################
+# CHECK ESSENTIAL FILES
+##########################################################################################
+
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
   for f in config.yaml samples.tsv nclscan.config jobby cluster.json; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
+
+##########################################################################################
+# RECONFIG ... recreate config.yaml and overwrite old version
+##########################################################################################
 
 function reconfig(){
   # rebuild config file and replace the config.yaml in the WORKDIR
@@ -190,11 +224,19 @@ function reconfig(){
   echo "$WORKDIR/config.yaml has been updated!"
 }
 
+##########################################################################################
+# RUNCHECK ... check essential files and load required packages
+##########################################################################################
+
 function runcheck(){
   check_essential_files
   module load python/$PYTHONVERSION
   module load snakemake/$SNAKEMAKEVERSION
 }
+
+##########################################################################################
+# DRYRUN ... also run automatically before actual run
+##########################################################################################
 
 function dryrun() {
   runcheck
@@ -208,10 +250,18 @@ function dryrun() {
   run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
+##########################################################################################
+# UNLOCK
+##########################################################################################
+
 function unlock() {
   runcheck
   run "--unlock"  
 }
+
+##########################################################################################
+# SET SINGULARITY BINDS ... bind required singularity folders appropriately
+##########################################################################################
 
 function set_singularity_binds(){
 # this functions tries find what folders to bind
@@ -228,10 +278,18 @@ function set_singularity_binds(){
   SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
 }
 
+##########################################################################################
+# PRINT SINGULARITY BINDS ... print bound singularity folders for debugging
+##########################################################################################
+
 function printbinds(){
   set_singularity_binds
   echo $SINGULARITY_BINDS
 }
+
+##########################################################################################
+# RUNLOCAL ... run directly on local interactive node ... no submission to SLURM
+##########################################################################################
 
 function runlocal() {
   runcheck
@@ -241,11 +299,19 @@ function runlocal() {
   run "local"
 }
 
+##########################################################################################
+# RUNSLURM ... submit head job to slurm which will spawn other jobs on SLURM
+##########################################################################################
+
 function runslurm() {
   runcheck
   set_singularity_binds
-  run "slurm"
+  run "--dry-run " && run "slurm"
 }
+
+##########################################################################################
+# CREATE RUNINFO ... create runinfo.yaml in workdir
+##########################################################################################
 
 function create_runinfo {
   modtime=$1
@@ -266,6 +332,10 @@ function create_runinfo {
   d=$(date)
   echo "Date/Time: $d" >> ${WORKDIR}/runinfo.yaml
 }
+
+##########################################################################################
+# PRERUN CLEANUP ... get ready to run .. park old logs/stats etc.
+##########################################################################################
 
 function preruncleanup() {
   echo "Running..."
@@ -298,8 +368,15 @@ function preruncleanup() {
 
 }
 
-function run() {
+##########################################################################################
+# RUN wrapper for all possible run's
+# a. dryrun
+# b. unlock
+# c. local run
+# d. slurm run, etc.
+##########################################################################################
 
+function run() {
 
   if [ "$1" == "local" ];then
 
@@ -314,6 +391,10 @@ function run() {
   --latency-wait 120 \
   --configfile $CONFIGFILE \
   --cores all \
+  --rerun-incomplete \
+  --rerun-triggers input \
+  --retries 2 \
+  --keep-going \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
 
@@ -330,8 +411,8 @@ function run() {
 
   cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
-#SBATCH --job-name="circRNA_DAQ"
-#SBATCH --mem=10g
+#SBATCH --job-name="charlie"
+#SBATCH --mem=40g
 #SBATCH --partition="ccr,norm"
 #SBATCH --time=96:00:00
 #SBATCH --cpus-per-task=2
@@ -392,6 +473,10 @@ snakemake $1 -s $SNAKEFILE \
 
 }
 
+##########################################################################################
+# RESET ... delete workdir and then initialize
+##########################################################################################
+
 function reset() {
   #delete the workdir and re-initialize it
   echo "Working Dir: $WORKDIR"
@@ -402,6 +487,9 @@ function reset() {
   init
 }
 
+##########################################################################################
+# MAIN ... command line argument parsing
+##########################################################################################
 
 function main(){
 
@@ -416,6 +504,19 @@ function main(){
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
       ;;
+      -g=*|--host=*)
+        HOST="${i#*=}"
+      ;;
+      -a=*|--additives=*)
+        ADDITIVES="${i#*=}"
+      ;;
+      -v=*|--viruses=*)
+        VIRUSES="${i#*=}"
+      ;;      
+      -s=*|--manifest=*)
+        MANIFEST="${i#*=}"
+        if [ ! -f $MANIFEST ];then err "File $MANIFEST does NOT exist!";fi
+      ;;      
       -h|--help)
         usage && exit 0;
       ;;
@@ -449,6 +550,9 @@ function main(){
   esac
 }
 
+##########################################################################################
+# run main!
+##########################################################################################
 
 main "$@"
 
