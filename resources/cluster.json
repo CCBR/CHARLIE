@@ -27,7 +27,7 @@
     "find_circ": {
         "mem": "120g",
         "threads": "56",
-        "time": "6:00:00"        
+        "time": "12:00:00"        
     },
     "mapsplice": {
         "mem": "200g",
