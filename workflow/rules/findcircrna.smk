@@ -40,9 +40,14 @@ def get_per_sample_files_to_merge(wildcards):
     filedict["circExplorer"] = join(
         WORKDIR, "results", s, "circExplorer", s + ".circExplorer.counts_table.tsv"
     )
+    filedict["circExplorer_BWA"] = join(
+        WORKDIR, "results", s, "circExplorer_BWA", s + ".circExplorer_bwa.annotation_counts.tsv"
+    )
     filedict["CIRI"] = join(WORKDIR, "results", s, "ciri", s + ".ciri.out.filtered")
     # # if RUN_CLEAR:
     # #     filedict['CLEAR']=join(WORKDIR,"results","{sample}","CLEAR","quant.txt.annotated")
+    if RUN_FINDCIRC:
+        filedict["findcirc"] = join(WORKDIR,"results",s,"find_circ",s+".find_circ.bed.filtered")
     if RUN_DCC:
         filedict["DCC"] = join(
             WORKDIR,
@@ -250,7 +255,7 @@ python {params.script} \\
 # ref: https://ciri-cookbook.readthedocs.io/en/latest/CIRI2.html#an-example-of-running-ciri2
 rule ciri:
     input:
-        bwt=rules.create_index.output.bwt,
+        bwt=rules.create_bwa_index.output.bwt,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,
@@ -329,6 +334,84 @@ python {params.script} \\
     --virus_filter_max {params.maxsize_virus} \\
     -o {output.cirioutfiltered}
 """
+
+rule circExplorer_bwa:
+    input:
+        ciribam=rules.ciri.output.ciribam,
+    output:
+        backsplicedjunctions=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.back_spliced_junction.bed",
+        ),
+        annotations=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.circularRNA_known.txt",
+        ),
+        annotation_counts_table=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "circExplorer_BWA",
+            "{sample}.circExplorer_bwa.annotation_counts.tsv",
+        ),
+    params:
+        sample="{sample}",
+        bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],  # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+        outdir=join(WORKDIR, "results", "{sample}", "circExplorer_BWA"),
+        genepred=rules.create_index.output.genepred_w_geneid,
+        reffa=REF_FA,
+        refregions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+        minsize_host=config["minsize_host"],
+        maxsize_host=config["maxsize_host"],
+        minsize_virus=config["minsize_virus"],
+        maxsize_virus=config["maxsize_virus"],
+        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+    threads: getthreads("circExplorer")
+    envmodules:
+        TOOLS["circexplorer"]["version"],
+    shell:
+        """
+set -exo pipefail
+if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
+cd {params.outdir}
+
+CIRCexplorer2 parse \\
+    -t BWA \\
+    {input.ciribam} > {params.sample}_circexplorer_bwa_parse.log 2>&1
+mv back_spliced_junction.bed {output.backsplicedjunctions}
+
+CIRCexplorer2 annotate \\
+-r {params.genepred} \\
+-g {params.reffa} \\
+-b {output.backsplicedjunctions} \\
+-o $(basename {output.annotations}) \\
+--low-confidence
+
+python {params.script} \\
+    --back_spliced_bed {output.backsplicedjunctions} \\
+    --back_spliced_min_reads {params.bsj_min_nreads} \\
+    --circularRNA_known {output.annotations} \\
+    --low_conf low_conf_$(basename {output.annotations}) \\
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --regions {params.refregions} \\
+    --host_filter_min {params.minsize_host} \\
+    --host_filter_max {params.maxsize_host} \\
+    --virus_filter_min {params.minsize_virus} \\
+    --virus_filter_max {params.maxsize_virus} \\
+    -o {output.annotation_counts_table}
+"""
+
 
 
 # DEPRECATED
@@ -1097,6 +1180,127 @@ awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads
 """
 
 
+# rule find_circ output has these columns
+# | #  | short_name      | description
+# | -- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+# | 1  | chrom           | chromosome/contig name                                                                                           |
+# | 2  | start           | left splice site (zero-based)                                                                                    |
+# | 3  | end             | right splice site (zero-based). (Always: end > start. 5' 3' depends on strand)                                   |
+# | 4  | name            | (provisional) running number/name assigned to junction                                                           |
+# | 5  | n_reads         | number of reads supporting the junction (BED 'score')                                                            |
+# | 6  | strand          | genomic strand (+ or -)                                                                                          |
+# | 7  | n_uniq          | number of distinct read sequences supporting the junction                                                        |
+# | 8  | uniq_bridges    | number of reads with both anchors aligning uniquely                                                              |
+# | 9  | best_qual_left  | alignment score margin of the best anchor alignment supporting the left splice junction (max=2 \* anchor_length) |
+# | 10 | best_qual_right | same for the right splice site                                                                                   |
+# | 11 | tissues         | comma-separated, alphabetically sorted list of tissues/samples with this junction                                |
+# | 12 | tiss_counts     | comma-separated list of corresponding read-counts                                                                |
+# | 13 | edits           | number of mismatches in the anchor extension process                                                             |
+# | 14 | anchor_overlap  | number of nucleotides the breakpoint resides within one anchor                                                   |
+# | 15 | breakpoints     | number of alternative ways to break the read with flanking GT/AG                                                 |
+# | 16 | signal          | flanking dinucleotide splice signal (normally GT/AG)                                                             |
+# | 17 | strandmatch     | 'MATCH', 'MISMATCH' or 'NA' for non-stranded analysis                                                            |
+# | 18 | category        | list of keywords describing the junction. Useful for quick grep filtering                                        |
+
+rule find_circ:
+    input:
+        bt2=rules.create_bowtie2_index.output.bt2,
+        anchorsfq=rules.find_circ_align.output.anchorsfq,
+    output:
+        find_circ_bsj_bed=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "find_circ",
+            "{sample}.find_circ.bed"
+        ),
+        find_circ_bsj_bed_filtered=join(
+            WORKDIR,
+            "results",
+            "{sample}",
+            "find_circ",
+            "{sample}.find_circ.bed.filtered"
+        )
+    params:
+        sample="{sample}",
+        reffa=REF_FA,
+        find_cir_dir=FIND_CIRC_DIR,
+        min_reads=config['circexplorer_bsj_circRNA_min_reads'],
+        randomstr=str(uuid.uuid4()),
+    envmodules:
+        TOOLS["bowtie2"]["version"],
+        TOOLS["samtools"]["version"],
+        TOOLS["parallel"]["version"],
+    threads: getthreads("find_circ")
+    shell:
+        """
+set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+
+if [ ! -d $TMPDIR ]; then mkdir -p $TMPDIR;fi
+cd $TMPDIR
+
+refdir=$(dirname {input.bt2})
+outdir=$(dirname {output.find_circ_bsj_bed})
+
+# split the anchor fastq file into 10 files
+# reads are in pairs like this
+# @A00430:372:H5NL7DRXY:1:2103:21992:28526_A__GTCAGCAGGCCCAAACCCCCACAGGCAAGCAAACTGACAAAACCAAGAGTAACATGAAAGGTTTCTAAGCATGAATTGAGGAACAGAAGAAGCAGAGCAGATGATCGGAGCAGCATTTGTTTCTCCCCAAATCTAGAAATTTTAGTTCATA
+# GTCAGCAGGCCCAAACCCCC
+# +
+# FFFFFFFFFFFFFFFFFFFF
+# @A00430:372:H5NL7DRXY:1:2103:21992:28526_B
+# TCTAGAAATTTTAGTTCATA
+# +
+# FFFFFFFF:FFFFFFFFF:F
+# These _A and _B pairs should be retained in the fastq splits
+
+# find number of lines in fastq file
+total_lines=$(zcat {input.anchorsfq} | wc -l)
+split_nlines=$(echo $total_lines| awk '{{print sprintf("%d", $1/10)}}' | awk '{{print sprintf("%d",($1+7)/8+1)}}' | awk '{{print sprintf("%d",$1*8)}}')
+zcat {input.anchorsfq} | split -d -l $split_nlines --suffix-length 1 - ${{TMPDIR}}/{params.sample}.samsplit.
+
+if [ -f ${{TMPDIR}}/do_find_circ ];then rm -f ${{TMPDIR}}/do_find_circ;fi
+
+for i in $(seq 0 9);do
+    bowtie2 -p {threads} \\
+        --score-min=C,-15.0 \\
+        --reorder --mm \\
+        -q -U ${{TMPDIR}}/{params.sample}.samsplit.${{i}} \\
+        -x ${{refdir}}/ref > ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam
+
+cat <<EOF >>${{TMPDIR}}/do_find_circ
+cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \
+{params.find_cir_dir}/find_circ.py \
+    --genome={params.reffa} \
+    --prefix={params.sample}.find_circ \
+    --name={params.sample} \
+    --noncanonical \
+    --allhits \
+    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \
+    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \
+    > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed
+EOF
+done
+
+parallel -j 10 < ${{TMPDIR}}/do_find_circ
+
+cat ${{TMPDIR}}/{params.sample}.splice_sites.*.bed > ${{TMPDIR}}/{params.sample}.splice_sites.bed
+
+grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
+    grep ANCHOR_UNIQUE \\
+    > {output.find_circ_bsj_bed}
+
+echo -ne "chrom\\tstart\\tend\\tname\\tn_reads\\tstrand\\tn_uniq\\tuniq_bridges\\tbest_qual_left\\tbest_qual_right\\ttissues\\ttiss_counts\\tedits\\tanchor_overlap\\tbreakpoints\\tsignal\\tstrandmatch\\tcategory\\n" > {output.find_circ_bsj_bed_filtered}
+awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>m) {{print}}}}' {output.find_circ_bsj_bed} \\
+    >> {output.find_circ_bsj_bed_filtered}
+"""
+
+
 def _boolean2str(x):  # "1" for True and "0" for False
     if x == True:
         return "1"
@@ -1123,8 +1327,8 @@ def _boolean2str(x):  # "1" for True and "0" for False
 # | 13   | nclscan_annotation                   |  1+1 for intragenic 0+1 for intergenic                                                                                                                                                                             |
 
 
-localrules:
-    merge_per_sample,
+# localrules:
+#     merge_per_sample,
 
 
 rule merge_per_sample:
@@ -1145,6 +1349,7 @@ rule merge_per_sample:
         nmapsplice=N_RUN_MAPSPLICE,
         nnclscan=N_RUN_NCLSCAN,
         ncirrnafinder=N_RUN_CIRCRNAFINDER,
+        nfindcirc=N_RUN_FINDCIRC,
         minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
     shell:
         """
@@ -1154,6 +1359,7 @@ python3 {params.script} \\
         --mapsplice {params.nmapsplice} \\
         --nclscan {params.nnclscan} \\
         --circrnafinder {params.ncirrnafinder} \\
+        --findcirc {params.nfindcirc} \\
         --samplename {params.sample} \\
         --min_read_count_reqd {params.minreadcount} \\
         --reffa {params.reffa} \\
@@ -1340,8 +1546,8 @@ bash {output.merge_bash_script}
 #     """
 
 
-localrules:
-    create_master_counts_file,
+# localrules:
+#     create_master_counts_file,
 
 
 # rule create_master_counts_file:

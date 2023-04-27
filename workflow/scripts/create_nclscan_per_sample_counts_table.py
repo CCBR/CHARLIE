@@ -1,6 +1,14 @@
 import argparse
 import pandas
 
+def _annotation_int2str(i):
+    if i==0: 
+        return "Intergenic"
+    elif i==1:
+        return "Intragenic"
+    else:
+        return "Unknown"
+
 # pandas.options.mode.chained_assignment = None
 
 parser = argparse.ArgumentParser(description='Create per sample Counts Table from NCLscan Outputs')
@@ -92,6 +100,7 @@ minus_strand.columns = ['chrom','end','start','strand','read_count', 'nclscan_an
 
 outdf = pandas.concat([plus_strand,minus_strand],ignore_index=True,sort=False)
 outdf["nclscan_annotation"] = outdf["nclscan_annotation"] + 1 #change 1 to 2 and 0 to 1 ... as 0 is for no annotation
+outdf["nclscan_annotation"] = outdf["nclscan_annotation"].apply(_annotation_int2str)
 
 outdf = outdf.astype({"chrom": str, "start": int, "end": int, "strand": str, "read_count": int, "nclscan_annotation": str})
 

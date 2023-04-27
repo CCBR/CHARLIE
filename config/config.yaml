@@ -23,16 +23,22 @@ mapsplice_filtering: 2  # 1=less stringent 2=default
 run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
-run_nclscan: True
+run_nclscan: False
 nclscan_config: "WORKDIR/nclscan.config"
 #
+# Should we also run find_circ? True or False WITHOUT quotes
+run_findcirc: True
+
 
 
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
-host: "hg38"
-additives: "ERCC" # options are ERCC and BAC16Insert
-viruses: "NC_009333.1"
+# host:       "hg38"
+# additives:  "ERCC" # options are ERCC and BAC16Insert
+# viruses:    "NC_009333.1"
+host:       "HOST"
+additives:  "ADDITIVES"
+viruses:    "VIRUSES"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
@@ -74,63 +80,32 @@ minsize_virus:  150
 maxsize_host: 1000000000
 maxsize_virus:  5000
 
-
-#
-## Resources
-#
-## hg38 vanilla --> hg38 rRNA masked + rRNA appended
-##
-#ref_fa: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa"
-#ref_gtf: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.gtf"
-#regions: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa.regions"
-#star_index_dir: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/STAR_index_no_GTF_2.7.6a"
-#ref_bwa_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#ref_hisat_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#ref_bowtie1_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#genepred_w_geneid: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.genes.genepred_w_geneid"
-#
-# hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
-# * hg38 ... rRNA masked
-# * rRNA ... 45S and 5S sequences
-# * ERCC sequences
-# * viruses:
-
-
-
-# ref_fa: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.fa"
-# ref_gtf: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.gtf"
-# regions: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.regions"
-# star_index_dir: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/STAR_index_no_GTF_2.7.6a"
-# ref_bwa_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# ref_hisat_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.genes.genepred_w_geneid"
-
-
-#
-
-
-
 ## you most probably dont need to change these
 scriptsdir: "PIPELINE_HOME/workflow/scripts"
 resourcesdir: "PIPELINE_HOME/resources"
 tools: "PIPELINE_HOME/resources/tools.yaml"
+
 # default cluster
 # cluster: "PIPELINE_HOME/resources/cluster.json"
 cluster: "WORKDIR/cluster.json"
+
 adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
 circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
-ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
-nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
-circrnafinder_dir: "/data/Ziegelbauer_lab/tools/circRNA_finder-1.2"
+flanksize: 18 # 18bp flank on either side of the BSJ .. used by multiple BSJ callers
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded
 cutadapt_min_length: 15
 cutadapt_n: 5
 cutadapt_max_n: 0.5
 cutadapt_O: 5
 cutadapt_q: 20
-fastas_gtfs_dir: "/data/Ziegelbauer_lab/resources/fastas_gtfs"
+
+ciri_perl_script: "/data/CCBR_Pipeliner/bin/CIRI_v2.0.6/CIRI2.pl"
+nclscan_dir: "/data/CCBR_Pipeliner/bin/NCLscan-1.7.0"
+circrnafinder_dir: "/data/CCBR_Pipeliner/bin/circRNA_finder-1.2"
+find_circ_dir: "/data/CCBR_Pipeliner/bin/find_circ"
+fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
+
 annotation_lookups:
   hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
   mm39: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt"

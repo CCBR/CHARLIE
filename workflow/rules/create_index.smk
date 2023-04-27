@@ -8,7 +8,6 @@ rule create_index:
     output:
         genepred_w_geneid=join(REF_DIR, "ref.genes.genepred_w_geneid"),
         sa=join(REF_DIR, "STAR_no_GTF", "SA"),
-        bwt=join(REF_DIR, "ref.sa"),
         fixed_gtf=join(REF_DIR, "ref.fixed.gtf"),
         transcripts_fa=join(REF_DIR, "ref.transcripts.fa"),
         lncRNA_transcripts_fa=join(REF_DIR, "ref.dummy.fa"),
@@ -38,7 +37,7 @@ cd {params.refdir}
 samtools faidx {params.reffa} && \
     cut -f1-2 {params.reffa}.fai > {params.reffa}.sizes
 
-bwa index -p ref {params.reffa} > bwa_index.log
+# bwa index -p ref {params.reffa} > bwa_index.log ... created in a separate rule
 
 # NCLscan files
 python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
@@ -89,3 +88,52 @@ fastas=$(ls {params.separate_fastas}/*.fa| {TRSED})
 $fastas \
 {params.ebwt}
 """
+
+rule create_bwa_index:
+    input:
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
+    output:
+        bwt=join(REF_DIR,"ref.bwt"),
+        log=join(REF_DIR,"bwa_index.log")
+    params:
+        reffa=REF_FA
+    envmodules: TOOLS["bwa"]["version"]
+    shell:"""
+set -exo pipefail
+refdir=$(dirname {params.reffa})
+cd $refdir
+bwa index -p ref {params.reffa} > bwa_index.log
+"""
+
+rule create_bowtie2_index:
+    input:
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
+    output:
+        bt2=join(REF_DIR,"ref.1.bt2")
+    params:
+        reffa=REF_FA
+    envmodules: TOOLS["bowtie2"]["version"]
+    shell:"""
+set -exo pipefail
+refdir=$(dirname {params.reffa})
+cd $refdir
+bowtie2-build {params.reffa} ref
+"""
+
+rule create_bowtie1_index:
+    input:
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
+    output:
+        bt2=join(REF_DIR,"ref.1.ebwt")
+    params:
+        reffa=REF_FA
+    envmodules: TOOLS["bowtie1"]["version"]
+    shell:"""
+set -exo pipefail
+refdir=$(dirname {params.reffa})
+cd $refdir
+bowtie-build {params.reffa} ref
+"""  

@@ -4,6 +4,8 @@ from os.path import join
 def _get_counts_file_path(sampledir,s,prog):
     if prog=="circExplorer":
         return join(sampledir,"circExplorer",s+".circExplorer.counts_table.tsv")
+    if prog=="circExplorerbwa":
+        return join(sampledir,"circExplorer_BWA",s+".circExplorer_bwa.annotation_counts.tsv")
     elif prog=="ciri":
         return join(sampledir,"ciri",s+".ciri.out.filtered")
     elif prog=="dcc":
@@ -14,10 +16,13 @@ def _get_counts_file_path(sampledir,s,prog):
         return join(sampledir,"NCLscan",s+".nclscan.counts_table.tsv.filtered")
     elif prog=="circrnafinder":
         return join(sampledir,"circRNA_finder",s+".circRNA_finder.counts_table.tsv.filtered")
+    elif prog=="findcirc":
+        return join(sampledir,"find_circ",s+".find_circ.bed.filtered")
 
 
 def main() :
     parser = argparse.ArgumentParser(description='Merge per sample Counts from different circRNA detection tools')
+    # INPUTS
     parser.add_argument('--pyscript', dest='pyscript', type=str, required=True,
         help='python script to be run')
     parser.add_argument('--sampledir', dest='sampledir', type=str, required=True,
@@ -26,6 +31,8 @@ def main() :
         help='n_run_dcc')
     parser.add_argument('--mapsplice', dest='mapsplice', type=int, required=False,default=0,
         help='n_run_mapslice')
+    parser.add_argument('--findcirc', dest='findcirc', type=int, required=False,default=0,
+        help='n_run_findcirc')
     parser.add_argument('--nclscan', dest='nclscan', type=int, required=False,default=0,
         help='n_run_nclscan')
     parser.add_argument('--circrnafinder', dest='circrnafinder', type=int, required=False, default=0,
@@ -37,6 +44,7 @@ def main() :
     parser.add_argument("--reffa",dest="reffa",required=True,type=str,
         help="reference fasta file path")
     parser.add_argument('--pyscriptoutfile',required=True,help='merged table')
+    # OUTPUTS
     parser.add_argument('--outscript',required=True,help='output bash script')
     args = parser.parse_args()
     
@@ -45,10 +53,12 @@ def main() :
     parameters=""
     parameters+=" --circExplorer "+_get_counts_file_path(sd,sn,'circExplorer')
     parameters+=" --ciri "+_get_counts_file_path(sd,sn,'ciri')
+    parameters+=" --circExplorerbwa "+_get_counts_file_path(sd,sn,'circExplorerbwa')
     if args.dcc==1: parameters+=" --dcc "+_get_counts_file_path(sd,sn,'dcc')
     if args.mapsplice==1: parameters+=" --mapsplice "+_get_counts_file_path(sd,sn,'mapsplice')
     if args.nclscan==1: parameters+=" --nclscan "+_get_counts_file_path(sd,sn,'nclscan')
     if args.circrnafinder==1: parameters+=" --circrnafinder "+_get_counts_file_path(sd,sn,'circrnafinder')
+    if args.findcirc==1: parameters+=" --findcirc "+_get_counts_file_path(sd,sn,'findcirc')
     parameters+=" --reffa "+args.reffa
     parameters+=" --min_read_count_reqd "+str(args.minreads)
     parameters+=" --samplename "+sn
