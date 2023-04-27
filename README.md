@@ -32,7 +32,9 @@ This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other too
 Flowchart:
 ![](docs/images/CHARLIE_v0.8.x.png)
 
-For complete documentation with tutorial go [here](https://ccbr.github.io/CCBR_circRNA_DAQ/)
+For complete documentation with tutorial go [here](https://ccbr.github.io/CCBR_circRNA_DAQ/).
+
+> DISCLAIMER: New circRNA tools have been added CHARLIE and the documentation is currently out of date!
 
 
 
