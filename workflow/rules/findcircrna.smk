@@ -1230,6 +1230,7 @@ rule find_circ:
     envmodules:
         TOOLS["bowtie2"]["version"],
         TOOLS["samtools"]["version"],
+        TOOLS["parallel"]["version"],
     threads: getthreads("find_circ")
     shell:
         """
@@ -1240,32 +1241,61 @@ else
     TMPDIR="/dev/shm/{params.randomstr}"
 fi
 
-
+if [ ! -d $TMPDIR ]; then mkdir -p $TMPDIR;fi
 cd $TMPDIR
 
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.find_circ_bsj_bed})
 
-bowtie2 -p {threads} \\
-    --score-min=C,-15.0 \\
-    --reorder --mm \\
-    -q -U {input.anchorsfq} \\
-    -x ${{refdir}}/ref | \\
-{params.find_cir_dir}/find_circ.py \\
-    --genome={params.reffa} \\
-    --prefix={params.sample}.find_circ \\
-    --name={params.sample} \\
-    --noncanonical \\
-    --allhits \\
-    --stats=${{outdir}}/{params.sample}.bowtie2_stats.txt \\
-    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.fa \\
-    > ${{TMPDIR}}/{params.sample}.splice_sites.bed
+# split the anchor fastq file into 10 files
+# reads are in pairs like this
+# @A00430:372:H5NL7DRXY:1:2103:21992:28526_A__GTCAGCAGGCCCAAACCCCCACAGGCAAGCAAACTGACAAAACCAAGAGTAACATGAAAGGTTTCTAAGCATGAATTGAGGAACAGAAGAAGCAGAGCAGATGATCGGAGCAGCATTTGTTTCTCCCCAAATCTAGAAATTTTAGTTCATA
+# GTCAGCAGGCCCAAACCCCC
+# +
+# FFFFFFFFFFFFFFFFFFFF
+# @A00430:372:H5NL7DRXY:1:2103:21992:28526_B
+# TCTAGAAATTTTAGTTCATA
+# +
+# FFFFFFFF:FFFFFFFFF:F
+# These _A and _B pairs should be retained in the fastq splits
+
+# find number of lines in fastq file
+total_lines=$(zcat {input.anchorsfq} | wc -l)
+split_nlines=$(echo $total_lines| awk '{{print sprintf("%d", $1/10)}}' | awk '{{print sprintf("%d",($1+7)/8+1)}}' | awk '{{print sprintf("%d",$1*8)}}')
+zcat {input.anchorsfq} | split -d -l $split_nlines --suffix-length 1 - ${{TMPDIR}}/{params.sample}.samsplit.
+
+if [ -f ${{TMPDIR}}/do_find_circ ];then rm -f ${{TMPDIR}}/do_find_circ;fi
+
+for i in $(seq 0 9);do
+    bowtie2 -p {threads} \\
+        --score-min=C,-15.0 \\
+        --reorder --mm \\
+        -q -U ${{TMPDIR}}/{params.sample}.samsplit.${{i}} \\
+        -x ${{refdir}}/ref > ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam
+
+cat <<EOF >>${{TMPDIR}}/do_find_circ
+cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \
+{params.find_cir_dir}/find_circ.py \
+    --genome={params.reffa} \
+    --prefix={params.sample}.find_circ \
+    --name={params.sample} \
+    --noncanonical \
+    --allhits \
+    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \
+    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \
+    > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed
+EOF
+done
+
+parallel -j 10 < ${{TMPDIR}}/do_find_circ
+
+cat ${{TMPDIR}}/{params.sample}.splice_sites.*.bed > ${{TMPDIR}}/{params.sample}.splice_sites.bed
 
 grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
     grep ANCHOR_UNIQUE \\
     > {output.find_circ_bsj_bed}
 
-echo -ne "chrom\tstart\tend\tname\tn_reads\tstrand\tn_uniq\tuniq_bridges\tbest_qual_left\tbest_qual_right\ttissues\ttiss_counts\tedits\tanchor_overlap\tbreakpoints\tsignal\tstrandmatch\tcategory\n" > {output.find_circ_bsj_bed_filtered}
+echo -ne "chrom\\tstart\\tend\\tname\\tn_reads\\tstrand\\tn_uniq\\tuniq_bridges\\tbest_qual_left\\tbest_qual_right\\ttissues\\ttiss_counts\\tedits\\tanchor_overlap\\tbreakpoints\\tsignal\\tstrandmatch\\tcategory\\n" > {output.find_circ_bsj_bed_filtered}
 awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>m) {{print}}}}' {output.find_circ_bsj_bed} \\
     >> {output.find_circ_bsj_bed_filtered}
 """
