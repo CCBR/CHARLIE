@@ -28,7 +28,7 @@ nclscan_config: "WORKDIR/nclscan.config"
 #
 # Should we also run find_circ? True or False WITHOUT quotes
 run_findcirc: True
-
+findcirc_params: "--noncanonical --allhits"
 
 
 # select references .... host + viruses(comma-separated):
