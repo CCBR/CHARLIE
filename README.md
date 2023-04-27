@@ -11,10 +11,29 @@ Things to know about CHARLIE:
 - Reach out to [Vishal Koparde](mailto:vishal.koparde@nihgov) for questions/comments/requests.
 
 
-This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other tools in parallel to detect, quantify and annotate circRNAs. Here is a flowchart of v0.3.3:
-![img](https://github.com/CCBR/CHARLIE/blob/master/circRNA_v0.3.3.png)
+This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other tools in parallel to detect, quantify and annotate circRNAs. Here is a list of tools that can be run using CHARLIE:
+
+| circRNA Detection Tool | Aligner(s) | Run by default |
+| ---------------------- | ---------- | -------------- |
+| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)          | STAR<sup>1</sup>       | Yes            |
+| [CIRI2](https://sourceforge.net/projects/ciri/files/CIRI2/)                  | BWA<sup>1</sup>        | Yes            |
+| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)          | BWA<sup>1</sup>        | Yes            |
+| [CLEAR](https://github.com/YangLab/CLEAR)                  | STAR<sup>1</sup>       | Yes            |
+| [DCC](https://github.com/dieterich-lab/DCC)                    | STAR<sup>2</sup>       | Yes            |
+| [circRNAFinder](https://github.com/bioxfu/circRNAFinder)          | STAR<sup>3</sup>       | Yes            |
+| [find_circ](https://github.com/marvin-jens/find_circ)              | Bowtie2    | Yes            |
+| [MapSplice](https://github.com/merckey/MapSplice2)              | BWA<sup>2</sup>        | No             |
+| [NCLScan](https://github.com/TreesLab/NCLscan)                | NovoAlign  | No             |
+
+> Note: STAR<sup>1</sup>, STAR<sup>2</sup>, STAR<sup>3</sup> denote 3 different sets of alignment parameters, etc.
+
+> Note: BWA<sup>1</sup>, BWA<sup>2</sup> denote 2 different alignment parameters, etc.
+
+Flowchart:
+![](docs/images/CHARLIE_v0.8.x.png)
 
 For complete documentation with tutorial go [here](https://ccbr.github.io/CCBR_circRNA_DAQ/)
+
 
 
 ```bash
@@ -63,13 +82,13 @@ VIRUSES:
   * NC_045512.2   [Severe acute respiratory syndrome(SARS)-related coronavirus]
   * MN485971.1    [HIV from Belgium]
   * NC_001806.2   [Human alphaherpesvirus 1 (Herpes simplex virus type 1)](strain 17) (HSV-1)]
-  * KT899744      [HSV-1 strain KOS]
+  * KT899744.1    [HSV-1 strain KOS]
   * MH636806.1    [MHV68 (Murine herpesvirus 68 strain WUMS)]
 
 ##########################################################################################
 
 USAGE:
-  bash ./charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
 
 Required Arguments:
 1.  WORKDIR     : [Type: String]: Absolute or relative path to the output folder with write permissions.
@@ -79,7 +98,6 @@ Required Arguments:
     * dryrun    : dry run snakemake to generate DAG
     * run       : run with slurm
     * runlocal  : run without submitting to sbatch
-    * help      : print this help
     ADVANCED RUNMODES (use with caution!!)
     * unlock    : unlock WORKDIR if locked by snakemake NEVER UNLOCK WORKDIR WHERE PIPELINE IS CURRENTLY RUNNING!
     * reconfig  : recreate config file in WORKDIR (debugging option) EDITS TO config.yaml WILL BE LOST!
@@ -87,18 +105,28 @@ Required Arguments:
     * printbinds: print singularity binds (paths)
     * local     : same as runlocal
 
+Optional Arguments:
+
+--host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
+--additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
+--viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
+--manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
+--changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
+--help|-h       : print this help
+
+
 Example commands:
-  bash ./charlie -w=/my/ouput/folder -m=init
-  bash ./charlie -w=/my/ouput/folder -m=dryrun
-  bash ./charlie -w=/my/ouput/folder -m=run
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=init
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=dryrun
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=run
 
 ##########################################################################################
 
 VersionInfo:
   python          : 3.7
   snakemake       : 7.19.1
-  pipeline_home   : /blah/blah/blah
-  git commit/tag  : b1f7695dffba79a245900257b34ebd2d0d91abc7    v0.8-148-gb1f7695
+  pipeline_home   : /vf/users/Ziegelbauer_lab/Pipelines/circRNA/activeDev
+  git commit/tag  : 1ae5ca091976364369784f67adffbbbf1dcdb7d5    v0.8-197-g1ae5ca0
 
 ##########################################################################################
 ```
