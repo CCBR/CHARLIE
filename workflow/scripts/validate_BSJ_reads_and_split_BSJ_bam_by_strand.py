@@ -119,6 +119,12 @@ class Readinfo:
 		self.isreverse=dict()
 		self.issecondary=dict()
 		self.issupplementary=dict()
+	
+	def __str__(self):
+		s = "readid: %s"%(self.readid)
+		s = "%s\tbitflags: %s"%(s,self.bitflags)
+		s = "%s\tbitid: %s"%(s,self.bitid)
+		return s
 
 	def set_refcoordinates(self,bitflag,refpos):
 		self.refcoordinates[bitflag]=refpos
@@ -193,6 +199,9 @@ class Readinfo:
 		* Middle alignment should be between left and right alignments
 		"""
 		if len(self.bitid.split("##"))==3:
+			left=-1
+			right=-1
+			middle=-1
 			if self.bitid=="83##163##2129":
 				left=2129
 				right=83
@@ -225,7 +234,20 @@ class Readinfo:
 				left=2449
 				right=403
 				middle=355
+			print(left,right,middle)
+			if left == -1 or right == -1 or middle == -1:
+				return False
 			if not (self.refcoordinates[left][-1] < self.refcoordinates[right][0] and self.refcoordinates[middle][-1] <= self.refcoordinates[right][-1] and self.refcoordinates[middle][0] >= self.refcoordinates[left][0]):
+				print("HERE")
+				print(self.refcoordinates[left][-1])
+				print(self.refcoordinates[right][0])
+				print(self.refcoordinates[middle][-1])
+				print(self.refcoordinates[right][-1])
+				print(self.refcoordinates[middle][0])
+				print(self.refcoordinates[left][0])
+				print(self.refcoordinates[left][-1] < self.refcoordinates[right][0])
+				print(self.refcoordinates[middle][-1] <= self.refcoordinates[right][-1])
+				print(self.refcoordinates[middle][0] >= self.refcoordinates[left][0])
 				return False
 			else:
 				return True
@@ -290,6 +312,7 @@ def get_bitflag(r):
 
 
 def main():
+	debug = True
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i","--inbam",dest="inbam",required=True,type=argparse.FileType('r'),
 		help="Input bam file")
@@ -306,25 +329,30 @@ def main():
 # 	bsjfile = open(args.bed,"w")
 	bigdict=dict()
 	for read in samfile.fetch():
+		if read.reference_id != read.next_reference_id: continue
 		rid=get_uniq_readid(read)
+		if debug:print(rid)
 		if not rid in bigdict:
 			bigdict[rid]=Readinfo(rid,read.reference_name)
 		bigdict[rid].append_alignment(read)
 		bitflag=get_bitflag(read)
+		if debug:print(bitflag)
 		bigdict[rid].append_bitflag(bitflag)
 		# bigdict[rid].extend_ref_positions(read.get_reference_positions(full_length=False))
 		refpos=list(filter(lambda x:x!=None,read.get_reference_positions(full_length=True)))
 		bigdict[rid].set_refcoordinates(bitflag,refpos)
 		bigdict[rid].set_read1_reverse_secondary_supplementary(bitflag,read)
 		# bigdict[rid].extend_ref_positions(list(filter(lambda x:x!=None,read.get_reference_positions(full_length=True))))
-		
+		if debug:print(bigdict[rid])
 	bsjdict=dict()
 	bitid_counts=dict()
 	for rid in bigdict.keys():
 		bigdict[rid].generate_bitid()
+		if debug:print(bigdict[rid])
 		bigdict[rid].get_strand()
 		if not bigdict[rid].validate_read():
 			continue
+		if debug:print("HERE",bigdict[rid])
 		bigdict[rid].get_start_end()
 		# print(bigdict[rid])
 		if bigdict[rid].strand=="+":

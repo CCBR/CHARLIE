@@ -1,6 +1,20 @@
 import pysam
 import sys
 import argparse
+# """
+# Script takes a STAR 2p BAM file and tab-delimited file with splice junctions in the first 3 columns,
+# and outputs spliced-only alignments
+# @Params:
+# @Inputs:
+# inbam: str (required)
+# 	path to input BAM file
+# tab: str (required)
+# 	path to tab file with splice junctions in the first 3 columns ... this is typically output from STAR 1p after applying filters.
+# @Outputs:
+# outbam: str (required)
+# 	path to output BAM file
+# """
+
 parser = argparse.ArgumentParser(description='extract spliced reads from bam file')
 parser.add_argument('--inbam',dest='inbam',required=True,help='STAR bam file with index')
 parser.add_argument('--tab',dest='tab',required=True,help='tab file with splice junctions in the first 3 columns')
@@ -11,6 +25,7 @@ inbam = pysam.AlignmentFile(args.inbam, "rb" )
 outbam = pysam.AlignmentFile(args.outbam, "wb", template=inbam )
 tab = open(args.tab)
 junctions = tab.readlines()
+junctions.pop(0)
 tab.close()
 count=0
 threshold=0
@@ -27,12 +42,18 @@ for l in junctions:
 # get chromosome name, start and end positions for the junction
 # and fetch reads aligning to this region using "fetch"
 # ref: https://pysam.readthedocs.io/en/latest/api.html#pysam.FastaFile.fetch
-    for read in inbam.fetch(c,s,e):
+    for read in inbam.fetch(c,s-200,e+200):
+    # for read in inbam.fetch(c):
 # get cigarstring to replace softclips
         cigar=read.cigarstring
 # replace softclips with hardclip
         cigar=cigar.replace("S","H")
         cigart=read.cigartuples
+
+# if cigartuple contains
+# N	BAM_CREF_SKIP	3
+# then it is a spliced read!
+
 # ref: https://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
 # cigartuples operation list is
 # M	BAM_CMATCH	0
@@ -61,9 +82,17 @@ for l in junctions:
 # so gather start and end coordinates
                 start=read.reference_start+cigart[0][1]+1
                 end=start+cigart[1][1]-1
+                # print(read)
+                # print(cigart)
+                # print(c+"##"+str(s)+"##"+str(e),start-s,end-e,read.get_reference_positions(full_length=True),read)
                 if start==s and end==e:
 # check if start and end are in the junctions file
 # if yes then write to output file
+                    # print(read)
+                    # print(cigart)
+                    # print(start,end)
+                    # print(s,e)
+                    # exit()
                     outbam.write(read)
                     #print(read.query_name,c,s,e,start,end)
                     #print(read)

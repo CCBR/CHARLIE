@@ -4,6 +4,23 @@ import argparse
 import os
 from collections import defaultdict
 
+# """
+# Script takes a STAR 2p BAM file and chimeric junctions output from STAR 2p,
+# and outputs linear-only (without any splicing) alignments
+# @Params:
+# @Inputs:
+# inputBAM: str (required)
+# 	path to input BAM file
+# junctions: str (required)
+# 	path to chimeric junctions file
+# paired: boolean (optional)
+#   true for PE and false for SE
+# @Outputs:
+# outputBAM: str (required)
+# 	path to output BAM file
+# """
+
+# if readid is NOT in the junctions file then it is a read with no Junction ... aka LINEAR!
             
 class Read:
     def __init__(self):
@@ -21,7 +38,7 @@ class Read:
     def is_valid_read(self):
         return(self.read1exists and self.read2exists)
         
-        
+
 
 
 parser = argparse.ArgumentParser(description='Filter BAM to exclude BSJs and other chimeric alignments')
@@ -32,7 +49,7 @@ parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
 parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
 parser.add_argument('-p',dest='paired', help='bam is paired', action='store_true')
 args = parser.parse_args()
-rids=list()
+# rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
 outBAM = pysam.AlignmentFile(args.outputBAM, "wb", template=inBAM)
 reads = defaultdict(lambda: Read())
@@ -81,21 +98,15 @@ reads = defaultdict(lambda: Read())
 
 
 # get a list of the chimeric readids
+rids_dict=dict()
 with open(args.junctions, 'r') as junc_f:
     for line in junc_f:
         if "junction_type" in line:
             continue
         readid=line.split()[9] # 10th column is read-name
-        rids.append(readid)
+        rids_dict[readid]=1
 
-
-# rids=list(set(rids))
-# convert to dict to speed things up
-rids_dict=dict()
-for rid in rids:
-    rids_dict[rid]=1
-
-print(f"Total chimeric readids:{len(rids)}")
+print(f"Total chimeric readids:{len(rids_dict)}")
 
 if args.paired: # paired-end
     for read in inBAM.fetch(until_eof=True):

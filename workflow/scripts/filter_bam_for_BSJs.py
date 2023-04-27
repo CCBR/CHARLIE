@@ -5,6 +5,21 @@ import argparse
 import os
 from itertools import groupby
 
+# """
+# input is a BAM file containing all BSJ alignments along with some chimeric alignments
+# this script filters out the non-BSJ alignments and outputs the BSJ-only alignments to a 
+# new BAM file.
+# @Params:
+# @Inputs:
+# inputBAM: str (required)
+# 	path to input BAM file
+# readids: str (required)
+# 	path to file with readids to keep (tab-delimited with columns:readid,chrom,strand,site1,site2,cigarlist), one readid per line
+# @Outputs:
+# outputBAM: str (required)
+# 	path to output BAM file
+# """
+
 def split_text(s):
     for k, g in groupby(s, str.isalpha):
         yield ''.join(g)
@@ -22,7 +37,7 @@ def get_alt_cigars(c):
 
 pp = pprint.PrettyPrinter(indent=4)
 
-parser = argparse.ArgumentParser(description='Filter readid filtered BAM file for BSJ alignments')
+parser = argparse.ArgumentParser(description='Filter readid filtered BAM file for BSJ-only alignments')
 parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
                     help='input BAM file')
 parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,

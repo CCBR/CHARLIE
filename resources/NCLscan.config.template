@@ -79,7 +79,8 @@ max_fragment_size = 500
 quality_score = 20
 
 ## The collection of the supporting reads must span the NCL junction boundary by the setting size of span range on both sides of the junction site.
-span_range = 50
+## Try to match this to flanksize in the main config
+span_range = 18
 
 
 ###################
