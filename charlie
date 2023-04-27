@@ -119,13 +119,22 @@ Required Arguments:
     * dryrun    : dry run snakemake to generate DAG
     * run       : run with slurm
     * runlocal  : run without submitting to sbatch
-    * help      : print this help
     ADVANCED RUNMODES (use with caution!!)
     * unlock    : unlock WORKDIR if locked by snakemake NEVER UNLOCK WORKDIR WHERE PIPELINE IS CURRENTLY RUNNING!
     * reconfig  : recreate config file in WORKDIR (debugging option) EDITS TO config.yaml WILL BE LOST!
     * reset     : DELETE workdir dir and re-init it (debugging option) EDITS TO ALL FILES IN WORKDIR WILL BE LOST!
     * printbinds: print singularity binds (paths)
     * local     : same as runlocal
+
+Optional Arguments:
+
+--host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
+--additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
+--viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
+--manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
+--changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
+--help|-h       : print this help
+
 
 Example commands:
   bash ${SCRIPTNAME} -w=/my/ouput/folder -m=init
@@ -210,6 +219,40 @@ function check_essential_files() {
   for f in config.yaml samples.tsv nclscan.config jobby cluster.json; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
+}
+
+##########################################################################################
+# CHANGE GROUP to Ziegelbauer_lab
+##########################################################################################
+
+function change_grp() {
+  grps=$(groups)
+  found=0
+  current_grp=""
+  count=0
+  for g in $grps
+  do
+    count=$((count+1))
+    if [ "$count" == "1" ];then
+      current_grp=$g
+    fi
+    if [ "Ziegelbauer_lab" == $g ]
+    then
+      found=1
+      break
+    fi
+  done
+  if [ "$found" == "1" ]
+  then
+    if [ "$current_grp" != "Ziegelbauer_lab" ]
+    then
+      echo "Current group     : $current_grp"
+      echo "Changing to group : Ziegelbauer_lab"
+      # newgrp Ziegelbauer_lab
+      exec sg Ziegelbauer_lab "$0 $*"
+    fi
+  fi
+  # main "$@"
 }
 
 ##########################################################################################
@@ -494,7 +537,11 @@ function reset() {
 
 function main(){
 
+  CHANGEGRP=0
+
   if [ $# -eq 0 ]; then usage; exit 1; fi
+
+  allargs="$@"
 
   for i in "$@"
   do
@@ -504,6 +551,9 @@ function main(){
       ;;
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
+      ;;
+      -z|--changegrp)
+        CHANGEGRP=1
       ;;
       -g=*|--host=*)
         HOST="${i#*=}"
@@ -536,6 +586,9 @@ function main(){
   JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
 
   CLUSTERSTATUSCMD="${PIPELINE_HOME}/resources/cluster_status.sh"
+
+  # change group to Ziegelbauer_lab before doing anything
+  if [ "$CHANGEGRP" == "1" ]; then change_grp "$allargs"; fi
 
   case $RUNMODE in
     init) init && exit 0;;
