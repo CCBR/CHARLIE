@@ -35,7 +35,7 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 # Some more set up
 ##########################################################################################
 
-CLUSTER_SBATCH_CMD="sbatch --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
+CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
 if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
@@ -433,6 +433,7 @@ snakemake -s $SNAKEFILE \
 --configfile $CONFIGFILE \
 --cluster-config $CLUSTERFILE \
 --cluster "$CLUSTER_SBATCH_CMD" \
+--cluster-status $CLUSTERSTATUSCMD \
 -j 500 \
 --rerun-incomplete \
 --rerun-triggers input \
@@ -533,6 +534,8 @@ function main(){
   CLUSTERFILE="${WORKDIR}/cluster.json"
   JOBBY="${WORKDIR}/jobby"
   JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
+
+  CLUSTERSTATUSCMD="${PIPELINE_HOME}/resources/cluster_status.sh"
 
   case $RUNMODE in
     init) init && exit 0;;
