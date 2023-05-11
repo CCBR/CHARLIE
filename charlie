@@ -293,6 +293,12 @@ function dryrun() {
   run "--dry-run" | tee ${WORKDIR}/dryrun.${timestamp}.log
 }
 
+function touch() {
+  runcheck
+  timestamp=$(date +"%y%m%d%H%M%S")
+  run "--touch" | tee ${WORKDIR}/touch.${timestamp}.log
+}
+
 ##########################################################################################
 # UNLOCK
 ##########################################################################################
@@ -496,6 +502,13 @@ EOF
 
   sbatch ${WORKDIR}/submit_script.sbatch
 
+  elif [ "$1" == "--touch" ];then
+
+snakemake $1 -s $SNAKEFILE \
+--directory $WORKDIR \
+--configfile $CONFIGFILE \
+--cores 1
+
   else # dry-run and unlock
 
 snakemake $1 -s $SNAKEFILE \
@@ -597,6 +610,7 @@ function main(){
     run) runslurm && exit 0;;
     runlocal) runlocal && exit 0;;
     reset) reset && exit 0;;
+    touch) touch && exit 0;;
     dry) dryrun && exit 0;;                      # hidden option
     local) runlocal && exit 0;;                  # hidden option
     reconfig) reconfig && exit 0;;               # hidden option for debugging
