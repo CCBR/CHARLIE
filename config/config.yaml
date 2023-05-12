@@ -99,6 +99,8 @@ cutadapt_n: 5
 cutadapt_max_n: 0.5
 cutadapt_O: 5
 cutadapt_q: 20
+high_confidence_core_callers: "circExplorer,circExplorer_bwa"
+high_confidence_core_callers_plus_n: 1
 
 ciri_perl_script: "/data/CCBR_Pipeliner/bin/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/CCBR_Pipeliner/bin/NCLscan-1.7.0"

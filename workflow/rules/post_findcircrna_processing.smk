@@ -179,6 +179,18 @@ rule create_circExplorer_linear_spliced_bams:
             "circExplorer",
             "{sample}.linear_spliced.counts.tsv",
         ),
+        linear_BSJ_bam=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bam"
+        ),  # linear reads in BSJ inclusion zone
+        spliced_BSJ_bam=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bam"
+        ),  # linear spliced-only alignments in the sample
+        linear_BSJ_bw=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bw"
+        ),
+        spliced_BSJ_bw=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bw"
+        ),
         linear_bam=join(
             WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bam"
         ),  # linear reads in BSJ inclusion zone
@@ -228,7 +240,7 @@ cd {params.outdir}
 
 # get filtered bam (remove secondary/supplementary/etc.) and the rid2jid lookup files
 # inputs
-#     echo "16 arguments expected!"
+#     echo "18 arguments expected!"
 #     echo "#1 --> path to non-chimeric BAM file"
 #     echo "#2 --> sample name"
 #     echo "#3 --> PE or SE"
@@ -245,6 +257,8 @@ cd {params.outdir}
 #     echo "#14 --> host list comma separated .. no spaces"
 #     echo "#15 --> additives list comma separated .. no spaces"
 #     echo "#16 --> viruses list comma separated .. no spaces"
+	# echo "#17 --> all linear readids in BAM"
+	# echo "#18 --> all spliced readids in BAM"
 
 bash {params.bashscript} \
     {input.nonchimericbam} \
@@ -257,12 +271,14 @@ bash {params.bashscript} \
     {output.linear_readids} \
     {output.spliced_readids} \
     {output.linear_spliced_counts} \
-    {output.linear_bam} \
-    {output.spliced_bam} \
+    {output.linear_BSJ_bam} \
+    {output.spliced_BSJ_bam} \
     {params.refregions} \
     {params.host} \
     {params.additives} \
-    {params.viruses}
+    {params.viruses} \
+    {output.linear_bam} \
+    {output.spliced_bam}
 rm -rf $TMPDIR
 """
 
