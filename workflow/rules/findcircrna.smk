@@ -1225,7 +1225,7 @@ rule find_circ:
         sample="{sample}",
         reffa=REF_FA,
         find_cir_dir=FIND_CIRC_DIR,
-        finc_circ_params=config['findcirc_params'],
+        findcirc_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         randomstr=str(uuid.uuid4()),
     envmodules:
@@ -1351,6 +1351,8 @@ rule merge_per_sample:
         ncirrnafinder=N_RUN_CIRCRNAFINDER,
         nfindcirc=N_RUN_FINDCIRC,
         minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
+        high_confidence_core_callers=config["high_confidence_core_callers"], # comma separated list ... default circExplorer,circExplorer_bwa
+        high_confidence_core_callers_plus_n=config["high_confidence_core_callers_plus_n"] # number of callers in addition to core callers that need to call the circRNA for it to be called "High Confidence"
     shell:
         """
 python3 {params.script} \\
@@ -1365,7 +1367,9 @@ python3 {params.script} \\
         --reffa {params.reffa} \\
         --sampledir {params.sampledir} \\
         --outscript {output.merge_bash_script} \\
-        --pyscriptoutfile {output.merged_counts} 
+        --pyscriptoutfile {output.merged_counts} \\
+        --hqcc {params.high_confidence_core_callers} \\
+        --hqccpn {params.high_confidence_core_callers_plus_n}
 bash {output.merge_bash_script}
 """
 

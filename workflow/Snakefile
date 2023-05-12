@@ -198,297 +198,96 @@ rule all:
         join(REF_DIR, "ref.bwt"),
         ## cutadapt
         ## cutadapt files are now temp() to save space
-        expand(
-            join(WORKDIR, "results", "{sample}", "trim", "{sample}.R1.trim.fastq.gz"),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(WORKDIR, "results", "{sample}", "trim", "{sample}.R2.trim.fastq.gz"),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "trim", "{sample}.R1.trim.fastq.gz")                            ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "trim", "{sample}.R2.trim.fastq.gz")                            ,sample=SAMPLES),
         ## fastqc
-        expand(
-            join(WORKDIR, "qc", "fastqc", "{sample}.R1.trim_fastqc.zip"),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "qc", "fastqc", "{sample}.R1.trim_fastqc.zip")                                         ,sample=SAMPLES),
         ## star1p
-        expand(
-            join(WORKDIR, "results", "{sample}", "STAR1p", "{sample}_p1.SJ.out.tab"),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "STAR1p", "{sample}_p1.SJ.out.tab")                             ,sample=SAMPLES),
         ## star 1p outputs required for DCC
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR1p",
-                "{sample}_p1.Chimeric.out.junction",
-            ),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR1p",
-                "mate1",
-                "{sample}" + "_mate1.Chimeric.out.junction",
-            ),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR1p",
-                "mate2",
-                "{sample}" + "_mate2.Chimeric.out.junction",
-            ),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "STAR1p", "{sample}_p1.Chimeric.out.junction")                  ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "STAR1p", "mate1","{sample}" + "_mate1.Chimeric.out.junction")  ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "STAR1p", "mate2","{sample}" + "_mate2.Chimeric.out.junction")  ,sample=SAMPLES),
         ## merge junctions
         join(WORKDIR, "results", "pass1.out.tab"),
         # ## star2p
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR2p",
-                "{sample}_p2.Chimeric.out.junction",
-            ),
-            sample=SAMPLES,
-        ),  # required by circExplorer
-        expand(
-            join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.chimeric.bam"),
-            sample=SAMPLES,
-        ),  # required to create BSJ bam
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR2p",
-                "{sample}_p2.non_chimeric.bam",
-            ),
-            sample=SAMPLES,
-        ),  # required to extract linear reads
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "STAR2p",
-                "{sample}_p2.ReadsPerGene.out.tab",
-            ),
-            sample=SAMPLES,
-        ),  # per-sample gene counts
+        expand(join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.Chimeric.out.junction")                  ,sample=SAMPLES),  # required by circExplorer
+        expand(join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.chimeric.bam")                           ,sample=SAMPLES),  # required to create BSJ bam
+        expand(join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.non_chimeric.bam" )                      ,sample=SAMPLES),  # required to extract linear reads
+        expand(join(WORKDIR, "results", "{sample}", "STAR2p", "{sample}_p2.ReadsPerGene.out.tab")                   ,sample=SAMPLES),  # per-sample gene counts
         # ## star gene counts matrix
-        join(WORKDIR, "results", "stranded_STAR_GeneCounts.tsv"),  # multi-sample counts matrix
+        join(WORKDIR, "results", "stranded_STAR_GeneCounts.tsv"),                                                                      # multi-sample counts matrix
         # ## picard MarkDuplicates metrics
-        expand(
-            join(
-                WORKDIR,
-                "qc",
-                "picard_MarkDuplicates",
-                "{sample}.MarkDuplicates.metrics.txt",
-            ),
-            sample=SAMPLES,
-        ),  # required to estimate duplication stats    
+        expand(join(WORKDIR, "qc", "picard_MarkDuplicates", "{sample}.MarkDuplicates.metrics.txt")                  ,sample=SAMPLES),  # required to estimate duplication stats
+
         ## circExplorer --> we run circExplorer2
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer",
-                "{sample}.circularRNA_known.txt",
-            ),
-            sample=SAMPLES,
-        ),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer",
-                "{sample}.circExplorer.annotation_counts.tsv",
-            ),
-            sample=SAMPLES,
-        ),
-        ## circExplorer ... polished BSJ output
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bed.gz"
-            ),
-            sample=SAMPLES,
-        ),  # filtered BSJs with additional columns like :
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.circularRNA_known.txt")               ,sample=SAMPLES),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.circExplorer.annotation_counts.tsv")  ,sample=SAMPLES),  # circExplorer ... polished BSJ output
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bed.gz")                          ,sample=SAMPLES),  # filtered BSJs with additional columns like :
         # 1. (combination of SAM bitflags in the alignment), eg. 339##419##2385 
         # 2. comma-separated list of readids (with HI number) supporting the BSJ, eg. J00170:207:H73WTBBXY:2:1108:8197:34266##2,J00170:207:H73WTBBXY:2:1108:6126:34371##2
         # 3. splice-site flanking 2 bps eg. GG##CT
+
         ## circExplorer ... get various BAMs
-        expand(
-            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bam"),
-            sample=SAMPLES,
-        ),  # use called circExplorer circRNA and the chimeric BAM to extract BSJ only alignments
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bam"
-            ),
-            sample=SAMPLES,
-        ),  # BSJ only alignments to BSJs on the sense strand
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer",
-                "{sample}.BSJ.minus.bam",
-            ),
-            sample=SAMPLES,
-        ),  # BSJ only alignments to BSJs on the anti-sense strand
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bam"
-            ),
-            sample=SAMPLES,
-        ),  # linear reads in BSJ inclusion zone
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bam"),sample=SAMPLES),
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bam"
-            ),
-            sample=SAMPLES,
-        ),  # spliced-only alignments in the sample
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bam"),sample=SAMPLES),     # spliced-only linear alignments in BSJ inclusion zone
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bam"),sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bam")         ,sample=SAMPLES),  # use called circExplorer circRNA and the chimeric BAM to extract BSJ only alignments
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bam")    ,sample=SAMPLES),  # BSJ only alignments to BSJs on the sense strand
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.minus.bam")   ,sample=SAMPLES),  # BSJ only alignments to BSJs on the anti-sense strand
+        
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bam")  ,sample=SAMPLES),  # linear reads in BSJ inclusion zone
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bam") ,sample=SAMPLES),  # spliced-only alignments in the sample
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bam")      ,sample=SAMPLES),  # linear reads ... all non chimeric
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bam")     ,sample=SAMPLES),  # spliced-only ... all non chimeric
+
         # ## circExplorer BWs
-        expand(
-            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bw"),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bw"
-            ),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.minus.bw"
-            ),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bw"),
-            sample=SAMPLES,
-        ),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.plus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.minus.bw"),sample=SAMPLES),
-        expand(
-            join(
-                WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bw"
-            ),
-            sample=SAMPLES,
-        ),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.bw"),sample=SAMPLES),     
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.plus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","circExplorer","{sample}.linear.spliced.minus.bw"),sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.bw")          ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.plus.bw")     ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.BSJ.minus.bw")    ,sample=SAMPLES),
+
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bw")   ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bw")  ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bw")       ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced.bw")      ,sample=SAMPLES),
         # ## circExplorer extra bams
         # unpack(get_extra_bams),
         ## circExplorer ... found read counts table
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer",
-                "{sample}.readcounts.tsv",
-            ),
-            sample=SAMPLES,
-        ),  # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.readcounts.tsv")  ,sample=SAMPLES),                               # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
+        
         ## circExplorer_BWA
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer_BWA",
-                "{sample}.circularRNA_known.txt",
-            ),
-            sample=SAMPLES,
-        ),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
-        expand(
-            join(
-                WORKDIR,
-                "results",
-                "{sample}",
-                "circExplorer_BWA",
-                "{sample}.circExplorer_bwa.annotation_counts.tsv",
-            ),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer_BWA", "{sample}.circularRNA_known.txt")                   ,sample=SAMPLES ),  # annotations with "known" GENCODE genes and NOT "known" circRNAs!
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer_BWA", "{sample}.circExplorer_bwa.annotation_counts.tsv")  ,sample=SAMPLES),
+
         # ## CLEAR quant output --> CLEAR is nothing but circExplorer3
         get_clear_target_files(RUN_CLEAR),
+
         # ## ciri
-        expand(
-            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.out.filtered"),
-            sample=SAMPLES,
-        ),
-        expand(
-            join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.bam"),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.out.filtered")       ,sample=SAMPLES),
+        expand(join(WORKDIR, "results", "{sample}", "ciri", "{sample}.ciri.bam")                ,sample=SAMPLES),
+        
         # ## DCC
         # # expand(join(WORKDIR,"results","{sample}","DCC","{sample}.dcc.counts_table.tsv"),sample=SAMPLES),
         get_dcc_target_files(RUN_DCC),
+        
         # ## MapSplice
         get_mapsplice_target_files(RUN_MAPSPLICE),
+        
         # ## NCLscan
         get_nclscan_target_files(RUN_NCLSCAN),
+        
         # ## circRNA_finder
         get_circrnafinder_target_files(RUN_CIRCRNAFINDER),
+        
         # ## find_circ
         get_find_circ_target_files(RUN_FINDCIRC),
+        
         ## alignment stats
         join(WORKDIR, "results", "alignmentstats.txt"),
+        
         # # ## merged counts per sample table of all counts/annotations from all circRNA callers
-        expand(
-            join(WORKDIR, "results", "{sample}", "{sample}.circRNA_counts.txt.gz"),
-            sample=SAMPLES,
-        ),
+        expand(join(WORKDIR, "results", "{sample}", "{sample}.circRNA_counts.txt.gz"),sample=SAMPLES),
+        
         # # ## master counts file
         join(WORKDIR, "results", "circRNA_master_counts.tsv.gz"),
-        # # ## ciri BSJ bam
-        # # expand(join(WORKDIR,"results","{sample}","ciri","{sample}.bwa.BSJ.bam"),sample=SAMPLES),
-        # # ## BSJ bams and bigwigs
-        # # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.valid_STAR_BSJ.bed"),sample=SAMPLES),
-        # # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.novel_CIRI_BSJ.bed"),sample=SAMPLES),
-        # # expand(join(WORKDIR,"results","{sample}","customBSJs","{sample}.BSJ.bed"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".plus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".minus.bw"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","BSJs","{sample}.BSJ."+HOST+".bed"),sample=SAMPLES),
-        # # ## Spliced reads bams and bigwigs
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.spliced_reads."+HOST+".bw"),sample=SAMPLES),
-        # # ## linear reads bams and bigwigs
-        # # # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear.bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bam"),sample=SAMPLES),
-        # expand(join(WORKDIR,"results","{sample}","STAR2p","{sample}.linear_reads."+HOST+".bw"),sample=SAMPLES),
-        # # ## CIRI2 and CIRCEXPLORER2 VENN DIAGRAM
-        # # expand(join(WORKDIR,"results","{sample}","{sample}.venn_mqc.png"),sample=SAMPLES),
-        # # expand(join(WORKDIR,"results","{sample}","{sample}.cirionly.lst"),sample=SAMPLES),
-        # # expand(join(WORKDIR,"results","{sample}","{sample}.circexploreronly.lst"),sample=SAMPLES),
-        # # expand(join(WORKDIR,"results","{sample}","{sample}.common.lst"),sample=SAMPLES),
+         
         # ## multiqc report
         # join(WORKDIR,"multiqc_report.html")
 

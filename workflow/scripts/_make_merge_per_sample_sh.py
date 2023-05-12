@@ -41,6 +41,10 @@ def main() :
         help='Sample Name')
     parser.add_argument('--min_read_count_reqd', dest='minreads', type=int, required=False, default=2,
         help='Read count threshold..circRNA with lower than this number of read support are excluded! (default=2)')
+    parser.add_argument('--hqcc', dest='hqcc', type=str, required=False, default="circExplorer,circExplorer_bwa",
+        help='Comma separated list of high confidence core callers (default="circExplorer,circExplorer_bwa")')
+    parser.add_argument('--hqccpn', dest='hqccpn', type=int, required=False, default=1,
+        help='Define n:high confidence core callers plus n callers are required to call this circRNA HQ (default 1)')
     parser.add_argument("--reffa",dest="reffa",required=True,type=str,
         help="reference fasta file path")
     parser.add_argument('--pyscriptoutfile',required=True,help='merged table')
@@ -62,6 +66,8 @@ def main() :
     parameters+=" --reffa "+args.reffa
     parameters+=" --min_read_count_reqd "+str(args.minreads)
     parameters+=" --samplename "+sn
+    parameters+=" --hqcc "+args.hqcc
+    parameters+=" --hqccpn "+str(args.hqccpn)
     parameters+=" -o "+args.pyscriptoutfile
     
     with open(args.outscript,'w') as outscript:
