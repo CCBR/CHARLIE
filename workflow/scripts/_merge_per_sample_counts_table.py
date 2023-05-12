@@ -73,11 +73,19 @@ def main() :
         help='Read count threshold..circRNA with lower than this number of read support are excluded! (default=2)')
     parser.add_argument("--reffa",dest="reffa",required=True,type=argparse.FileType('r'),default=sys.stdin,
         help="reference fasta file")
+    parser.add_argument('--hqcc', dest='hqcc', type=str, required=False, default="circExplorer,circExplorer_bwa",
+        help='Comma separated list of high confidence core callers (default="circExplorer,circExplorer_bwa")')
+    parser.add_argument('--hqccpn', dest='hqccpn', type=int, required=False, default=1,
+        help='Define n:high confidence core callers plus n callers are required to call this circRNA HQ (default 1)')
     parser.add_argument('-o',dest='outfile',required=True,help='merged table')
     args = parser.parse_args()
 
     sn=args.samplename
-
+    hqcc=args.hqcc
+    hqcc=hqcc.strip().lower().split(",")
+    hqcclen=len(hqcc)
+    required_hqcols=[]
+    not_required_hqcols=[]
     dfs=[]
 
     # load circExplorer
@@ -126,6 +134,10 @@ def main() :
     circE = _df_setcol_as_str(circE,strcols)
 
     dfs.append(circE)
+    if "circExplorer".lower() in hqcc: 
+        required_hqcols.append("circExplorer_read_count")
+    else:
+        not_required_hqcols.append("circExplorer_read_count")
 
     #chrom  start   end     strand  read_count      known_novel
     # circExplorer2 with BWA
@@ -145,6 +157,10 @@ def main() :
     circEbwa = _df_setcol_as_str(circEbwa,strcols)
 
     dfs.append(circEbwa)
+    if "circExplorer_bwa".lower() in hqcc: 
+        required_hqcols.append("circExplorer_bwa_read_count")
+    else:
+        not_required_hqcols.append("circExplorer_bwa_read_count")
 
     # load ciri
     ciri=pandas.read_csv(args.ciri,sep="\t",header=0,usecols=['chr', 'circRNA_start', 'circRNA_end', '#junction_reads', '#non_junction_reads', 'circRNA_type', 'strand'])
@@ -181,6 +197,10 @@ def main() :
     if len(strcols) > 0: ciri = _df_setcol_as_str(ciri,strcols)
     
     dfs.append(ciri)
+    if "ciri".lower() in hqcc: 
+        required_hqcols.append("ciri_read_count")
+    else:
+        not_required_hqcols.append("ciri_read_count")
 
     if args.findcirc:
         findcirc=pandas.read_csv(args.findcirc,sep="\t",header=0)
@@ -218,6 +238,10 @@ def main() :
         if len(strcols) > 0: findcirc = _df_setcol_as_str(findcirc,strcols)    
 
         dfs.append(findcirc)
+        if "findcirc".lower() in hqcc: 
+            required_hqcols.append("findcirc_read_count")
+        else:
+            not_required_hqcols.append("findcirc_read_count")
 
     # load dcc
     if args.dcc:
@@ -250,7 +274,10 @@ def main() :
         if len(strcols) > 0: dcc = _df_setcol_as_str(dcc,strcols)    
 
         dfs.append(dcc)
-
+        if "DCC".lower() in hqcc: 
+            required_hqcols.append("dcc_read_count")
+        else:
+            not_required_hqcols.append("dcc_read_count")
 
     # load mapsplice
     if args.mapsplice:
@@ -283,6 +310,10 @@ def main() :
         if len(strcols) > 0: mapsplice = _df_setcol_as_str(mapsplice,strcols) 
 
         dfs.append(mapsplice)
+        if "MapSplice".lower() in hqcc: 
+            required_hqcols.append("mapsplice_read_count")
+        else:
+            not_required_hqcols.append("mapsplice_read_count")
 
     # load nclscan
     if args.nclscan:
@@ -317,6 +348,10 @@ def main() :
             if len(strcols) > 0: nclscan = _df_setcol_as_str(nclscan,strcols)  
 
         dfs.append(nclscan)
+        if "NCLscan".lower() in hqcc: 
+            required_hqcols.append("nclscan_read_count")
+        else:
+            not_required_hqcols.append("nclscan_read_count")
 
     if args.circrnafinder:
         circrnafinder=pandas.read_csv(args.circrnafinder,sep="\t",header=0)
@@ -341,7 +376,10 @@ def main() :
         if len(strcols) > 0: circrnafinder = _df_setcol_as_str(circrnafinder,strcols)    
 
         dfs.append(circrnafinder)
-
+        if "circRNAFinder".lower() in hqcc: 
+            required_hqcols.append("circrnafinder_read_count")
+        else:
+            not_required_hqcols.append("circrnafinder_read_count")
 
     # for df in dfs:
     #     print(df.columns)
@@ -380,6 +418,9 @@ def main() :
 
     merged_counts.fillna(-1,inplace=True)
     merged_counts[ 'ntools'] = 0
+    merged_counts[ 'HQ' ] = "N"
+    merged_counts[ 'hqcounts' ] = 0
+    merged_counts[ 'nonhqcounts' ] = 0
 
     annotation_cols=['circExplorer_annotation','ciri_annotation']
     floatcols = []
@@ -419,7 +460,9 @@ def main() :
         intcols.extend(['circrnafinder_read_count'])
 
     intcols.extend(['ntools'])
+    intcols.extend(['hqcounts','nonhqcounts'])
     strcols = list ( ( set(merged_counts.columns) - set(intcols) ) - set(floatcols) )
+    strcols.append('HQ')
     merged_counts = _df_setcol_as_int(merged_counts,intcols)
     if len(floatcols)>0: merged_counts = _df_setcol_as_float(merged_counts,floatcols)
     merged_counts = _df_setcol_as_str(merged_counts,strcols)
@@ -427,6 +470,14 @@ def main() :
     # fix annotations == -1
     for c in annotation_cols:
         merged_counts.loc[merged_counts[c]=="-1" , c] = "Unknown"
+    
+    for c in required_hqcols:
+        merged_counts.loc[merged_counts[c] >= args.minreads, 'hqcounts'] += 1
+    for c in not_required_hqcols:
+        merged_counts.loc[merged_counts[c] >= args.minreads, 'nonhqcounts'] += 1
+    
+    merged_counts.loc[merged_counts['hqcounts'] == hqcclen, 'HQ'] = "Y"
+    merged_counts.loc[merged_counts['nonhqcounts'] < args.hqccpn, 'HQ'] = "N"
 
     merged_counts.loc[merged_counts['circExplorer_read_count'] >= args.minreads, 'ntools'] += 1
     merged_counts.loc[merged_counts['ciri_read_count'] >= args.minreads, 'ntools'] += 1
@@ -455,7 +506,7 @@ def main() :
     merged_counts=_df_setcol_as_str(merged_counts,['sample_name','flanking_sites'])
 
     # prepare output ... reorder columns
-    outcols=['chrom', 'start', 'end', 'strand', 'flanking_sites', 'sample_name', 'ntools']
+    outcols=['chrom', 'start', 'end', 'strand', 'flanking_sites', 'sample_name', 'ntools', 'HQ']
     # add circExplorer columns
     outcols.extend(['circExplorer_read_count',
                     'circExplorer_found_BSJcounts', 
@@ -482,6 +533,8 @@ def main() :
     if args.nclscan and includenclscan: outcols.append('nclscan_read_count')
     # add circRNAfinder columns
     if args.circrnafinder: outcols.append('circrnafinder_read_count')
+
+    outcols.extend(['hqcounts','nonhqcounts'])
     # add annotation columns
     outcols.extend(annotation_cols)
     merged_counts = merged_counts[outcols]
