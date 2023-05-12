@@ -53,6 +53,7 @@ def main():
         description="""Extracts PE BSJs from STAR2p output Chimeric BAM file. It also adds
         unique read group IDs to each read. This RID is of the format <chrom>##<start>##<end>
         where the chrom, start and end represent the BSJ the read is depicting.
+        ## UPDATE: works for all BAM files ... not just BSJ only 
         """
     )
     #INPUTs
@@ -101,10 +102,10 @@ def main():
     
     outputbams = dict()
     for h in hosts:
-        outbamname = os.path.join(args.outdir,args.samplename+"."+args.prefix+"."+h+".BSJ.bam")
+        outbamname = os.path.join(args.outdir,args.samplename+"."+args.prefix+"."+h+".bam")
         outputbams[h] = pysam.AlignmentFile(outbamname, "wb", header = samheader)
     for h in viruses:
-        outbamname = os.path.join(args.outdir,args.samplename+"."+args.prefix+"."+h+".BSJ.bam")
+        outbamname = os.path.join(args.outdir,args.samplename+"."+args.prefix+"."+h+".bam")
         outputbams[h] = pysam.AlignmentFile(outbamname, "wb", header = samheader)
     
     for read in samfile.fetch():
