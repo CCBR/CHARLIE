@@ -1225,7 +1225,7 @@ rule find_circ:
         sample="{sample}",
         reffa=REF_FA,
         find_cir_dir=FIND_CIRC_DIR,
-        finc_circ_params=config['findcirc_params'],
+        find_circ_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         randomstr=str(uuid.uuid4()),
     envmodules:
@@ -1280,7 +1280,7 @@ cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \
     --genome={params.reffa} \
     --prefix={params.sample}.find_circ \
     --name={params.sample} \
-    {params.findcirc_params} \
+    {params.find_circ_params} \
     --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \
     --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \
     > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed

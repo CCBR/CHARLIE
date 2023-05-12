@@ -28,7 +28,8 @@ nclscan_config: "WORKDIR/nclscan.config"
 #
 # Should we also run find_circ? True or False WITHOUT quotes
 run_findcirc: True
-findcirc_params: "--noncanonical --allhits"
+# findcirc_params: "--noncanonical --allhits" # this gives way too many circRNAs
+findcirc_params: "--noncanonical"
 
 
 # select references .... host + viruses(comma-separated):
