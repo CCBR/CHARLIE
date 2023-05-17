@@ -88,7 +88,6 @@ def main():
     viruses=set()
     
     regions = read_regions(regionsfile=args.regions,host=args.host,additives=args.additives,viruses=args.viruses)		
-    
     for s in sequences:
         hav = _get_host_additive_virus(regions,s)
         if hav == "host":
@@ -99,6 +98,9 @@ def main():
             virusname = _get_regionname_from_seqname(regions,s)
             seqname2regionname[s]=virusname
             viruses.add(virusname)
+        if hav == "additive":
+            additive = _get_regionname_from_seqname(regions,s)
+            seqname2regionname[s]=additive
     
     outputbams = dict()
     for h in hosts:

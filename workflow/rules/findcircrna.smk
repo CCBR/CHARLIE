@@ -224,9 +224,9 @@ python {params.script} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --circularRNA_known {output.annotations} \\
     --low_conf low_conf_$(basename {output.annotations}) \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -324,9 +324,9 @@ rm -rf {params.sample}.bwa.sam
 python {params.script} \\
     --ciriout {output.ciriout} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -401,9 +401,9 @@ python {params.script} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --circularRNA_known {output.annotations} \\
     --low_conf low_conf_$(basename {output.annotations}) \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -761,9 +761,9 @@ python {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
     --out_dcc_filtered_counts_table {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -984,9 +984,9 @@ python {params.script} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -1084,9 +1084,9 @@ python {params.script} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
