@@ -29,6 +29,7 @@ rule create_index:
         TOOLS["samtools"]["version"],
         TOOLS["ucsc"]["version"],
         TOOLS["cufflinks"]["version"],
+        TOOLS["python37"]["version"],
     threads: getthreads("create_index")
     shell:
         """
