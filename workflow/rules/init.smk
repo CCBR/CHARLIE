@@ -150,15 +150,26 @@ else:
     HOST_ADDITIVES = HOST
 VIRUSES = config["viruses"]
 VIRUSES = VIRUSES.replace(" ", "")
+if VIRUSES != "":
+    HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES + "," + VIRUSES
+    HOST_VIRUSES = HOST + "," + VIRUSES
+else:
+    HOST_VIRUSES = HOST
+    HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES
+    
 REPEATS_GTF = join(FASTAS_GTFS_DIR, HOST + ".repeats.gtf")
 
-HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES + "," + VIRUSES
-HOST_VIRUSES = HOST + "," + VIRUSES
 HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES_VIRUSES.split(",")
 FASTAS = [join(FASTAS_GTFS_DIR, f + ".fa") for f in HOST_ADDITIVES_VIRUSES]
 REGIONS = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST_ADDITIVES_VIRUSES]
-REGIONS_HOST = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST.split(",")]
-REGIONS_VIRUSES = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in VIRUSES.split(",")]
+if HOST != "":
+    REGIONS_HOST = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST.split(",")]
+else:
+    REGIONS_HOST = []
+if VIRUSES != "":
+    REGIONS_VIRUSES = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in VIRUSES.split(",")]
+else:
+    REGIONS_VIRUSES = []
 GTFS = [join(FASTAS_GTFS_DIR, f + ".gtf") for f in HOST_ADDITIVES_VIRUSES]
 FASTAS_REGIONS_GTFS = FASTAS.copy()
 FASTAS_REGIONS_GTFS.extend(REGIONS)
