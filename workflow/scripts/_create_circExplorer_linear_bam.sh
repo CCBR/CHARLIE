@@ -296,10 +296,10 @@ samtools sort -l 9 -T ${tmpdir}/sorttmp --write-index -@${threads} -O BAM -o ${s
 
 if [ -f ${tmpdir}/para3 ];then rm -f ${tmpdir}/para3;fi
 
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
 
 parallel -j 4 < ${tmpdir}/para3
 
