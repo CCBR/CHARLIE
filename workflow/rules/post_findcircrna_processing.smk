@@ -93,9 +93,9 @@ python3 {params.scriptpe} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outputhostbams --outputvirusbams --outdir $TMPDIR
 
 else
@@ -110,9 +110,9 @@ python3 {params.scriptse} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outputhostbams --outputvirusbams --outdir $TMPDIR
 
 fi
@@ -240,24 +240,24 @@ cd {params.outdir}
 
 # get filtered bam (remove secondary/supplementary/etc.) and the rid2jid lookup files
 
-bash {params.bashscript} \
-    --nonchimericbam {input.nonchimericbam} \
-    --samplename {params.sample} \
-    --peorse {params.peorse} \
-    --bsjbed {input.bsjbedgz} \
-    --tmpdir $TMPDIR \
-    --rid2jid {output.rid2jid} \
-    --filteredbam {output.filtered_bam} \
-    --linearbsjlist {output.linear_readids} \
-    --splicedbsjlist {output.spliced_readids} \
-    --jidcounts {output.linear_spliced_counts} \
-    --linearbsjbam {output.linear_BSJ_bam} \
-    --splicedbsjbam {output.spliced_BSJ_bam} \
-    --regions {params.refregions} \
-    --host "{params.host}" \
-    --additives "{params.additives}" \
-    --viruses "{params.viruses}" \
-    --linearbam {output.linear_bam} \
+bash {params.bashscript} \\
+    --nonchimericbam {input.nonchimericbam} \\
+    --samplename {params.sample} \\
+    --peorse {params.peorse} \\
+    --bsjbed {input.bsjbedgz} \\
+    --tmpdir $TMPDIR \\
+    --rid2jid {output.rid2jid} \\
+    --filteredbam {output.filtered_bam} \\
+    --linearbsjlist {output.linear_readids} \\
+    --splicedbsjlist {output.spliced_readids} \\
+    --jidcounts {output.linear_spliced_counts} \\
+    --linearbsjbam {output.linear_BSJ_bam} \\
+    --splicedbsjbam {output.spliced_BSJ_bam} \\
+    --regions {params.refregions} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --linearbam {output.linear_bam} \\
     --splicedbam {output.spliced_bam}
 rm -rf $TMPDIR
 """

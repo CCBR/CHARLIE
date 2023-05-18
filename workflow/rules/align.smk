@@ -634,7 +634,7 @@ samtools view -@{threads} \\
     ${{TMPDIR}}/{params.sample}.sorted.bam
 
 {params.find_circ_dir}/unmapped2anchors.py \\
-    ${{outdir}}/{params.sample}.unmapped.bam | \
+    ${{outdir}}/{params.sample}.unmapped.bam | \\
 	gzip -c - > {output.anchorsfq}
 
 rm -rf $TMPDIR

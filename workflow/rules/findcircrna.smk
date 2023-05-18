@@ -1275,14 +1275,14 @@ for i in $(seq 0 9);do
         -x ${{refdir}}/ref > ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam
 
 cat <<EOF >>${{TMPDIR}}/do_find_circ
-cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \
-{params.find_cir_dir}/find_circ.py \
-    --genome={params.reffa} \
-    --prefix={params.sample}.find_circ \
-    --name={params.sample} \
-    {params.find_circ_params} \
-    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \
-    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \
+cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \\
+{params.find_cir_dir}/find_circ.py \\
+    --genome={params.reffa} \\
+    --prefix={params.sample}.find_circ \\
+    --name={params.sample} \\
+    {params.find_circ_params} \\
+    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \\
+    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \\
     > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed
 EOF
 done
