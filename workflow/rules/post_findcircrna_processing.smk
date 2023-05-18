@@ -239,46 +239,26 @@ mkdir -p $TMPDIR
 cd {params.outdir}
 
 # get filtered bam (remove secondary/supplementary/etc.) and the rid2jid lookup files
-# inputs
-#     echo "18 arguments expected!"
-#     echo "#1 --> path to non-chimeric BAM file"
-#     echo "#2 --> sample name"
-#     echo "#3 --> PE or SE"
-#     echo "#4 --> known BSJs in bed.gz format"
-#     echo "#5 --> tmpdir"
-#     echo "#6 --> gzipped outputfilename eg.<sample_name>.rid2jid.tsv.gz"
-#     echo "#7 --> output filtered sample BAM"
-#     echo "#8 --> gzip-ed list of linear BSJ readids"
-#     echo "#9 --> gzip-ed list of linear spliced BSJ readids"
-#     echo "#10 --> jid counts (linear and linear-spliced) per jid or BSJ"
-#     echo "#11 --> linear BSJ readids in BAM"
-#     echo "#12 --> linear-spliced BSJ readids in BAM"
-#     echo "#13 --> .regions file eg. ref/ref.fa.regions"
-#     echo "#14 --> host list comma separated .. no spaces"
-#     echo "#15 --> additives list comma separated .. no spaces"
-#     echo "#16 --> viruses list comma separated .. no spaces"
-	# echo "#17 --> all linear readids in BAM"
-	# echo "#18 --> all spliced readids in BAM"
 
 bash {params.bashscript} \
-    {input.nonchimericbam} \
-    {params.sample} \
-    {params.peorse} \
-    {input.bsjbedgz} \
-    $TMPDIR \
-    {output.rid2jid} \
-    {output.filtered_bam} \
-    {output.linear_readids} \
-    {output.spliced_readids} \
-    {output.linear_spliced_counts} \
-    {output.linear_BSJ_bam} \
-    {output.spliced_BSJ_bam} \
-    {params.refregions} \
-    {params.host} \
-    {params.additives} \
-    {params.viruses} \
-    {output.linear_bam} \
-    {output.spliced_bam}
+    --nonchimericbam {input.nonchimericbam} \
+    --samplename {params.sample} \
+    --peorse {params.peorse} \
+    --bsjbed {input.bsjbedgz} \
+    --tmpdir $TMPDIR \
+    --rid2jid {output.rid2jid} \
+    --filteredbam {output.filtered_bam} \
+    --linearbsjlist {output.linear_readids} \
+    --splicedbsjlist {output.spliced_readids} \
+    --jidcounts {output.linear_spliced_counts} \
+    --linearbsjbam {output.linear_BSJ_bam} \
+    --splicedbsjbam {output.spliced_BSJ_bam} \
+    --regions {params.refregions} \
+    --host "{params.host}" \
+    --additives "{params.additives}" \
+    --viruses "{params.viruses}" \
+    --linearbam {output.linear_bam} \
+    --splicedbam {output.spliced_bam}
 rm -rf $TMPDIR
 """
 
