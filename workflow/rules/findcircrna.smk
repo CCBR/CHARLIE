@@ -1232,6 +1232,7 @@ rule find_circ:
         TOOLS["bowtie2"]["version"],
         TOOLS["samtools"]["version"],
         TOOLS["parallel"]["version"],
+        TOOLS["python27"]["version"]
     threads: getthreads("find_circ")
     shell:
         """
