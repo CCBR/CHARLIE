@@ -1229,14 +1229,16 @@ rule find_circ:
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         randomstr=str(uuid.uuid4()),
     envmodules:
+        TOOLS["python27"]["version"],
         TOOLS["bowtie2"]["version"],
         TOOLS["samtools"]["version"],
         TOOLS["parallel"]["version"],
-        TOOLS["python27"]["version"]
     threads: getthreads("find_circ")
     shell:
         """
 set -exo pipefail
+python --version
+which python
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
 else
@@ -1262,9 +1264,13 @@ outdir=$(dirname {output.find_circ_bsj_bed})
 # These _A and _B pairs should be retained in the fastq splits
 
 # find number of lines in fastq file
-total_lines=$(zcat {input.anchorsfq} | wc -l)
+cp {input.anchorsfq} ${{TMPDIR}}
+fname=$(basename {input.anchorsfq})
+fname_wo_gz=$(echo $fname|sed "s/.gz//g")
+pigz -d $fname
+total_lines=$(wc -l ${{fname_wo_gz}} | awk '{{print $1}}')
 split_nlines=$(echo $total_lines| awk '{{print sprintf("%d", $1/10)}}' | awk '{{print sprintf("%d",($1+7)/8+1)}}' | awk '{{print sprintf("%d",$1*8)}}')
-zcat {input.anchorsfq} | split -d -l $split_nlines --suffix-length 1 - ${{TMPDIR}}/{params.sample}.samsplit.
+split -d -l $split_nlines --suffix-length 1 $fname_wo_gz ${{TMPDIR}}/{params.sample}.samsplit.
 
 if [ -f ${{TMPDIR}}/do_find_circ ];then rm -f ${{TMPDIR}}/do_find_circ;fi
 

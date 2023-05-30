@@ -577,8 +577,8 @@ rule find_circ_align:
         find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
     envmodules:
-        TOOLS["bowtie2"]["version"],
-        TOOLS["samtools"]["version"],
+        TOOLS["python27"]["version"],
+        TOOLS["samtools"]["version"], TOOLS['bowtie2']['version']
     threads: getthreads("find_circ_align")
     shell:
         """
@@ -629,13 +629,18 @@ samtools sort -@{threads} \\
 samtools view -@{threads} \\
     --output-fmt BAM \\
     --write-index \\
-    -o ${{outdir}}/{params.sample}.unmapped.bam \\
+    -o ${{TMPDIR}}/{params.sample}.unmapped.bam \\
     -f4 \\
     ${{TMPDIR}}/{params.sample}.sorted.bam
 
 {params.find_circ_dir}/unmapped2anchors.py \\
-    ${{outdir}}/{params.sample}.unmapped.bam | \\
-	gzip -c - > {output.anchorsfq}
+    ${{TMPDIR}}/{params.sample}.unmapped.bam | \\
+	gzip -c - > ${{TMPDIR}}/{params.sample}.anchors.fastq.gz
+
+mv ${{TMPDIR}}/{params.sample}.anchors.fastq.gz {output.anchorsfq}
+mv ${{TMPDIR}}/{params.sample}.unmapped.b* ${{outdir}}/
+
+sleep 300 
 
 rm -rf $TMPDIR
 """
