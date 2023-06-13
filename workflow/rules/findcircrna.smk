@@ -196,43 +196,42 @@ rule circExplorer:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+        bash_script=join(SCRIPTS_DIR,"_run_circExplorer_star.sh"),
+        randomstr=str(uuid.uuid4()),
+        # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     envmodules:
         TOOLS["circexplorer"]["version"],
     shell:
         """
 set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 cd {params.outdir}
-mv {input.junctionfile} {input.junctionfile}.original
-grep -v junction_type {input.junctionfile}.original > {input.junctionfile}
-CIRCexplorer2 parse \\
-    -t STAR \\
-    {input.junctionfile} > {params.sample}_circexplorer_parse.log 2>&1
-mv back_spliced_junction.bed {output.backsplicedjunctions}
-mv {input.junctionfile}.original {input.junctionfile}
-CIRCexplorer2 annotate \\
--r {params.genepred} \\
--g {params.reffa} \\
--b {output.backsplicedjunctions} \\
--o $(basename {output.annotations}) \\
---low-confidence
-
-python {params.script} \\
-    --back_spliced_bed {output.backsplicedjunctions} \\
-    --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --circularRNA_known {output.annotations} \\
-    --low_conf low_conf_$(basename {output.annotations}) \\
-    --host "{params.host}" \\
-    --additives "{params.additives}" \\
-    --viruses "{params.viruses}" \\
+bash {params.bash_script} \\
+    --junctionfile {input.junctionfile} \\
+    --tmpdir $TMPDIR \\
+    --outdir {params.outdir} \\
+    --samplename {params.sample} \\
+    --genepred {params.genepred} \\
+    --reffa {params.reffa} \\
+    --minreads {params.bsj_min_nreads} \\
+    --hostminfilter {params.minsize_host} \\
+    --hostmaxfilter {params.maxsize_host} \\
+    --virusminfilter {params.minsize_virus} \\
+    --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host_filter_min {params.minsize_host} \\
-    --host_filter_max {params.maxsize_host} \\
-    --virus_filter_min {params.minsize_virus} \\
-    --virus_filter_max {params.maxsize_virus} \\
-    -o {output.annotation_counts_table}
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --outcount {output.annotation_counts_table} \\
+    --outbsj {output.backsplicedjunctions} \\
+    --outannotations {output.annotations}
 """
 
 
@@ -374,42 +373,42 @@ rule circExplorer_bwa:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+        bash_script=join(SCRIPTS_DIR,"_run_circExplorer_bwa.sh"),
+        randomstr=str(uuid.uuid4()),
+        # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     envmodules:
         TOOLS["circexplorer"]["version"],
     shell:
         """
 set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 cd {params.outdir}
-
-CIRCexplorer2 parse \\
-    -t BWA \\
-    {input.ciribam} > {params.sample}_circexplorer_bwa_parse.log 2>&1
-mv back_spliced_junction.bed {output.backsplicedjunctions}
-
-CIRCexplorer2 annotate \\
--r {params.genepred} \\
--g {params.reffa} \\
--b {output.backsplicedjunctions} \\
--o $(basename {output.annotations}) \\
---low-confidence
-
-python {params.script} \\
-    --back_spliced_bed {output.backsplicedjunctions} \\
-    --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --circularRNA_known {output.annotations} \\
-    --low_conf low_conf_$(basename {output.annotations}) \\
-    --host "{params.host}" \\
-    --additives "{params.additives}" \\
-    --viruses "{params.viruses}" \\
+bash {params.bash_script} \\
+    --bwabam {input.ciribam} \\
+    --tmpdir $TMPDIR \\
+    --outdir {params.outdir} \\
+    --samplename {params.sample} \\
+    --genepred {params.genepred} \\
+    --reffa {params.reffa} \\
+    --minreads {params.bsj_min_nreads} \\
+    --hostminfilter {params.minsize_host} \\
+    --hostmaxfilter {params.maxsize_host} \\
+    --virusminfilter {params.minsize_virus} \\
+    --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host_filter_min {params.minsize_host} \\
-    --host_filter_max {params.maxsize_host} \\
-    --virus_filter_min {params.minsize_virus} \\
-    --virus_filter_max {params.maxsize_virus} \\
-    -o {output.annotation_counts_table}
+    --host {params.host} \\
+    --additives {params.additives} \\
+    --viruses {params.viruses} \\
+    --outcount {output.annotation_counts_table} \\
+    --outbsj {output.backsplicedjunctions} \\
+    --outannotations {output.annotations}
 """
 
 

@@ -485,7 +485,7 @@ snakemake -s $SNAKEFILE \
 --cluster-status $CLUSTERSTATUSCMD \
 -j 500 \
 --rerun-incomplete \
---rerun-triggers input \
+--rerun-triggers code \
 --retries 2 \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
@@ -521,7 +521,7 @@ snakemake $1 -s $SNAKEFILE \
 --cluster "$CLUSTER_SBATCH_CMD" \
 -j 500 \
 --rerun-incomplete \
---rerun-triggers input \
+--rerun-triggers code \
 --keep-going \
 --reason \
 --stats ${WORKDIR}/snakemake.stats
