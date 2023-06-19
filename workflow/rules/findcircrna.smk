@@ -226,12 +226,12 @@ bash {params.bash_script} \\
     --virusminfilter {params.minsize_virus} \\
     --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outcount {output.annotation_counts_table} \\
     --outbsj {output.backsplicedjunctions} \\
-    --outannotations {output.annotations}
+    --outannotation {output.annotations}
 """
 
 
@@ -403,12 +403,12 @@ bash {params.bash_script} \\
     --virusminfilter {params.minsize_virus} \\
     --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outcount {output.annotation_counts_table} \\
     --outbsj {output.backsplicedjunctions} \\
-    --outannotations {output.annotations}
+    --outannotation {output.annotations}
 """
 
 
@@ -1226,6 +1226,7 @@ rule find_circ:
         find_cir_dir=FIND_CIRC_DIR,
         find_circ_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
+        collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
         randomstr=str(uuid.uuid4()),
     envmodules:
         TOOLS["python27"]["version"],
@@ -1302,7 +1303,7 @@ grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
     > {output.find_circ_bsj_bed}
 
 echo -ne "chrom\\tstart\\tend\\tname\\tn_reads\\tstrand\\tn_uniq\\tuniq_bridges\\tbest_qual_left\\tbest_qual_right\\ttissues\\ttiss_counts\\tedits\\tanchor_overlap\\tbreakpoints\\tsignal\\tstrandmatch\\tcategory\\n" > {output.find_circ_bsj_bed_filtered}
-awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>m) {{print}}}}' {output.find_circ_bsj_bed} \\
+cat {output.find_circ_bsj_bed} | python {params.collapse_script} | awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>=m) {{print}}}}'  \\
     >> {output.find_circ_bsj_bed_filtered}
 """
 
@@ -1574,6 +1575,7 @@ rule create_master_counts_file:
         script=join(SCRIPTS_DIR, "_make_master_counts_table.py"),
         resultsdir=join(WORKDIR, "results"),
         lookup_table=ANNOTATION_LOOKUP,
+        bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],
     envmodules:
         TOOLS["python37"]["version"],
     shell:
@@ -1591,5 +1593,6 @@ done
 
 python {params.script} \\
     --counttablelist $infiles \\
-    -o {output.matrix}
+    -o {output.matrix} \\
+    --minreads {params.bsj_min_nreads}
 """
