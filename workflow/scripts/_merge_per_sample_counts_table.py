@@ -31,19 +31,23 @@ class BSJ:
     def add_flanks(self,sequences):
         if self.strand == '+':
             coord = int(self.end)
-            self.splice_site_flank_5 = sequences[self.chrom][coord:coord+2]
+            seq = sequences[self.chrom][coord:coord+2]
+            self.splice_site_flank_5 = seq.upper()
             coord = int(self.start)
-            self.splice_site_flank_3 = sequences[self.chrom][coord-2:coord]
+            seq = sequences[self.chrom][coord-2:coord]
+            self.splice_site_flank_3 = seq.upper()
         elif self.strand == '-':
             coord = int(self.end)
             seq =  sequences[self.chrom][coord:coord+2]
-            seq = seq.replace("A", "t").replace("C", "g").replace("T", "a").replace("G", "c")
             seq = seq.upper()
+            seq = seq.replace("A", "t").replace("C", "g").replace("T", "a").replace("G", "c")
+            seq = seq.upper()[::-1]
             self.splice_site_flank_3 = seq
             coord = int(self.start)
             seq = sequences[self.chrom][coord-2:coord]
-            seq = seq.replace("A", "t").replace("C", "g").replace("T", "a").replace("G", "c")
             seq = seq.upper()
+            seq = seq.replace("A", "t").replace("C", "g").replace("T", "a").replace("G", "c")
+            seq = seq.upper()[::-1]
             self.splice_site_flank_5 = seq
     
     def get_flanks(self):
