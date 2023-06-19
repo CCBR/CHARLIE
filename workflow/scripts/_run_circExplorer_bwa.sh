@@ -63,14 +63,17 @@ cat back_spliced_junction.filter1.bed|tr '/' '\t'|cut -f1-3,5- |awk -v m=$MINREA
 # 1. both chromosomes are the same
 # 2. both strands are the same
 # 3. both coordinates are NOT the same
-awk '$1==$4' junction |awk '$3==$6' | awk '$2!=$5' > junction.filter1
+# as the junction file will be empy for BWA .. this strategy needs to be redone!
+# awk '$1==$4' junction |awk '$3==$6' | awk '$2!=$5' > junction.filter1
 
 # use junctions file to get the true strand (not + as reported in back_spliced_junction.bed) ... this is done 
 # using _circExplorer_BSJ_get_strand.sh ... and replace it to create new BSJ BED
-while read seq s e score name ostrand;do 
-	strand=$(bash ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.sh $seq $s $e junction.filter1)
-	echo -ne "$seq\t$s\t$e\t$score\t.\t$strand\n"
-done < back_spliced_junction.filter2.bed > back_spliced_junction.filter2.strand_fixed.bed
+# while read seq s e score name ostrand;do 
+# 	strand=$(bash ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.sh $seq $s $e junction.filter1)
+# 	echo -ne "$seq\t$s\t$e\t$score\t.\t$strand\n"
+# done < back_spliced_junction.filter2.bed > back_spliced_junction.filter2.strand_fixed.bed
+# for now lets convert all strands to "."
+while read a b c d e f;do echo -ne "$a\t$b\t$c\t$d\t$e\t.\n";done < back_spliced_junction.filter2.bed > back_spliced_junction.filter2.strand_fixed.bed
 
 # copy back strand_fixed BSJ BED
 cp back_spliced_junction.filter2.strand_fixed.bed $STRANDFIXEDBSJBED
@@ -91,9 +94,9 @@ python ${SCRIPTDIR}/circExplorer_get_annotated_counts_per_sample.py \
 	--back_spliced_min_reads $MINREADS \
 	--circularRNA_known $FILTEREDKNOWNTXT \
 	--low_conf $FILTEREDLOWCONF \
-	--host $HOST \
-	--additives $ADDITIVES \
-	--viruses $VIRUSES \
+	--host "$HOST" \
+	--additives "$ADDITIVES" \
+	--viruses "$VIRUSES" \
 	--virus_filter_min $VIRUSMINFILTER \
 	--host_filter_min $HOSTMINFILTER \
 	--host_filter_max $HOSTMAXFILTER \

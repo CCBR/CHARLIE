@@ -47,7 +47,7 @@ FILTEREDLOWCONF="${OUTDIR}/low_conf_${SAMPLENAME}.circRNA_known.filter1.txt"
 
 cd $TMPDIR
 
-# remove header from junction_file
+# create junction file
 grep -v junction_type ${JUNCTIONFILE} > junction
 
 # run CircExplorer2 parse
@@ -56,27 +56,10 @@ CIRCexplorer2 parse -t STAR junction > $PARSELOG 2>&1
 # copy back original back_spliced BED file
 cp back_spliced_junction.bed $ORIGINALBSJBED
 
-# filter out from back_spliced BED entries where both coordinates are the same
-awk '$2!=$3' back_spliced_junction.bed > back_spliced_junction.filter1.bed
-
-# apply second filter to remove entries with read support less than MINREADS
-cat back_spliced_junction.filter1.bed|tr '/' '\t'|cut -f1-3,5- |awk -v m=$MINREADS '$4>=m' > back_spliced_junction.filter2.bed
-
-# filter junction file for
-# 1. both chromosomes are the same
-# 2. both strands are the same
-# 3. both coordinates are NOT the same
-awk '$1==$4' junction |awk '$3==$6' | awk '$2!=$5' > junction.filter1
-
-# use junctions file to get the true strand (not + as reported in back_spliced_junction.bed) ... this is done 
-# using _circExplorer_BSJ_get_strand.sh ... and replace it to create new BSJ BED
-while read seq s e score name ostrand;do 
-	strand=$(bash ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.sh $seq $s $e junction.filter1)
-	echo -ne "$seq\t$s\t$e\t$score\t.\t$strand\n"
-done < back_spliced_junction.filter2.bed > back_spliced_junction.filter2.strand_fixed.bed
+python ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.py ${JUNCTIONFILE} back_spliced_junction.bed ${MINREADS} > back_spliced_junction.strand_fixed.bed
 
 # copy back strand_fixed BSJ BED
-cp back_spliced_junction.filter2.strand_fixed.bed $STRANDFIXEDBSJBED
+cp back_spliced_junction.strand_fixed.bed $STRANDFIXEDBSJBED
 
 # run CIRCexplorer2 annotate ... also generate low-conf circRNAs
 CIRCexplorer2 annotate -r $GENEPRED -g $REFFA -b back_spliced_junction.bed -o circRNA_known.txt --low-confidence
@@ -94,9 +77,9 @@ python ${SCRIPTDIR}/circExplorer_get_annotated_counts_per_sample.py \
 	--back_spliced_min_reads $MINREADS \
 	--circularRNA_known $FILTEREDKNOWNTXT \
 	--low_conf $FILTEREDLOWCONF \
-	--host $HOST \
-	--additives $ADDITIVES \
-	--viruses $VIRUSES \
+	--host "$HOST" \
+	--additives "$ADDITIVES" \
+	--viruses "$VIRUSES" \
 	--virus_filter_min $VIRUSMINFILTER \
 	--host_filter_min $HOSTMINFILTER \
 	--host_filter_max $HOSTMAXFILTER \
