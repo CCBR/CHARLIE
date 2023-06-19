@@ -507,6 +507,46 @@ done
 """
 
 
+rule create_hq_bams:
+    input:
+        inbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
+        countstable=rules.create_master_counts_file.output.matrix,
+    output:
+        outbam=join(WORKDIR, "results", "HQ_BSJ_bams","{sample}.HQ_only.BSJ.bam")
+    params:
+        script=join(SCRIPTS_DIR,"_bam_filter_BSJ_for_HQonly.py"),
+        samplename="{sample}",
+        regions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+    envmodules:
+        TOOLS["python37"]["version"],
+        TOOLS["samtools"]["version"],
+    shell:"""
+set -exo pipefail
+outdir=$(dirname {output.outbam})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
+cd $outdir
+python3 {params.script} \\
+    -i {input.inbam} \\
+    -t {input.countstable} \\
+    -o {output.outbam} \\
+    --regions {params.regions} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --sample_name {params.samplename}
+samtools index {output.outbam}
+for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
+    if [ ! -f "${{bam}}.bai" ];then
+        samtools index $bam
+    fi
+done
+"""
+
+
+
 # localrules: venn
 # rule venn:
 #     input:
