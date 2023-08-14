@@ -74,7 +74,7 @@ def main():
 
     RGlist = dict()
     for index,row in indf.iterrows():
-        jid = row['chrom']+"##"+str(row['start'])+"##"+str(row['end'])+"##"+row['strand']
+        jid = row['chrom']+"##"+str(row['start'])+"##"+str(row['end'])
         RGlist[jid]=1
     print("Number of RGs: ",len(RGlist))
 
@@ -114,6 +114,9 @@ def main():
 
     for read in samfile.fetch():
         rg = read.get_tag("RG")
+        rg = rg.split("##")
+        rg = rg[:len(rg)-1]
+        rg = "##".join(rg)
         if rg in RGlist:
             regionname=_get_regionname_from_seqname(regions,read.reference_name)
             if regionname in hosts:
