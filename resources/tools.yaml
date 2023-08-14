@@ -1,5 +1,5 @@
 bedtools:
- version: "bedtools/2.29.2"
+ version: "bedtools/2.30.0"
 bowtie2:
  version: "bowtie/2-2.5.1"
 bowtie1:
@@ -40,7 +40,7 @@ star:
 stringtie:
  version: "stringtie/2.1.4"
 ucsc:
- version: "ucsc/407"
+ version: "ucsc/450"
 R:
  version: "R/4.0.3"
 ncl_required_modules: "python/2.7 bedtools/2.29.0 blat/3.5 bwa/0.7.17 samtools/1.15.1 novocraft/4.03.05"
