@@ -379,7 +379,8 @@ function create_runinfo {
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
   userlogin=$(whoami)
-  username=$(finger $userlogin|grep ^Login|awk -F"Name: " '{print $2}')
+  # username=$(finger $userlogin|grep ^Login|awk -F"Name: " '{print $2}')
+  username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}')
   echo "Login: $userlogin" >> ${WORKDIR}/runinfo.yaml
   echo "Name: $username" >> ${WORKDIR}/runinfo.yaml
   g=$(groups)
