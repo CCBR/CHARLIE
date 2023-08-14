@@ -250,6 +250,7 @@ rule all:
         # ## circExplorer extra bams
         # unpack(get_extra_bams),
         ## circExplorer ... found read counts table
+        expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.rid2jid.tsv.gz")  ,sample=SAMPLES),
         expand(join(WORKDIR, "results", "{sample}", "circExplorer", "{sample}.readcounts.tsv")  ,sample=SAMPLES),                               # counts table has expected counts, found BSJ counts, linear counts (same and opposite strand), splices BSJ counts
         
         ## circExplorer_BWA
