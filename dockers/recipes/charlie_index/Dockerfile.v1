@@ -30,6 +30,7 @@ ENV PATH="/opt2/bin:${PATH}"
 
 ADD https://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat /opt2/bin
 RUN chmod a+x /opt2/bin/blat
+
 # install NCL_scan
 WORKDIR /opt2
 ADD https://github.com/TreesLab/NCLscan/archive/refs/tags/v1.6.5.tar.gz /opt2
@@ -39,6 +40,14 @@ WORKDIR /opt2/NCLscan-1.6.5/bin
 RUN make
 ENV PATH="/opt2/NCLscan-1.6.5/bin:${PATH}"
 
+# install python libraries
+RUN pip install pandas && \
+  pip install numpy && \
+  pip install scipy && \
+  pip install pysam && \
+  pip install HTSeq && \
+  pip install matplotlib && \
+  
 # cleanup etc
 # Save Dockerfile in the docker
 COPY Dockerfile /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
