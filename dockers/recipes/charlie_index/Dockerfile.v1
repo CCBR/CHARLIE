@@ -19,7 +19,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 RUN conda create -n novoalign
 RUN . /opt2/conda/etc/profile.d/conda.sh && \
   conda activate novoalign && \
-  conda install -c bioconda novoalign
+  conda install -c compbiocore novoalign
 
 RUN mkdir -p /opt2/bin
 COPY redirect /opt2/bin/redirect
