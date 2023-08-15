@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+if [ "$#" != "1" ];then
+    echo "Provide a TAG as argument!"
+    exit
+fi
+
+
+# dt=$(date +"%d%m%y%H%M%S")
+# dockerhub_account="nciccbr"
+NAMESPACE="CCBR"
+CWD=`pwd`
+JUSTFOLDERNAME=$(basename $CWD)
+reponame="$JUSTFOLDERNAME"
+
+dt=$(date +"%y%m%d")
+tag="$1"
+
+if [ -f Dockerfile ];then rm -f Dockerfile;fi
+if [ ! -f Dockerfile.${tag} ];then
+    echo "Dockerfile.${tag} does not exist. Cannot build!"
+    exit
+fi
+ln -s Dockerfile.${tag} Dockerfile
+
+docker build \
+    --progress=plain \
+    --build-arg BUILD_DATE=${dt} \
+    --build-arg BUILD_TAG=${tag} \
+    --build-arg REPONAME=${reponame} \
+    -f Dockerfile \
+    -t ${NAMESPACE}/${reponame}:${tag} \
+    . 2>&1 | \
+    tee Dockerfile.${tag}.build.${dt}.log
