@@ -9,7 +9,7 @@ fi
 
 dockerhub_account="ghcr.io/CCBR" # dockerhub_account is same as "ghcr.io/<NAMESPACE>" on ghcr
 # foldername is the reponame
-echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+echo $GH_PAT | docker login ghcr.io -u $GH_USERNAME --password-stdin
 CWD=`pwd`
 JUSTFOLDERNAME=$(basename $CWD)
 reponame="$JUSTFOLDERNAME"
