@@ -24,9 +24,20 @@ RUN . /opt2/conda/etc/profile.d/conda.sh && \
 RUN mkdir -p /opt2/bin
 COPY redirect /opt2/bin/redirect
 RUN chmod a+x /opt2/bin/redirect && \
-    ln -s /opt2/bin/redirect /opt2/bin/novoalign
+    ln -s /opt2/bin/redirect /opt2/bin/novoalign && \
+    ln -s /opt2/bin/redirect /opt2/bin/novoindex
 ENV PATH="/opt2/bin:${PATH}"
+
+ADD https://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat /opt2/bin
+RUN chmod a+x /opt2/bin/blat
 # install NCL_scan
+WORKDIR /opt2
+ADD https://github.com/TreesLab/NCLscan/archive/refs/tags/v1.6.5.tar.gz /opt2
+RUN tar xzvf v1.6.5.tar.gz && \
+  rm -f v1.6.5.tar.gz 
+WORKDIR /opt2/NCLscan-1.6.5/bin
+RUN make
+ENV PATH="/opt2/NCLscan-1.6.5/bin:${PATH}"
 
 # cleanup etc
 # Save Dockerfile in the docker
