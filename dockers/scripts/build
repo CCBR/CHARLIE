@@ -7,8 +7,8 @@ fi
 
 
 # dt=$(date +"%d%m%y%H%M%S")
-# dockerhub_account="nciccbr"
-NAMESPACE="ccbr"
+# dockerhub_account="ccbr" # dockerhub_account is same as "ghcr.io/<NAMESPACE>" on ghcr
+dockerhub_account="nciccbr"
 CWD=`pwd`
 JUSTFOLDERNAME=$(basename $CWD)
 reponame="$JUSTFOLDERNAME"
