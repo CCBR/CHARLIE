@@ -8,7 +8,7 @@ fi
 
 # dt=$(date +"%d%m%y%H%M%S")
 # dockerhub_account="nciccbr"
-NAMESPACE="CCBR"
+NAMESPACE="ccbr"
 CWD=`pwd`
 JUSTFOLDERNAME=$(basename $CWD)
 reponame="$JUSTFOLDERNAME"
