@@ -7,7 +7,6 @@ rule create_index:
         list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
     output:
         genepred_w_geneid=join(REF_DIR, "ref.genes.genepred_w_geneid"),
-        sa=join(REF_DIR, "STAR_no_GTF", "SA"),
         fixed_gtf=join(REF_DIR, "ref.fixed.gtf"),
         transcripts_fa=join(REF_DIR, "ref.transcripts.fa"),
         lncRNA_transcripts_fa=join(REF_DIR, "ref.dummy.fa"),
@@ -22,52 +21,73 @@ rule create_index:
         script3=join(SCRIPTS_DIR, "fix_gtfs.py"),
         randomstr=str(uuid.uuid4()),
         nclscan_dir=config["nclscan_dir"],
+        nclscan_docker_dir=config["nclscan_docker_dir"],
         nclscan_config=config["nclscan_config"],
+        nclscan_docker_config=config["nclscan_docker_config"],
     envmodules:
-        TOOLS["star"]["version"],
         TOOLS["bwa"]["version"],
         TOOLS["samtools"]["version"],
         TOOLS["ucsc"]["version"],
         TOOLS["cufflinks"]["version"],
+    container: config['containers']['star']
     threads: getthreads("create_index")
     shell:
         """
 set -exo pipefail
 cd {params.refdir}
+if [[ -f "/.dockerenv" || -f /singularity ]];then
+    # you are inside a docker or singularity container
+    ncldir="{params.nclscan_docker_dir}"
+    nclconf="{params.nclscan_docker_config}"
+else
+    ncldir="{params.nclscan_dir}"
+    nclconf="{params.nclscan_config}"
+fi
 samtools faidx {params.reffa} && \
     cut -f1-2 {params.reffa}.fai > {params.reffa}.sizes
-
-# bwa index -p ref {params.reffa} > bwa_index.log ... created in a separate rule
 
 # NCLscan files
 python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
 gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
 touch {output.lncRNA_transcripts_fa}
-{params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
+${{ncldir}}/bin/create_reference.py -c ${{nclconf}}
+# the above script internally runs bwa and that takes a while!
 
 gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \
     python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
 
+# MapSplice requires the {params.reffa} multifasta to be split into separate fastas
+bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
+ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
+# may have to create bowtie1 index here.. has to be a separate rule ... see below
+"""
+
+
+TRSED = r"""tr '\n' ',' | sed 's/.$//g'"""
+
+rule create_star_index:
+    input:
+        # FASTAS_REGIONS_GTFS
+        list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
+    output:
+        sa=join(REF_DIR, "STAR_no_GTF", "SA"),
+    params:
+        reffa=REF_FA
+    envmodules: TOOLS["star"]["version"]
+    container: config['containers']['star']
+    threads: getthreads("create_star_index")
+    shell:
+        """
+set -exo pipefail
 stardir=$(dirname {output.sa})
+parentdir=$(dirname ${{stardir}}) && cd $parentdir
 mkdir -p $stardir && \\
 STAR \\
     --runThreadN {threads} \\
     --runMode genomeGenerate \\
     --genomeDir $stardir \\
     --genomeFastaFiles {params.reffa}
-
-# MapSplice requires the {params.reffa} multifasta to be split into separate fastas
-bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
-ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
-# may have to create bowtie1 index here.. has to be a separate rule ... see below
-
-
-
 """
-
-
-TRSED = r"""tr '\n' ',' | sed 's/.$//g'"""
-
 
 rule create_mapsplice_index:
     input:
@@ -78,8 +98,7 @@ rule create_mapsplice_index:
         separate_fastas=join(REF_DIR, "separate_fastas"),
         ebwt=join(REF_DIR, "separate_fastas_index"),
     threads: getthreads("create_mapsplice_index")
-    container:
-        "docker://cgrlab/mapsplice2:latest"
+    container: config['containers']['mapsplice']
     shell:
         """
 set -exo pipefail
@@ -95,15 +114,16 @@ rule create_bwa_index:
         list(map(lambda x: ancient(x), FASTAS_REGIONS_GTFS)),
     output:
         bwt=join(REF_DIR,"ref.bwt"),
-        log=join(REF_DIR,"bwa_index.log")
     params:
         reffa=REF_FA
     envmodules: TOOLS["bwa"]["version"]
+    container: config['containers']['star']
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})
 cd $refdir
-bwa index -p ref {params.reffa} > bwa_index.log
+# increasing -b from default ... based off of https://github.com/lh3/bwa/issues/104
+bwa index -b 10000000000 -p ref {params.reffa}
 """
 
 rule create_bowtie2_index:

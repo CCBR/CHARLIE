@@ -7,6 +7,8 @@
 set -eo pipefail
 module purge
 
+retries="2"
+
 ##########################################################################################
 # functions
 ##########################################################################################
@@ -40,8 +42,10 @@ if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
 fi
-PYTHONVERSION="3.7"
+# PYTHONVERSION="3.7"
+PYTHONVERSION="3.10"
 SNAKEMAKEVERSION="7.19.1"
+CHARLIEVERSION="0.10.0"
 # SNAKEMAKEVERSION="5.24.1"
 
 # set defaults
@@ -63,7 +67,7 @@ function usage() { cat << EOF
 
 ##########################################################################################
 
-Welcome to charlie(v0.9.0)
+Welcome to charlie(v${CHARLIEVERSION})
  _______  __   __  _______  ______    ___      ___   _______ 
 |       ||  | |  ||   _   ||    _ |  |   |    |   | |       |
 |       ||  |_|  ||  |_|  ||   | ||  |   |    |   | |    ___|
@@ -132,7 +136,7 @@ Optional Arguments:
 --additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
 --manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
---changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
+--useenvmod|-e  : use `--use-enmodules` option while running Snakemake. This is for using modules on HPC instead of containers(default).  
 --help|-h       : print this help
 
 
@@ -148,6 +152,7 @@ VersionInfo:
   snakemake       : $SNAKEMAKEVERSION 
   pipeline_home   : $PIPELINE_HOME
   git commit/tag  : $GIT_COMMIT_TAG
+  charlie_version : v${CHARLIEVERSION}
 
 ##########################################################################################
 EOF
@@ -188,6 +193,7 @@ sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
+sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.docker.template > $WORKDIR/nclscan.docker.config
 fi
 if [ ! -f $CLUSTERFILE ];then
 cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
@@ -222,37 +228,14 @@ function check_essential_files() {
 }
 
 ##########################################################################################
-# CHANGE GROUP to Ziegelbauer_lab
+# get singularity setup part of the snakemake command --> SINGULARITY_STR
 ##########################################################################################
 
-function change_grp() {
-  grps=$(groups)
-  found=0
-  current_grp=""
-  count=0
-  for g in $grps
-  do
-    count=$((count+1))
-    if [ "$count" == "1" ];then
-      current_grp=$g
-    fi
-    if [ "Ziegelbauer_lab" == $g ]
-    then
-      found=1
-      break
-    fi
-  done
-  if [ "$found" == "1" ]
-  then
-    if [ "$current_grp" != "Ziegelbauer_lab" ]
-    then
-      echo "Current group     : $current_grp"
-      echo "Changing to group : Ziegelbauer_lab"
-      # newgrp Ziegelbauer_lab
-      exec sg Ziegelbauer_lab "$0 $*"
-    fi
+function set_singularity_str() {
+  SINGULARITY_STR="--use-singularity --singularity-args \"${SINGULARITY_BINDS}\""
+  if [[ "${USE_ENVMODULES}" == "1" ]]; then
+    SINGULARITY_STR="--use-envmodules"
   fi
-  # main "$@"
 }
 
 ##########################################################################################
@@ -311,14 +294,16 @@ function set_singularity_binds(){
 # biowulf specific
   echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
   echo "$WORKDIR" >> ${WORKDIR}/tmp1
-  grep -o '\/.*' <(cat ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)|dos2unix|tr '\t' '\n'|grep -v ' \|\/\/'|sort|uniq >> ${WORKDIR}/tmp1
+  grep -o '\/.*' <(cat ${WORKDIR}/config.yaml)|dos2unix|tr '\t' '\n'|sed "s/\"//g"|grep -v ' \|\/\/'|grep -v opt2|sort|uniq >> ${WORKDIR}/tmp1
+  grep -o '\/.*' <(tail -n+2 ${WORKDIR}/samples.tsv)|dos2unix|tr '\t' '\n'|sed "s/\"//g"|grep -v ' \|\/\/'|sort|uniq >> ${WORKDIR}/tmp1
   grep gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3,$4,$5}'| grep "[a-zA-Z0-9]" |sort|uniq > ${WORKDIR}/tmp2
   grep -v gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3}'| grep "[a-zA-Z0-9]"|sort|uniq > ${WORKDIR}/tmp3
   while read a;do readlink -f $a;done < ${WORKDIR}/tmp3 | grep "[a-zA-Z0-9]"> ${WORKDIR}/tmp4
   binds=$(cat ${WORKDIR}/tmp2 ${WORKDIR}/tmp3 ${WORKDIR}/tmp4|sort|uniq |tr '\n' ',')
-  rm -f ${WORKDIR}/tmp?
+  # rm -f ${WORKDIR}/tmp?
   binds=$(echo $binds|awk '{print substr($1,1,length($1)-1)}')
   SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+  set_singularity_str
 }
 
 ##########################################################################################
@@ -367,7 +352,11 @@ function create_runinfo {
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
   userlogin=$(whoami)
-  username=$(finger $userlogin|grep ^Login|awk -F"Name: " '{print $2}')
+  if [[ `which finger 2>/dev/null` ]];then
+          username=$(finger $userlogin |grep ^Login | awk -F"Name: " '{print $2}');
+  elif [[ `which lslogins 2>/dev/null` ]];then
+          username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}');
+  else username="NOTFOUND";fi
   echo "Login: $userlogin" >> ${WORKDIR}/runinfo.yaml
   echo "Name: $username" >> ${WORKDIR}/runinfo.yaml
   g=$(groups)
@@ -425,18 +414,18 @@ function run() {
 
   preruncleanup
 
+  # --use-envmodules \
+
   snakemake -s $SNAKEFILE\
   --directory $WORKDIR \
   --printshellcmds \
-  --use-singularity \
-  --singularity-args "$SINGULARITY_BINDS" \
-  --use-envmodules \
+  $SINGULARITY_STR \
   --latency-wait 120 \
   --configfile $CONFIGFILE \
   --cores all \
   --rerun-incomplete \
   --rerun-triggers input \
-  --retries 2 \
+  --retries ${retries} \
   --keep-going \
   --stats ${WORKDIR}/snakemake.stats \
   2>&1|tee ${WORKDIR}/snakemake.log
@@ -468,9 +457,7 @@ cd \$SLURM_SUBMIT_DIR
 
 snakemake -s $SNAKEFILE \
 --directory $WORKDIR \
---use-singularity \
---singularity-args "$SINGULARITY_BINDS" \
---use-envmodules \
+$SINGULARITY_STR \
 --printshellcmds \
 --latency-wait 120 \
 --configfile $CONFIGFILE \
@@ -480,7 +467,7 @@ snakemake -s $SNAKEFILE \
 -j 500 \
 --rerun-incomplete \
 --rerun-triggers input \
---retries 2 \
+--retries ${retries} \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats \
 2>&1|tee ${WORKDIR}/snakemake.log
@@ -500,7 +487,6 @@ EOF
 
 snakemake $1 -s $SNAKEFILE \
 --directory $WORKDIR \
---use-envmodules \
 --printshellcmds \
 --latency-wait 120 \
 --configfile $CONFIGFILE \
@@ -537,7 +523,7 @@ function reset() {
 
 function main(){
 
-  CHANGEGRP=0
+  USE_ENVMODULES=0
 
   if [ $# -eq 0 ]; then usage; exit 1; fi
 
@@ -552,8 +538,8 @@ function main(){
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
       ;;
-      -z|--changegrp)
-        CHANGEGRP=1
+      -e|--useenvmod)
+          USE_ENVMODULES=1
       ;;
       -g=*|--host=*)
         HOST="${i#*=}"
@@ -571,6 +557,9 @@ function main(){
       -h|--help)
         usage && exit 0;
       ;;
+      --version)
+        echo "v${CHARLIEVERSION}" && exit 0;
+      ;;
       *)
         err "Unknown argument $i!"    # unknown option
       ;;
@@ -586,9 +575,6 @@ function main(){
   JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
 
   CLUSTERSTATUSCMD="${PIPELINE_HOME}/resources/cluster_status.sh"
-
-  # change group to Ziegelbauer_lab before doing anything
-  if [ "$CHANGEGRP" == "1" ]; then change_grp "$allargs"; fi
 
   case $RUNMODE in
     init) init && exit 0;;

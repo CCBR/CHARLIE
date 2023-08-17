@@ -12,7 +12,7 @@
 #  ref: https://github.com/dieterich-lab/DCC
 rule star1p:
     input:
-        sa=rules.create_index.output.sa,
+        sa=rules.create_star_index.output.sa,
         R1=rules.cutadapt.output.of1,
         R2=rules.cutadapt.output.of2,
         gtf=rules.create_index.output.fixed_gtf,

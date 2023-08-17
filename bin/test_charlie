@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+HELP=0
+if [[ "$#" == 0 ]];then
+    echo "Running charlie --help"
+    echo "Pass runmode as argument!"
+    HELP=1
+fi
+
+# set testing parameters
+CHARLIEVER="containerized"
+# testing output parent folder
+TEST_PARENT_OUTDIR="/data/CBLCCBR/.kopardevn_tmp/CHARLIE_TESTING"
+OUTDIR_SUFFIX=""
+if [[ "$#" == 2 ]];then
+    OUTDIR_SUFFIX="_$2"
+fi
+
+HOST="hg38"
+ADDITIVES="ERCC,BAC16Insert"
+VIRUSES="NC_009333.1"
+
+# PIPELINES_HOME is an env var on BIOWULF and FRCE
+PIPELINES_HOME="/data/CCBR_Pipeliner/Pipelines" # on BIOWULF 
+# PIPELINES_HOME="/mnt/projects/CCBR-Pipelines/pipelines" # on FRCE 
+
+SCRIPTNAME="$0"
+# in case the script is run as a symlink
+SCRIPTNAME=$(readlink -f $SCRIPTNAME)
+SCRIPTDIRNAME=$(readlink -f $(dirname "$SCRIPTNAME"))
+# add "bin" to PATH
+if [[ ":$PATH:" != *":${SCRIPTDIRNAME}:"* ]];then
+	export PATH=${PATH}:${SCRIPTDIRNAME}
+fi
+
+# DT=$(date +%y%m%d%H%M%S)
+DT=$(date +%y%m%d)
+
+if [[ "$HELP" == "1" ]];then
+    charlie --help && exit 0;
+fi
+
+RUNMODE=$1
+TESTDATAFOLDERPATH="${PIPELINES_HOME}/CHARLIE/${CHARLIEVER}/.tests/testdata/human"
+
+# prepare manifest
+MANIFEST="${HOME}/samples.tsv"
+sed -e "s/TESTDATAFOLDERPATH/${TESTDATAFOLDERPATH//\//\\/}/g" ${TESTDATAFOLDERPATH}/samples.tsv > $MANIFEST
+
+charlie \
+    --workdir="${TEST_PARENT_OUTDIR}/${DT}${OUTDIR_SUFFIX}" \
+    --runmode="$RUNMODE" \
+    --host="$HOST" \
+    --additives="$ADDITIVES" \
+    --viruses="$VIRUSES" \
+    --manifest=$MANIFEST 
+    # --useenvmod
+
+# charlie run \
+# --input /data/CCBR_Pipeliner/Pipelines/CHARLIE/${CHARLIEVER}/.tests/*fastq.gz \
+# --output /data/${USER}/CHARLIE_testing_${DT} \
+# --genome hg38_30 \
+# --create-nidap-folder \
+# --sif-cache /data/CCBR_Pipeliner/SIFS  
+# #--shared-resources /mnt/projects/CCBR-Pipelines/pipelines/CHARLIE/resources/shared_resources/ \
+# #--tmp-dir /scratch/cluster_scratch/${USER}/CHARLIE_tmp 
+# #--wait --create-nidap-folder \

@@ -25,6 +25,7 @@ run_circRNAFinder: True
 # This can only be run for PE data
 run_nclscan: False
 nclscan_config: "WORKDIR/nclscan.config"
+nclscan_docker_config: "WORKDIR/nclscan.docker.config"
 #
 # Should we also run find_circ? True or False WITHOUT quotes
 run_findcirc: True
@@ -102,6 +103,7 @@ cutadapt_q: 20
 
 ciri_perl_script: "/data/CCBR_Pipeliner/bin/CIRI_v2.0.6/CIRI2.pl"
 nclscan_dir: "/data/CCBR_Pipeliner/bin/NCLscan-1.7.0"
+nclscan_docker_dir: "/opt2/NCLscan-1.6.5"
 circrnafinder_dir: "/data/CCBR_Pipeliner/bin/circRNA_finder-1.2"
 find_circ_dir: "/data/CCBR_Pipeliner/bin/find_circ"
 fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
@@ -109,3 +111,8 @@ fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
 annotation_lookups:
   hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
   mm39: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt"
+
+
+containers:
+  star: "docker://nciccbr/charlie_index:v1"
+  mapsplice: "docker://cgrlab/mapsplice2:latest"
