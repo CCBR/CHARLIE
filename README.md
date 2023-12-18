@@ -1,8 +1,18 @@
 # CHARLIE
 ![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)
 
- **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
 
+### Table of Contents
+- [CHARLIE - **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line](#charlie)
+    - [Table of Contents](#table-of-contents)
+    - [1. Introduction](#1-introduction)
+    - [2. Flowchart](#2-flowchart)
+    - [3. Software Dependencies](#3-software-dependencies)
+    - [4. Usage](#4-usages)
+
+### 1. Introduction
+
+ **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
 
 Things to know about CHARLIE:
 
@@ -29,14 +39,46 @@ This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other too
 
 > Note: BWA<sup>1</sup>, BWA<sup>2</sup> denote 2 different alignment parameters, etc.
 
-Flowchart:
+### 2. Flowchart
 ![](docs/images/CHARLIE_v0.8.x.png)
 
-For complete documentation with tutorial go [here](https://ccbr.github.io/CCBR_circRNA_DAQ/).
+For complete documentation with tutorial go [here](https://CCBR.github.io/CHARLIE/).
 
 > DISCLAIMER: New circRNA tools have been added CHARLIE and the documentation is currently out of date!
 
+### 3. Software Dependencies
 
+The following version of various bioinformatics tools are using within CHARLIE:
+
+| tool          | version   |
+| ------------- | --------- |
+| blat          | 3.5       |
+| bedtools      | 2.30.0    |
+| bowtie        | 2-2.5.1   |
+| bowtie        | 1.3.1     |
+| bwa           | 0.7.17    |
+| circexplorer2 | 2.3.8     |
+| cufflinks     | 2.2.1     |
+| cutadapt      | 1.18      |
+| fastqc        | 0.11.9    |
+| hisat         | 2.2.1.0   |
+| java          | 1.8.0_181 |
+| multiqc       | 1.9       |
+| parallel      | 20231122  |
+| perl          | 5.24      |
+| picard        | 2.25.0    |
+| python        | 2.7       |
+| python        | 3.7       |
+| sambamba      | 0.8.0     |
+| samtools      | 1.16.1    |
+| STAR          | 2.7.6a    |
+| stringtie     | 2.1.4     |
+| ucsc          | 450       |
+| R             | 4.0.3     |
+| novocraft     | 4.03.05   |
+
+
+### 4. Usage
 
 ```bash
  % ./charlie
@@ -132,3 +174,7 @@ VersionInfo:
 
 ##########################################################################################
 ```
+
+> DISCLAIMER:
+> 
+> CHARLIE is built to be run only on [BIOWULF](https://hpc.nih.gov). A newer HPC-agnostic version of CHARLIE is planned for 2024.
