@@ -9,6 +9,7 @@
     - [2. Flowchart](#2-flowchart)
     - [3. Software Dependencies](#3-software-dependencies)
     - [4. Usage](#4-usages)
+    - [5. License](#5-license)
 
 ### 1. Introduction
 
@@ -174,6 +175,10 @@ VersionInfo:
 
 ##########################################################################################
 ```
+
+### 5. License
+
+See [here](https://github.com/CCBR/CHARLIE/blob/v0.10.0-dev/LICENSE).
 
 > DISCLAIMER:
 > 
