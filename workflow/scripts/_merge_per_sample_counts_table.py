@@ -546,7 +546,8 @@ def main() :
     # add circExplorer_BWA columns
     outcols.extend(['circExplorer_bwa_read_count'])
     # add find_circ columns
-    outcols.extend(['findcirc_read_count'])
+    if args.findcirc:
+        outcols.extend(['findcirc_read_count'])
     # add DCC columns
     if args.dcc: 
         outcols.extend(['dcc_read_count',
