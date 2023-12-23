@@ -50,34 +50,29 @@ def main():
             jid=l[1]
             if jid==".":
                 print(">>>>>>>>jid is dot:",l)
-            if not jid in scount:
-                scount[jid]=dict()
-                lcount[jid]=dict()
-                scount[jid]["SS"]=0
-                scount[jid]["OS"]=0
-                scount[jid]["Unknown"]=0
-                lcount[jid]["SS"]=0
-                lcount[jid]["OS"]=0
-                lcount[jid]["Unknown"]=0
+            # jchr,jstart,jend,jstrand=jid.split("##")
+            # jid2="##".join([jchr,jstart,jend])
+            jid2=jid
+            if not jid2 in scount:
+                scount[jid2]=dict()
+                lcount[jid2]=dict()
+                scount[jid2]["+"]=0
+                scount[jid2]["-"]=0
+                scount[jid2]["."]=0
+                lcount[jid2]["+"]=0
+                lcount[jid2]["-"]=0
+                lcount[jid2]["."]=0
             if "##" in l[0]:
                 rid,rstrand=l[0].split("##")
             else:
                 rid=l[0]
                 rstrand="."
-            jstrand=jid.split("##")[-1]
-            if rstrand=="+" or rstrand=="-":
-                if rstrand==jstrand:
-                    strandinfo="OS"
-                else:
-                    strandinfo="SS"
-            else:
-                strandinfo="Unknown"
             if rid in linridlist:
                 linridlist[rid]+=1
-                lcount[jid][strandinfo]+=1
+                lcount[jid][rstrand]+=1
             if rid in sinridlist:
                 sinridlist[rid]+=1
-                scount[jid][strandinfo]+=1
+                scount[jid][rstrand]+=1
     rid2jid.close()
     with gzip.open(args.linearout,'wt') as outrl:
         for k,v in linridlist.items():
@@ -90,13 +85,14 @@ def main():
                 outrl.write("%s\n"%k)
     outrl.close()
     countout=open(args.jidcounts,'w')
-    countout.write("#chrom\tstart\tend\tstrand\tlinear_same_strand\tspliced_same_strand\tlinear_opposite_strand\tspliced_opposite_strand\tlinear_unknown_strand\tspliced_unknown_strand\n")
+    # countout.write("#chrom\tstart\tend\tlinear_+\tspliced_+\tlinear_-\tspliced_-\tlinear_.\tspliced_.\n")
+    countout.write("#chrom\tstart\tend\tstrand\tlinear_+\tspliced_+\tlinear_-\tspliced_-\tlinear_.\tspliced_.\n")
     for k in lcount.keys():
         v1=lcount[k]
         v2=scount[k]
         kstr=k.split("##")
         k="\t".join(kstr)
-        countout.write("%s\t%d\t%d\t%d\t%d\t%d\t%d\n"%(k,v1["SS"],v2["SS"],v1["OS"],v2["OS"],v1["Unknown"],v2["Unknown"]))
+        countout.write("%s\t%d\t%d\t%d\t%d\t%d\t%d\n"%(k,v1["+"],v2["+"],v1["-"],v2["-"],v1["."],v2["."]))
     countout.close()
 
 if __name__ == "__main__":

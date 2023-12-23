@@ -15,6 +15,17 @@ import pandas
 # 10      linear_BSJ_reads_opposite_strand
 # 11      linear_spliced_BSJ_reads_opposite_strand
 
+
+def _df_setcol_as_int(df,collist):
+    for c in collist:
+        df[[c]]=df[[c]].astype(int)
+    return df
+
+def _df_setcol_as_str(df,collist):
+    for c in collist:
+        df[[c]]=df[[c]].astype(str)
+    return df
+
 def main():
     # debug = True
     debug = False
@@ -33,7 +44,11 @@ def main():
     # print(bcounts.head())
     # print(lcounts.head())
     mcounts = bcounts.merge(lcounts,how='outer',on=["#chrom","start","end","strand"])
-
+    mcounts.fillna(value=0,inplace=True)
+    strcols = [ '#chrom', 'strand', 'known_novel' ]
+    intcols = list ( set(mcounts.columns) - set(strcols) )
+    mcounts = _df_setcol_as_str(mcounts,strcols)
+    mcounts = _df_setcol_as_int(mcounts,intcols)
     mcounts.drop(["read_count"],axis=1,inplace=True)
     mcounts.to_csv(args.mergedcounts,index=False,doublequote=False,sep="\t")
 

@@ -54,13 +54,14 @@ def read_BSJs(filename,regions,host_min,host_max,virus_min,virus_max,known_novel
         end=int(l[2])
         strand=l[5]
         circid="##".join([chrom,str(start),str(end)])
-        count=int(l[3].split("/")[1])
+        # count=int(l[3].split("/")[1])
+        count=int(l[3])
         if count < threshold:
             continue
         host_additive_virus=_get_host_additive_virus(regions=regions,seqname=chrom)
-        if host_additive_virus == "additive": continue
+        # if host_additive_virus == "additive": continue
         size = end-start
-        if host_additive_virus == "host":
+        if host_additive_virus == "host" or host_additive_virus == "additive":
             if size < host_min: continue
             if size > host_max: continue
         if host_additive_virus == "virus":
@@ -70,6 +71,7 @@ def read_BSJs(filename,regions,host_min,host_max,virus_min,virus_max,known_novel
     return(BSJdict)
 
 parser = argparse.ArgumentParser(description='Create CircExplorer2 Per Sample Counts Table')
+# INPUTS
 parser.add_argument('--back_spliced_bed', dest='bsb', type=str, required=True,
                     help='back_spliced.bed')
 parser.add_argument('--back_spliced_min_reads', dest='back_spliced_min_reads', type=int, required=True,
@@ -94,7 +96,7 @@ parser.add_argument('--virus_filter_max', dest='virus_filter_max', type=int, req
                     help='max BSJ size filter for virus')
 parser.add_argument('--regions', dest='regions', type=str, required=True,
                     help='regions file eg. ref.fa.regions')
-
+# OUTPUTS
 parser.add_argument('-o',dest='outfile',required=True,help='counts TSV table')
 args = parser.parse_args()
 
@@ -117,7 +119,7 @@ if args.lc:
 for k,v in all_BSJs.items():
     if k in known_BSJs:
         all_BSJs[k].known_novel="known"
-        all_BSJs[k].strand=v.strand
+        all_BSJs[k].strand=known_BSJs[k].strand
         all_BSJs[k].counted=1
         known_BSJs[k].counted=1
     o.write(str(all_BSJs[k]))

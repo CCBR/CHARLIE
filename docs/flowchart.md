@@ -1,8 +1,9 @@
-# circRNA DAQ Pipeline
+# CHARLIE
 
 ![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
 
-Flowchart for [v0.3.3](https://github.com/kopardev/circRNA/releases/tag/v0.3.3):
+Flowchart
 
-![img](circRNA_v0.3.3.png)
+![img](images/CHARLIE_v0.8.x.png)
 
+> DISCLAIMER: This chart is for v0.8.x may be slightly outdated.

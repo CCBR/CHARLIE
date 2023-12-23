@@ -29,12 +29,13 @@ rule create_index:
         TOOLS["samtools"]["version"],
         TOOLS["ucsc"]["version"],
         TOOLS["cufflinks"]["version"],
+        TOOLS["python37"]["version"],
     threads: getthreads("create_index")
     shell:
         """
 set -exo pipefail
 cd {params.refdir}
-samtools faidx {params.reffa} && \
+samtools faidx {params.reffa} && \\
     cut -f1-2 {params.reffa}.fai > {params.reffa}.sizes
 
 # bwa index -p ref {params.reffa} > bwa_index.log ... created in a separate rule
@@ -45,7 +46,7 @@ gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
 touch {output.lncRNA_transcripts_fa}
 {params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
 
-gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \
+gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \\
     python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
 
 stardir=$(dirname {output.sa})
