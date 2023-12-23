@@ -304,7 +304,7 @@ The `.tests/dummy_fastqs` folder in the repo has test dataset:
 
 Expected output from the sample data is stored under `.tests/expected_output`.
 
-More details about running test data can be found [here](https://ccbr.github.io/CHARLIE).
+More details about running test data can be found [here](https://ccbr.github.io/CHARLIE/tutorial).
 
 > DISCLAIMER:
 > 
