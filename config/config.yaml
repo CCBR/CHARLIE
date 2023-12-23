@@ -27,7 +27,7 @@ run_nclscan: False
 nclscan_config: "WORKDIR/nclscan.config"
 #
 # Should we also run find_circ? True or False WITHOUT quotes
-run_findcirc: True
+run_findcirc: False
 # findcirc_params: "--noncanonical --allhits" # this gives way too many circRNAs
 findcirc_params: "--noncanonical"
 
