@@ -403,6 +403,42 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#v06x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.6.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v07x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.7.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v09x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.9.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v010x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.10.x
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -497,6 +533,42 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#v06x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.6.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v07x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.7.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v09x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.9.x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v010x" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.10.x
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -564,6 +636,50 @@
 <li>CLEAR pipeline <em>quant.txt</em> file is annotated for known circRNAs</li>
 <li><code>WORKDIR</code> can now be a relative path</li>
 <li>bam2bw conversion fix for BSJ and spliced_reads. <a href="https://github.com/kopardev/circRNA/issues/17">Issue</a> closed!</li>
+</ul>
+<h4 id="v06x">v0.6.x</h4>
+<ul>
+<li>cutadapt_min_length to cutadapt rule... setting it to 15 in config.</li>
+<li>customBSJs recalled from STAR alignments</li>
+<li>only for PE</li>
+<li>removes erroneously called CircExplorer BSJs</li>
+<li>create sense and anti-sense BSJ BAMs and BW for each reference (host+viruses)</li>
+<li>find reads which contribute to CIRI BSJs but not on the STAR list of BSJ reads, see if they contribute to novel (not called by STAR) BSJs and append novel BSJs to customBSJ list</li>
+<li>create linear reads BAM file</li>
+<li>create linear reads BigWigs for each region in the .regions file.</li>
+<li>Optimized pysam scripts</li>
+<li>fixed premature completion of singularity rules</li>
+</ul>
+<h4 id="v07x">v0.7.x</h4>
+<ul>
+<li>5 circRNA callers</li>
+<li>all-sample counts matrix with annotations</li>
+</ul>
+<h4 id="v09x">v0.9.x</h4>
+<ul>
+<li>updates to wrapper script, many new arguments/options added</li>
+<li>new per-sample counts table format</li>
+<li>new all-sample master counts matrix with min-nreads filtering and ntools column to show number of tools supporting the circRNA call</li>
+<li>new version of Snakemake</li>
+<li>cluster_status script added for forced completion of pipeline upon TIMEOUTs
+updated flowchart from lucid charts</li>
+<li>added circRNAfinder, find_circ, circExplorer2_bwa and other tools</li>
+<li>optimized execution and resource requirements</li>
+<li>updated viral annotations (Thanks Sara!)</li>
+<li>new method to extract linear counts, create linear BAMs using circExplorer2 outputs</li>
+<li>new job reporting using jobby and its derivatives
+separated creation of BWA and BOWTIE2 index from creation of STAR index to speed things up</li>
+<li>parallelized find_circ
+better cleanup (eg. deleting _STARgenome folders, etc.) for much smaller digital footprint</li>
+<li>multitude of comments throughout the snakefiles including listing of output file column descriptions</li>
+<li>preliminary GH actions added</li>
+</ul>
+<h4 id="v010x">v0.10.x</h4>
+<ul>
+<li>strand are reported together, strand from all callers are reported, </li>
+<li>both + and - flanking sites are reported, </li>
+<li>rev-comp function updated,</li>
+<li>updated versions of tools to match available tools on BIOWULF.</li>
 </ul>
 
 
