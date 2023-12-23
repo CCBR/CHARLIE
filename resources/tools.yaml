@@ -1,5 +1,5 @@
 bedtools:
- version: "bedtools/2.29.2"
+ version: "bedtools/2.30.0"
 bowtie2:
  version: "bowtie/2-2.5.1"
 bowtie1:
@@ -11,37 +11,37 @@ circexplorer:
 cufflinks:
  version: "cufflinks/2.2.1"
 cutadapt:
- version: "cutadapt/1.18"
+ version: "cutadapt/4.4"
 fastqc:
  version: "fastqc/0.11.9"
 hisat:
- version: "hisat/2.2.1.0"
+ version: "hisat/2.2.2.1-ngs3.0.1"
 java:
- version: "java/1.8.0_181"
+ version: "java/18.0.1.1"
 multiqc:
  version: "multiqc/1.9"
 parallel:
  version: "parallel/current"
 perl:
- version: "perl/5.24"
+ version: "perl/5.34"
 picard:
- version: "picard/2.25.0"
+ version: "picard/2.27.3"
 python27:
  version: "python/2.7"
 python37:
- version: "python/3.7"
+ version: "python/3.8"
 sambamba:
- version: "sambamba/0.8.0"
+ version: "sambamba/0.8.2"
 samtools:
  version: "samtools/1.16.1"
 star:
  version: "STAR/2.7.6a"
  alignTranscriptsPerReadNmax: "20000"
 stringtie:
- version: "stringtie/2.1.4"
+ version: "stringtie/2.2.1"
 ucsc:
- version: "ucsc/407"
+ version: "ucsc/450"
 R:
- version: "R/4.0.3"
+ version: "R/4.0.5"
 ncl_required_modules: "python/2.7 bedtools/2.29.0 blat/3.5 bwa/0.7.17 samtools/1.15.1 novocraft/4.03.05"
 

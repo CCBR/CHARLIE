@@ -109,7 +109,20 @@ MAPSPLICE_MIN_MAP_LEN = config["mapsplice_min_map_len"]
 MAPSPLICE_FILTERING = config["mapsplice_filtering"]
 FLANKSIZE = config['flanksize']
 FIND_CIRC_DIR = config['find_circ_dir']
-
+HQCC=config["high_confidence_core_callers"].replace(" ","")
+CALLERS=["circExplorer","ciri","circExplorer_bwa"]
+# if RUN_CLEAR: CALLERS.append("clear")
+if RUN_DCC: CALLERS.append("dcc")
+if RUN_MAPSPLICE: CALLERS.append("mapsplice")
+if RUN_CIRCRNAFINDER: CALLERS.append("circrnafinder")
+if RUN_NCLSCAN: CALLERS.append("nclscan")
+if RUN_FINDCIRC: CALLERS.append("findcirc")
+CALLERS=list(map(lambda x:x.lower(),CALLERS))
+HQCC=HQCC.split(",")
+HQCC=list(map(lambda x:x.lower(),HQCC))
+for caller in HQCC:
+    if not caller in CALLERS:
+        sys.exit("Caller: {} will not be running but included in high_confidence_core_callers!".format(caller))
 REF_DIR = join(WORKDIR, "ref")
 if not os.path.exists(REF_DIR):
     os.mkdir(REF_DIR)
@@ -137,15 +150,26 @@ else:
     HOST_ADDITIVES = HOST
 VIRUSES = config["viruses"]
 VIRUSES = VIRUSES.replace(" ", "")
+if VIRUSES != "":
+    HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES + "," + VIRUSES
+    HOST_VIRUSES = HOST + "," + VIRUSES
+else:
+    HOST_VIRUSES = HOST
+    HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES
+    
 REPEATS_GTF = join(FASTAS_GTFS_DIR, HOST + ".repeats.gtf")
 
-HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES + "," + VIRUSES
-HOST_VIRUSES = HOST + "," + VIRUSES
 HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES_VIRUSES.split(",")
 FASTAS = [join(FASTAS_GTFS_DIR, f + ".fa") for f in HOST_ADDITIVES_VIRUSES]
 REGIONS = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST_ADDITIVES_VIRUSES]
-REGIONS_HOST = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST.split(",")]
-REGIONS_VIRUSES = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in VIRUSES.split(",")]
+if HOST != "":
+    REGIONS_HOST = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in HOST.split(",")]
+else:
+    REGIONS_HOST = []
+if VIRUSES != "":
+    REGIONS_VIRUSES = [join(FASTAS_GTFS_DIR, f + ".fa.regions") for f in VIRUSES.split(",")]
+else:
+    REGIONS_VIRUSES = []
 GTFS = [join(FASTAS_GTFS_DIR, f + ".gtf") for f in HOST_ADDITIVES_VIRUSES]
 FASTAS_REGIONS_GTFS = FASTAS.copy()
 FASTAS_REGIONS_GTFS.extend(REGIONS)

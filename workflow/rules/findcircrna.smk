@@ -196,43 +196,42 @@ rule circExplorer:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+        bash_script=join(SCRIPTS_DIR,"_run_circExplorer_star.sh"),
+        randomstr=str(uuid.uuid4()),
+        # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     envmodules:
         TOOLS["circexplorer"]["version"],
     shell:
         """
 set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 cd {params.outdir}
-mv {input.junctionfile} {input.junctionfile}.original
-grep -v junction_type {input.junctionfile}.original > {input.junctionfile}
-CIRCexplorer2 parse \\
-    -t STAR \\
-    {input.junctionfile} > {params.sample}_circexplorer_parse.log 2>&1
-mv back_spliced_junction.bed {output.backsplicedjunctions}
-mv {input.junctionfile}.original {input.junctionfile}
-CIRCexplorer2 annotate \\
--r {params.genepred} \\
--g {params.reffa} \\
--b {output.backsplicedjunctions} \\
--o $(basename {output.annotations}) \\
---low-confidence
-
-python {params.script} \\
-    --back_spliced_bed {output.backsplicedjunctions} \\
-    --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --circularRNA_known {output.annotations} \\
-    --low_conf low_conf_$(basename {output.annotations}) \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+bash {params.bash_script} \\
+    --junctionfile {input.junctionfile} \\
+    --tmpdir $TMPDIR \\
+    --outdir {params.outdir} \\
+    --samplename {params.sample} \\
+    --genepred {params.genepred} \\
+    --reffa {params.reffa} \\
+    --minreads {params.bsj_min_nreads} \\
+    --hostminfilter {params.minsize_host} \\
+    --hostmaxfilter {params.maxsize_host} \\
+    --virusminfilter {params.minsize_virus} \\
+    --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host_filter_min {params.minsize_host} \\
-    --host_filter_max {params.maxsize_host} \\
-    --virus_filter_min {params.minsize_virus} \\
-    --virus_filter_max {params.maxsize_virus} \\
-    -o {output.annotation_counts_table}
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --outcount {output.annotation_counts_table} \\
+    --outbsj {output.backsplicedjunctions} \\
+    --outannotation {output.annotations}
 """
 
 
@@ -324,9 +323,9 @@ rm -rf {params.sample}.bwa.sam
 python {params.script} \\
     --ciriout {output.ciriout} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -374,42 +373,42 @@ rule circExplorer_bwa:
         maxsize_host=config["maxsize_host"],
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
-        script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
+        bash_script=join(SCRIPTS_DIR,"_run_circExplorer_bwa.sh"),
+        randomstr=str(uuid.uuid4()),
+        # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     envmodules:
         TOOLS["circexplorer"]["version"],
     shell:
         """
 set -exo pipefail
+if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+else
+    TMPDIR="/dev/shm/{params.randomstr}"
+fi
+if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 cd {params.outdir}
-
-CIRCexplorer2 parse \\
-    -t BWA \\
-    {input.ciribam} > {params.sample}_circexplorer_bwa_parse.log 2>&1
-mv back_spliced_junction.bed {output.backsplicedjunctions}
-
-CIRCexplorer2 annotate \\
--r {params.genepred} \\
--g {params.reffa} \\
--b {output.backsplicedjunctions} \\
--o $(basename {output.annotations}) \\
---low-confidence
-
-python {params.script} \\
-    --back_spliced_bed {output.backsplicedjunctions} \\
-    --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --circularRNA_known {output.annotations} \\
-    --low_conf low_conf_$(basename {output.annotations}) \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+bash {params.bash_script} \\
+    --bwabam {input.ciribam} \\
+    --tmpdir $TMPDIR \\
+    --outdir {params.outdir} \\
+    --samplename {params.sample} \\
+    --genepred {params.genepred} \\
+    --reffa {params.reffa} \\
+    --minreads {params.bsj_min_nreads} \\
+    --hostminfilter {params.minsize_host} \\
+    --hostmaxfilter {params.maxsize_host} \\
+    --virusminfilter {params.minsize_virus} \\
+    --virusmaxfilter {params.maxsize_virus} \\
     --regions {params.refregions} \\
-    --host_filter_min {params.minsize_host} \\
-    --host_filter_max {params.maxsize_host} \\
-    --virus_filter_min {params.minsize_virus} \\
-    --virus_filter_max {params.maxsize_virus} \\
-    -o {output.annotation_counts_table}
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --outcount {output.annotation_counts_table} \\
+    --outbsj {output.backsplicedjunctions} \\
+    --outannotation {output.annotations}
 """
 
 
@@ -761,9 +760,9 @@ python {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
     --out_dcc_filtered_counts_table {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -984,9 +983,9 @@ python {params.script} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -1084,9 +1083,9 @@ python {params.script} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --regions {params.refregions} \\
     --host_filter_min {params.minsize_host} \\
     --host_filter_max {params.maxsize_host} \\
@@ -1174,7 +1173,7 @@ if [ ! -d $outDir ];then mkdir -p $outDir;fi
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
 
-echo -ne "chr\tstart\tend\tstrand\tread_count\n" > {output.ctf}
+echo -ne "chr\\tstart\\tend\\tstrand\\tread_count\\n" > {output.ctf}
 awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' {output.bed} >> {output.ctf}
 
 """
@@ -1225,9 +1224,12 @@ rule find_circ:
         sample="{sample}",
         reffa=REF_FA,
         find_cir_dir=FIND_CIRC_DIR,
+        find_circ_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
+        collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
         randomstr=str(uuid.uuid4()),
     envmodules:
+        TOOLS["python27"]["version"],
         TOOLS["bowtie2"]["version"],
         TOOLS["samtools"]["version"],
         TOOLS["parallel"]["version"],
@@ -1235,6 +1237,8 @@ rule find_circ:
     shell:
         """
 set -exo pipefail
+python --version
+which python
 if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
     TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
 else
@@ -1260,9 +1264,13 @@ outdir=$(dirname {output.find_circ_bsj_bed})
 # These _A and _B pairs should be retained in the fastq splits
 
 # find number of lines in fastq file
-total_lines=$(zcat {input.anchorsfq} | wc -l)
+cp {input.anchorsfq} ${{TMPDIR}}
+fname=$(basename {input.anchorsfq})
+fname_wo_gz=$(echo $fname|sed "s/.gz//g")
+pigz -d $fname
+total_lines=$(wc -l ${{fname_wo_gz}} | awk '{{print $1}}')
 split_nlines=$(echo $total_lines| awk '{{print sprintf("%d", $1/10)}}' | awk '{{print sprintf("%d",($1+7)/8+1)}}' | awk '{{print sprintf("%d",$1*8)}}')
-zcat {input.anchorsfq} | split -d -l $split_nlines --suffix-length 1 - ${{TMPDIR}}/{params.sample}.samsplit.
+split -d -l $split_nlines --suffix-length 1 $fname_wo_gz ${{TMPDIR}}/{params.sample}.samsplit.
 
 if [ -f ${{TMPDIR}}/do_find_circ ];then rm -f ${{TMPDIR}}/do_find_circ;fi
 
@@ -1274,15 +1282,14 @@ for i in $(seq 0 9);do
         -x ${{refdir}}/ref > ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam
 
 cat <<EOF >>${{TMPDIR}}/do_find_circ
-cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \
-{params.find_cir_dir}/find_circ.py \
-    --genome={params.reffa} \
-    --prefix={params.sample}.find_circ \
-    --name={params.sample} \
-    --noncanonical \
-    --allhits \
-    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \
-    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \
+cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \\
+{params.find_cir_dir}/find_circ.py \\
+    --genome={params.reffa} \\
+    --prefix={params.sample}.find_circ \\
+    --name={params.sample} \\
+    {params.find_circ_params} \\
+    --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \\
+    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \\
     > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed
 EOF
 done
@@ -1296,7 +1303,7 @@ grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
     > {output.find_circ_bsj_bed}
 
 echo -ne "chrom\\tstart\\tend\\tname\\tn_reads\\tstrand\\tn_uniq\\tuniq_bridges\\tbest_qual_left\\tbest_qual_right\\ttissues\\ttiss_counts\\tedits\\tanchor_overlap\\tbreakpoints\\tsignal\\tstrandmatch\\tcategory\\n" > {output.find_circ_bsj_bed_filtered}
-awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>m) {{print}}}}' {output.find_circ_bsj_bed} \\
+cat {output.find_circ_bsj_bed} | python {params.collapse_script} | awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>=m) {{print}}}}'  \\
     >> {output.find_circ_bsj_bed_filtered}
 """
 
@@ -1351,6 +1358,8 @@ rule merge_per_sample:
         ncirrnafinder=N_RUN_CIRCRNAFINDER,
         nfindcirc=N_RUN_FINDCIRC,
         minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
+        high_confidence_core_callers=config["high_confidence_core_callers"], # comma separated list ... default circExplorer,circExplorer_bwa
+        high_confidence_core_callers_plus_n=config["high_confidence_core_callers_plus_n"] # number of callers in addition to core callers that need to call the circRNA for it to be called "High Confidence"
     shell:
         """
 python3 {params.script} \\
@@ -1365,7 +1374,9 @@ python3 {params.script} \\
         --reffa {params.reffa} \\
         --sampledir {params.sampledir} \\
         --outscript {output.merge_bash_script} \\
-        --pyscriptoutfile {output.merged_counts} 
+        --pyscriptoutfile {output.merged_counts} \\
+        --hqcc {params.high_confidence_core_callers} \\
+        --hqccpn {params.high_confidence_core_callers_plus_n}
 bash {output.merge_bash_script}
 """
 
@@ -1564,6 +1575,7 @@ rule create_master_counts_file:
         script=join(SCRIPTS_DIR, "_make_master_counts_table.py"),
         resultsdir=join(WORKDIR, "results"),
         lookup_table=ANNOTATION_LOOKUP,
+        bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],
     envmodules:
         TOOLS["python37"]["version"],
     shell:
@@ -1581,5 +1593,6 @@ done
 
 python {params.script} \\
     --counttablelist $infiles \\
-    -o {output.matrix}
+    -o {output.matrix} \\
+    --minreads {params.bsj_min_nreads}
 """

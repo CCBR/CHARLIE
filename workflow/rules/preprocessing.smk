@@ -3,6 +3,8 @@
 
 def get_fastqs(wildcards):
     d = dict()
+    # d["R1"] = ancient(SAMPLESDF["R1"][wildcards.sample])
+    # d["R2"] = ancient(SAMPLESDF["R2"][wildcards.sample])
     d["R1"] = SAMPLESDF["R1"][wildcards.sample]
     d["R2"] = SAMPLESDF["R2"][wildcards.sample]
     return d

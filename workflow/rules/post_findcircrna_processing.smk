@@ -93,9 +93,9 @@ python3 {params.scriptpe} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outputhostbams --outputvirusbams --outdir $TMPDIR
 
 else
@@ -110,9 +110,9 @@ python3 {params.scriptse} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
-    --host {params.host} \\
-    --additives {params.additives} \\
-    --viruses {params.viruses} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
     --outputhostbams --outputvirusbams --outdir $TMPDIR
 
 fi
@@ -179,6 +179,18 @@ rule create_circExplorer_linear_spliced_bams:
             "circExplorer",
             "{sample}.linear_spliced.counts.tsv",
         ),
+        linear_BSJ_bam=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bam"
+        ),  # linear reads in BSJ inclusion zone
+        spliced_BSJ_bam=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bam"
+        ),  # linear spliced-only alignments in the sample
+        linear_BSJ_bw=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear_BSJ.bw"
+        ),
+        spliced_BSJ_bw=join(
+            WORKDIR, "results", "{sample}", "circExplorer", "{sample}.spliced_BSJ.bw"
+        ),
         linear_bam=join(
             WORKDIR, "results", "{sample}", "circExplorer", "{sample}.linear.bam"
         ),  # linear reads in BSJ inclusion zone
@@ -227,42 +239,26 @@ mkdir -p $TMPDIR
 cd {params.outdir}
 
 # get filtered bam (remove secondary/supplementary/etc.) and the rid2jid lookup files
-# inputs
-#     echo "16 arguments expected!"
-#     echo "#1 --> path to non-chimeric BAM file"
-#     echo "#2 --> sample name"
-#     echo "#3 --> PE or SE"
-#     echo "#4 --> known BSJs in bed.gz format"
-#     echo "#5 --> tmpdir"
-#     echo "#6 --> gzipped outputfilename eg.<sample_name>.rid2jid.tsv.gz"
-#     echo "#7 --> output filtered sample BAM"
-#     echo "#8 --> gzip-ed list of linear BSJ readids"
-#     echo "#9 --> gzip-ed list of linear spliced BSJ readids"
-#     echo "#10 --> jid counts (linear and linear-spliced) per jid or BSJ"
-#     echo "#11 --> linear BSJ readids in BAM"
-#     echo "#12 --> linear-spliced BSJ readids in BAM"
-#     echo "#13 --> .regions file eg. ref/ref.fa.regions"
-#     echo "#14 --> host list comma separated .. no spaces"
-#     echo "#15 --> additives list comma separated .. no spaces"
-#     echo "#16 --> viruses list comma separated .. no spaces"
 
-bash {params.bashscript} \
-    {input.nonchimericbam} \
-    {params.sample} \
-    {params.peorse} \
-    {input.bsjbedgz} \
-    $TMPDIR \
-    {output.rid2jid} \
-    {output.filtered_bam} \
-    {output.linear_readids} \
-    {output.spliced_readids} \
-    {output.linear_spliced_counts} \
-    {output.linear_bam} \
-    {output.spliced_bam} \
-    {params.refregions} \
-    {params.host} \
-    {params.additives} \
-    {params.viruses}
+bash {params.bashscript} \\
+    --nonchimericbam {input.nonchimericbam} \\
+    --samplename {params.sample} \\
+    --peorse {params.peorse} \\
+    --bsjbed {input.bsjbedgz} \\
+    --tmpdir $TMPDIR \\
+    --rid2jid {output.rid2jid} \\
+    --filteredbam {output.filtered_bam} \\
+    --linearbsjlist {output.linear_readids} \\
+    --splicedbsjlist {output.spliced_readids} \\
+    --jidcounts {output.linear_spliced_counts} \\
+    --linearbsjbam {output.linear_BSJ_bam} \\
+    --splicedbsjbam {output.spliced_BSJ_bam} \\
+    --regions {params.refregions} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --linearbam {output.linear_bam} \\
+    --splicedbam {output.spliced_bam}
 rm -rf $TMPDIR
 """
 
@@ -509,6 +505,46 @@ for f in {input};do
     fi
 done 
 """
+
+
+rule create_hq_bams:
+    input:
+        inbam=rules.create_circExplorer_BSJ_bam.output.BSJbam,
+        countstable=rules.create_master_counts_file.output.matrix,
+    output:
+        outbam=join(WORKDIR, "results", "HQ_BSJ_bams","{sample}.HQ_only.BSJ.bam")
+    params:
+        script=join(SCRIPTS_DIR,"_bam_filter_BSJ_for_HQonly.py"),
+        samplename="{sample}",
+        regions=REF_REGIONS,
+        host=HOST,
+        additives=ADDITIVES,
+        viruses=VIRUSES,
+    envmodules:
+        TOOLS["python37"]["version"],
+        TOOLS["samtools"]["version"],
+    shell:"""
+set -exo pipefail
+outdir=$(dirname {output.outbam})
+if [ ! -d $outdir ];then mkdir -p $outdir;fi
+cd $outdir
+python3 {params.script} \\
+    -i {input.inbam} \\
+    -t {input.countstable} \\
+    -o {output.outbam} \\
+    --regions {params.regions} \\
+    --host "{params.host}" \\
+    --additives "{params.additives}" \\
+    --viruses "{params.viruses}" \\
+    --sample_name {params.samplename}
+samtools index {output.outbam}
+for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
+    if [ ! -f "${{bam}}.bai" ];then
+        samtools index $bam
+    fi
+done
+"""
+
 
 
 # localrules: venn

@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
- module load parallel
- module load python/3.7
- module load bedtools
- module load ucsc
- module load samtools
+# module load parallel
+# module load python/3.7
+# module load bedtools
+# module load ucsc
+# module load samtools
 
 
 set -e -x -o pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-# only for debugging
-SCRIPT_DIR2="/vf/users/Ziegelbauer_lab/Pipelines/circRNA/activeDev/workflow/scripts"
-# add the following line when not debugging
-SCRIPT_DIR2="$SCRIPT_DIR"
+# SCRIPT_DIR="/vf/users/Ziegelbauer_lab/Pipelines/circRNA/activeDev/workflow/scripts"
 SCRIPT_NAME=$( basename -- "${BASH_SOURCE[0]}" )
 
 ARGPARSE_DESCRIPTION="create linear and splice BAMs (and BIGWIGs)"
@@ -63,6 +60,29 @@ start0=$(date +%s.%N)
     # bedSort from ucsc tools
     # ucsc
 
+#if [ "$#" != 18 ];then
+#    echo "$#"
+#    echo "18 arguments expected!"
+#    echo "#1 --> path to non-chimeric BAM file"
+#    echo "#2 --> sample name"
+#    echo "#3 --> PE or SE"
+#    echo "#4 --> known BSJs in bed.gz format"
+#    echo "#5 --> tmpdir"
+#    echo "#6 --> gzipped outputfilename eg.${sample_name}.rid2jid.tsv.gz"
+#    echo "#7 --> output filtered sample BAM"
+#	echo "#8 --> gzip-ed list of linear BSJ readids"
+#	echo "#9 --> gzip-ed list of linear spliced BSJ readids"
+#	echo "#10 --> jid counts (linear and linear-spliced) per jid or BSJ"
+#	echo "#11 --> linear BSJ readids in BAM"
+#	echo "#12 --> linear-spliced BSJ readids in BAM"
+#	echo "#13 --> .regions file eg. ref/ref.fa.regions"
+#	echo "#14 --> host list comma separated .. no spaces"
+#	echo "#15 --> additives list comma separated .. no spaces"
+#       echo "#16 --> viruses list comma separated .. no spaces"
+#	echo "#17 --> all linear readids in BAM"
+#	echo "#18 --> all spliced readids in BAM"
+#    exit
+#fi
 
 set -exo pipefail
 
@@ -119,25 +139,26 @@ start=$(date +%s.%N)
 
 if [ "$peorse" == "PE" ];then
 
-python3 ${SCRIPT_DIR2}/filter_bam.py \
+python3 ${SCRIPT_DIR}/filter_bam.py \
     --inbam $non_chimeric_star2p_bam \
     --outbam $filtered_bam \
     --pe
 
 else
 
-python3 ${SCRIPT_DIR2}/filter_bam.py \
+python3 ${SCRIPT_DIR}/filter_bam.py \
     --inbam $non_chimeric_star2p_bam \
     --outbam $filtered_bam \
 
 fi
 
-nreads=$(samtools view $filtered_bam|wc -l)
+nreads=$(samtools view /gpfs/gsfs8/users/CBLCCBR/kopardevn_tmp/issue57_testing_2/results/GI1_T/circExplorer/GI1_T.bam|wc -l)
 if [ "$nreads" == "0" ];then
     echo "SOMETHING WENT WRONG ...filtered BAM is empty!!"
     exit
 fi
 samtools index -@4 $filtered_bam
+
 
 ###################################################################################################
 # convert BAM to read ends BED format
@@ -148,7 +169,7 @@ start=$(date +%s.%N)
 
 bedtools bamtobed -split -i $filtered_bam > ${tmpdir}/${sample_name}.bed
 
-python ${SCRIPT_DIR2}/_process_bamtobed.py \
+python ${SCRIPT_DIR}/_process_bamtobed.py \
     --inbed ${tmpdir}/${sample_name}.bed \
     --outbed ${tmpdir}/${sample_name}.readends.bed \
     --linear ${tmpdir}/${sample_name}.linear.readids.gz \
@@ -167,6 +188,7 @@ zcat $bsjbedgz |awk -F"\t" -v OFS="\t" '{print $1, $2, $2, $1"##"$2"##"$3"##"$6,
 zcat $bsjbedgz |awk -F"\t" -v OFS="\t" '{print $1, $3, $3, $1"##"$2"##"$3"##"$6, $5, $6}' - >> ${tmpdir}/BSJ.ends.bed
 bedSort ${tmpdir}/BSJ.ends.bed ${tmpdir}/BSJ.ends.bed
 
+
 ###################################################################################################
 # finding max readlength
 ###################################################################################################
@@ -174,12 +196,11 @@ bedSort ${tmpdir}/BSJ.ends.bed ${tmpdir}/BSJ.ends.bed
 printtime $SCRIPT_NAME $start0 $start "finding max readlength"
 start=$(date +%s.%N)
 
-python3 ${SCRIPT_DIR2}/bam_get_max_readlen.py -i $filtered_bam > ${tmpdir}/${sample_name}.maxrl
+python3 ${SCRIPT_DIR}/bam_get_max_readlen.py -i $filtered_bam > ${tmpdir}/${sample_name}.maxrl
 maxrl=$(cat ${tmpdir}/${sample_name}.maxrl)
 two_maxrl=$((maxrl*2))
-echo $two_maxrl
 
-#two_maxrl="302"
+
 ###################################################################################################
 # find closest known BSJs with primary alignments and then keep alignments with some alignment within the "inclusion zone"
 # this is run in parallel
@@ -196,7 +217,7 @@ bedSort $f $f && \
 bedtools closest -nonamecheck \
     -a $f \
     -b ${tmpdir}/BSJ.ends.bed  -d | \
-    awk -F\"\\t\" -v OFS=\"\\t\" -v limit=$two_maxrl '{if (\$NF > 0 && \$NF <= limit) {print \$4,\$10,\$NF}}' | \
+    awk -F\"\\t\" -v OFS=\"\\t\" -v limit=$two_maxrl '{if (\$NF > 0 && \$NF <= limit) {print \$4,\$10}}' | \
     sort --buffer-size=2G --unique --parallel=2 > ${f}.rid2jid.closest.txt
 """
 done > ${tmpdir}/para.tmp
@@ -204,12 +225,10 @@ grep -v "^$" ${tmpdir}/para.tmp > ${tmpdir}/para
 parallel -j $threads < ${tmpdir}/para
 
 #cat ${tmpdir}/${sample_name}.readends.part.?????.rid2jid.closest.txt > ${rid2jidgzip%.*}.tmp
-for f in $(find $tmpdir -name "${sample_name}.readends.part.*.rid2jid.closest.txt");do
-#for f in $(ls ${tmpdir}/${sample_name}.readends.part.?????.rid2jid.closest.txt);do
+for f in $(ls ${tmpdir}/${sample_name}.readends.part.?????.rid2jid.closest.txt);do
        cat $f
 done > ${rid2jidgzip%.*}.tmp
-sort -k1,1 -k3,3n --buffer-size=20G --parallel=$threads --unique ${rid2jidgzip%.*}.tmp | \
-	awk -F"\t" -v OFS="\t" '{a[$1]++;if (a[$1]==1) {print $1,$2}}' > ${rid2jidgzip%.*}
+sort --buffer-size=20G --parallel=$threads --unique ${rid2jidgzip%.*}.tmp > ${rid2jidgzip%.*}
 
 pigz -p4 -f ${rid2jidgzip%.*} && rm -f ${rid2jidgzip%.*}.tmp
 
@@ -220,13 +239,14 @@ pigz -p4 -f ${rid2jidgzip%.*} && rm -f ${rid2jidgzip%.*}.tmp
 printtime $SCRIPT_NAME $start0 $start "filter linear and spliced readids to those near BSJs only; creating counts table"
 start=$(date +%s.%N)
 
-python3 ${SCRIPT_DIR2}/_filter_linear_spliced_readids_w_rid2jid.py \
+python3 ${SCRIPT_DIR}/_filter_linear_spliced_readids_w_rid2jid.py \
     --linearin ${tmpdir}/${sample_name}.linear.readids.gz \
     --splicedin ${tmpdir}/${sample_name}.spliced.readids.gz \
     --rid2jid ${rid2jidgzip} \
     --linearout ${linearrids} \
     --splicedout ${splicedrids} \
     --jidcounts ${jidcounts}
+
 
 # rm -rf ${tmpdir}/${sample_name}.readends.part.*
 # the above statement leads to /usr/bin/rm: Argument list too long
@@ -247,10 +267,10 @@ splicedbam_bn=$(basename $splicedbam)
 linearbam_all_bn=$(basename $linearbam_all)
 splicedbam_all_bn=$(basename $splicedbam_all)
 
-echo "python3 ${SCRIPT_DIR2}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_bn} --readids $linearrids" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR2}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_bn} --readids $splicedrids" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR2}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_all_bn} --readids ${tmpdir}/${sample_name}.linear.readids.gz" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR2}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_all_bn} --readids ${tmpdir}/${sample_name}.spliced.readids.gz" >> ${tmpdir}/para2
+echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_bn} --readids $linearrids" >> ${tmpdir}/para2
+echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_bn} --readids $splicedrids" >> ${tmpdir}/para2
+echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_all_bn} --readids ${tmpdir}/${sample_name}.linear.readids.gz" >> ${tmpdir}/para2
+echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_all_bn} --readids ${tmpdir}/${sample_name}.spliced.readids.gz" >> ${tmpdir}/para2
 
 parallel -j 4 < ${tmpdir}/para2
 
@@ -276,10 +296,10 @@ samtools sort -l 9 -T ${tmpdir}/sorttmp --write-index -@${threads} -O BAM -o ${s
 
 if [ -f ${tmpdir}/para3 ];then rm -f ${tmpdir}/para3;fi
 
-echo "python3 ${SCRIPT_DIR2}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR2}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR2}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR2}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host \"$host\" --additives \"$additives\" --viruses \"$viruses\"" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
 
 parallel -j 4 < ${tmpdir}/para3
 
@@ -297,16 +317,16 @@ for folder in $(ls ${tmpdir}/b2b*);do rm -rf $folder;done
 
 if [ -f ${tmpdir}/para3 ];then rm -f ${tmpdir}/para4;fi
 
-echo "mkdir -p ${tmpdir}/b2b_1 && bash ${SCRIPT_DIR2}/bam_to_bigwig.sh $linearbam ${tmpdir}/b2b_1" >> ${tmpdir}/para4
-echo "mkdir -p ${tmpdir}/b2b_2 && bash ${SCRIPT_DIR2}/bam_to_bigwig.sh $splicedbam ${tmpdir}/b2b_2" >> ${tmpdir}/para4
-echo "mkdir -p ${tmpdir}/b2b_3 && bash ${SCRIPT_DIR2}/bam_to_bigwig.sh $linearbam_all ${tmpdir}/b2b_3" >> ${tmpdir}/para4
-echo "mkdir -p ${tmpdir}/b2b_4 && bash ${SCRIPT_DIR2}/bam_to_bigwig.sh $splicedbam_all ${tmpdir}/b2b_4" >> ${tmpdir}/para4
+echo "mkdir -p ${tmpdir}/b2b_1 && bash ${SCRIPT_DIR}/bam_to_bigwig.sh $linearbam ${tmpdir}/b2b_1" >> ${tmpdir}/para4
+echo "mkdir -p ${tmpdir}/b2b_2 && bash ${SCRIPT_DIR}/bam_to_bigwig.sh $splicedbam ${tmpdir}/b2b_2" >> ${tmpdir}/para4
+echo "mkdir -p ${tmpdir}/b2b_3 && bash ${SCRIPT_DIR}/bam_to_bigwig.sh $linearbam_all ${tmpdir}/b2b_3" >> ${tmpdir}/para4
+echo "mkdir -p ${tmpdir}/b2b_4 && bash ${SCRIPT_DIR}/bam_to_bigwig.sh $splicedbam_all ${tmpdir}/b2b_4" >> ${tmpdir}/para4
 count=4
 for prefix in "linear_BSJ" "spliced_BSJ" "linear" "spliced";do
 for b in $(echo "$host $viruses"|tr ',' ' ');do
     count=$((count+1))
     bam="${outdir}/${sample_name}.${prefix}.${b}.bam"
-    echo "mkdir -p ${tmpdir}/b2b_${count} && bash ${SCRIPT_DIR2}/bam_to_bigwig.sh $bam ${tmpdir}/b2b_${count}" >> ${tmpdir}/para4
+    echo "mkdir -p ${tmpdir}/b2b_${count} && bash ${SCRIPT_DIR}/bam_to_bigwig.sh $bam ${tmpdir}/b2b_${count}" >> ${tmpdir}/para4
 done
 done
 
@@ -314,4 +334,3 @@ parallel -j 12 < ${tmpdir}/para4
 
 #rm -rf ${tmpdir}/*
 printtime $SCRIPT_NAME $start0 $start "Done!"
-
