@@ -8,8 +8,11 @@
     - [1. Introduction](#1-introduction)
     - [2. Flowchart](#2-flowchart)
     - [3. Software Dependencies](#3-software-dependencies)
-    - [4. Usage](#4-usages)
+    - [4. Usage](#4-usage)
     - [5. License](#5-license)
+    - [6. Testing](#6-testing)
+      - [6.1 Test data](#61-test-data)
+      - [6.2 Expected output](#62-expected-output)
 
 ### 1. Introduction
 
@@ -60,22 +63,22 @@ The following version of various bioinformatics tools are using within CHARLIE:
 | bwa           | 0.7.17    |
 | circexplorer2 | 2.3.8     |
 | cufflinks     | 2.2.1     |
-| cutadapt      | 1.18      |
+| cutadapt      | 4.4       |
 | fastqc        | 0.11.9    |
-| hisat         | 2.2.1.0   |
-| java          | 1.8.0_181 |
+| hisat         | 2.2.2.1   |
+| java          | 18.0.1.1  |
 | multiqc       | 1.9       |
 | parallel      | 20231122  |
-| perl          | 5.24      |
-| picard        | 2.25.0    |
+| perl          | 5.34      |
+| picard        | 2.27.3    |
 | python        | 2.7       |
-| python        | 3.7       |
-| sambamba      | 0.8.0     |
+| python        | 3.8       |
+| sambamba      | 0.8.2     |
 | samtools      | 1.16.1    |
 | STAR          | 2.7.6a    |
-| stringtie     | 2.1.4     |
+| stringtie     | 2.2.1     |
 | ucsc          | 450       |
-| R             | 4.0.3     |
+| R             | 4.0.5     |
 | novocraft     | 4.03.05   |
 
 
@@ -178,7 +181,130 @@ VersionInfo:
 
 ### 5. License
 
-See [here](https://github.com/CCBR/CHARLIE/blob/v0.10.0-dev/LICENSE).
+MIT License
+
+Copyright (c) 2021 Vishal Koparde
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### 6. Testing
+
+#### Init
+
+Run init mode:
+
+```bash
+bash <path to charlie> -w=<path to output dir> -m=init
+```
+
+This will create the folder provided by `-w=`. The user should have write permission to this folder.
+
+#### Dry-run
+
+Test data (1 paired-end subsample and 1 single-end subsample) have been including under the `.tests/dummy_fastqs` folder. After running in `-m=init`, `samples.tsv` should be edited to point the copies of the above mentioned samples with the column headers:
+
+- sampleName	
+- path_to_R1_fastq	
+- path_to_R2_fastq
+
+Column `path_to_R2_fastq` will be blank in case of single-end samples.
+
+After editing `samples.tsv`, dry run should be run:
+
+```bash
+bash <path to charlie> -w=<path to output dir> -m=dryrun
+```
+
+This will create the reference fasta and gtf file based on the selections made in the `config.yaml`.
+
+#### Run
+If `-m=dryrun` was sucessful, then simply do `-m=run`. The output will look something like this
+
+```
+... ... skipping ~1000 lines
+...
+...
+Job stats:
+job                                              count    min threads    max threads
+---------------------------------------------  -------  ----------
+all                                                  1              1              1
+annotate_clear_output                                2              1              1
+circExplorer                                         2              2              2
+circExplorer_bwa                                     2              2              2
+circrnafinder                                        2              1              1
+ciri                                                 2             56             56
+clear                                                2              2              2
+create_bowtie2_index                                 1              1              1
+create_bwa_index                                     1              1              1
+create_circExplorer_BSJ_bam                          2              4              4
+create_circExplorer_linear_spliced_bams              2             56             56
+create_circExplorer_merged_found_counts_table        2              1              1
+create_hq_bams                                       2              1              1
+create_index                                         1             56             56
+create_master_counts_file                            1              1              1
+cutadapt                                             2             56             56
+dcc                                                  2              4              4
+dcc_create_samplesheets                              2              1              1
+estimate_duplication                                 2              1              1
+fastqc                                               2              4              4
+find_circ                                            2             56             56
+find_circ_align                                      2             56             56
+merge_SJ_tabs                                        1              2              2
+merge_alignment_stats                                1              1              1
+merge_genecounts                                     1              1              1
+merge_per_sample                                     2              1              1
+star1p                                               2             56             56
+star2p                                               2             56             56
+star_circrnafinder                                   2             56             56
+total                                               52              1             56
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        alignment_stats, all, annotate_clear_output, circExplorer, circExplorer_bwa, circrnafinder, ciri, clear, create_circExplorer_BSJ_bam, create_circExplorer_linear_spliced_bams, create_circExplorer_merged_found_counts_table, create_hq_bams, create_master_counts_file, dcc, dcc_create_samplesheets, estimate_duplication, fastqc, find_circ, find_circ_align, merge_SJ_tabs, merge_alignment_stats, merge_genecounts, merge_per_sample, star1p, star2p, star_circrnafinder
+    missing output files:
+        alignment_stats, annotate_clear_output, circExplorer, circExplorer_bwa, circrnafinder, ciri, clear, create_bowtie2_index, create_bwa_index, create_circExplorer_BSJ_bam, create_circExplorer_linear_spliced_bams, create_circExplorer_merged_found_counts_table, create_hq_bams, create_index, create_master_counts_file, cutadapt, dcc, dcc_create_samplesheets, estimate_duplication, fastqc, find_circ, find_circ_align, merge_SJ_tabs, merge_alignment_stats, merge_genecounts, merge_per_sample, star1p, star2p, star_circrnafinder
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
+Running...
+14743440
+```
+
+##### 6.1 Test Data
+
+The `.tests/dummy_fastqs` folder in the repo has test dataset:
+
+```bash
+% tree .tests/dummy_fastqs
+.tests/dummy_fastqs
+├── GI1_N.R1.fastq.gz
+├── GI1_N.R2.fastq.gz
+└── GI1_T.R1.fastq.gz
+```
+
+`GI1_N` is a PE sample while `GI1_T` is a SE sample.
+
+##### 6.2 Expected Output
+
+Expected output from the sample data is stored under `.tests/expected_output`.
+
+More details about running test data can be found [here](https://ccbr.github.io/CHARLIE).
 
 > DISCLAIMER:
 > 

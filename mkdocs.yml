@@ -1,12 +1,12 @@
 # Project Information
-site_name: circRNA DAQ (Detection/Annotation/Quantification)
+site_name: CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)
 site_author: Vishal Koparde, Ph.D.
 # Repository
-repo_name: kopardev/circRNA
-repo_url: https://github.com/kopardev/circRNA
+repo_name: CCBR/CHARLIE
+repo_url: https://github.com/CCBR/CHARLIE
 
 # Copyright
-copyright: Copyright &copy; 2021 CCBR
+copyright: Copyright &copy; 2023 CCBR
 
 # Configuration
 theme:
