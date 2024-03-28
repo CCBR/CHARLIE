@@ -1,0 +1,4 @@
+dockerhub_namespace: nciccbr
+image_name: charlie_nclscan_py27
+version: v0.1.0
+container: "$(dockerhub_namespace)/$(image_name):$(version)"
