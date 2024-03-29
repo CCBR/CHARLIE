@@ -54,8 +54,7 @@ rule star1p:
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["star"]["version"],
+    container: config['containers']["star"]
     threads: getthreads("star1p")
     shell:
         """
@@ -247,6 +246,7 @@ rule merge_SJ_tabs:
         filter2_noncanonical=config["star_1pass_filter_viruses_noncanonical"],
         filter2_unannotated=config["star_1pass_filter_viruses_unannotated"],
     threads: getthreads("merge_SJ_tabs")
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail
@@ -305,10 +305,7 @@ rule star2p:
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["star"]["version"],
-        TOOLS["sambamba"]["version"],
-        TOOLS["samtools"]["version"],
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star2p")
     shell:
         """
@@ -480,10 +477,7 @@ rule star_circrnafinder:
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["star"]["version"],
-        TOOLS["sambamba"]["version"],
-        TOOLS["samtools"]["version"],
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star_circrnafinder")
     shell:
         """
@@ -576,9 +570,7 @@ rule find_circ_align:
         peorse=get_peorse,
         find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["python27"]["version"],
-        TOOLS["samtools"]["version"], TOOLS['bowtie2']['version']
+    container: config['containers']["nclscan_py27"]
     threads: getthreads("find_circ_align")
     shell:
         """
@@ -659,9 +651,7 @@ rule estimate_duplication:
     params:
         sample="{sample}",
         memG=getmemG("estimate_duplication"),
-    envmodules:
-        TOOLS["picard"]["version"],
-        TOOLS["java"]["version"],
+    container: config['containers']["picard"]
     shell:
         """
 set -exo pipefail

@@ -62,11 +62,7 @@ rule create_circExplorer_BSJ_bam:
         flankscript=join(SCRIPTS_DIR, "_append_splice_site_flanks_to_BSJs.py"),
         bam2bwscript=join(SCRIPTS_DIR, "bam_to_bigwig.sh"),
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["python37"]["version"],
-        TOOLS["samtools"]["version"],
-        TOOLS["bedtools"]["version"],
-        TOOLS["ucsc"]["version"],
+    container: config['containers']["ucsc"]
     threads: getthreads("create_circExplorer_BSJ_bam")
     shell:
         """
@@ -218,12 +214,7 @@ rule create_circExplorer_linear_spliced_bams:
         # bam2bwscript=join(SCRIPTS_DIR,"bam_to_bigwig.sh"),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["python37"]["version"],
-        TOOLS["samtools"]["version"],
-        TOOLS["bedtools"]["version"],
-        TOOLS["ucsc"]["version"],
-        TOOLS["parallel"]["version"],
+    container: config['containers']["base"]
     threads: getthreads("create_circExplorer_linear_spliced_bams")
     shell:
         """
@@ -371,9 +362,7 @@ if RUN_MAPSPLICE:
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
             randomstr=str(uuid.uuid4()),
         threads: getthreads("alignment_stats")
-        envmodules:
-            TOOLS["python37"]["version"],
-            TOOLS["parallel"]["version"],
+        container: config['containers']["base"]
         shell:
             """
     set -exo pipefail
@@ -428,9 +417,7 @@ else:
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
             randomstr=str(uuid.uuid4()),
         threads: getthreads("alignment_stats")
-        envmodules:
-            TOOLS["python37"]["version"],
-            TOOLS["parallel"]["version"],
+        container: config['containers']["base"]
         shell:
             """
     set -exo pipefail
@@ -520,9 +507,7 @@ rule create_hq_bams:
         host=HOST,
         additives=ADDITIVES,
         viruses=VIRUSES,
-    envmodules:
-        TOOLS["python37"]["version"],
-        TOOLS["samtools"]["version"],
+    container: config['containers']["base"]
     shell:"""
 set -exo pipefail
 outdir=$(dirname {output.outbam})

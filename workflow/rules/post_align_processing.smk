@@ -111,8 +111,7 @@ rule merge_genecounts:
     params:
         outdir=join(WORKDIR, "results"),
         rscript=join(SCRIPTS_DIR, "merge_ReadsPerGene_counts.R"),
-    envmodules:
-        TOOLS["R"]["version"],
+    container: config['containers']["R"]
     shell:
         """
 set -exo pipefail

@@ -23,13 +23,7 @@ rule create_index:
         randomstr=str(uuid.uuid4()),
         nclscan_dir=config["nclscan_dir"],
         nclscan_config=config["nclscan_config"],
-    envmodules:
-        TOOLS["star"]["version"],
-        TOOLS["bwa"]["version"],
-        TOOLS["samtools"]["version"],
-        TOOLS["ucsc"]["version"],
-        TOOLS["cufflinks"]["version"],
-        TOOLS["python37"]["version"],
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("create_index")
     shell:
         """
@@ -61,9 +55,6 @@ STAR \\
 bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
 ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
 # may have to create bowtie1 index here.. has to be a separate rule ... see below
-
-
-
 """
 
 
@@ -79,8 +70,7 @@ rule create_mapsplice_index:
         separate_fastas=join(REF_DIR, "separate_fastas"),
         ebwt=join(REF_DIR, "separate_fastas_index"),
     threads: getthreads("create_mapsplice_index")
-    container:
-        "docker://cgrlab/mapsplice2:latest"
+    container: "docker://cgrlab/mapsplice2:latest"
     shell:
         """
 set -exo pipefail
@@ -99,7 +89,7 @@ rule create_bwa_index:
         log=join(REF_DIR,"bwa_index.log")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bwa"]["version"]
+    container: config['containers']["base"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})
@@ -115,7 +105,7 @@ rule create_bowtie2_index:
         bt2=join(REF_DIR,"ref.1.bt2")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bowtie2"]["version"]
+    container: config['containers']["base"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})

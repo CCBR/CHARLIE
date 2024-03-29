@@ -200,8 +200,7 @@ rule circExplorer:
         randomstr=str(uuid.uuid4()),
         # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
-    envmodules:
-        TOOLS["circexplorer"]["version"],
+    container: config['containers']["circexplorer"]
     shell:
         """
 set -exo pipefail
@@ -285,9 +284,7 @@ rule ciri:
         script=join(SCRIPTS_DIR, "filter_ciriout.py"),
         randomstr=str(uuid.uuid4()),
     threads: getthreads("ciri")
-    envmodules:
-        TOOLS["bwa"]["version"],
-        TOOLS["samtools"]["version"],
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail
@@ -377,8 +374,7 @@ rule circExplorer_bwa:
         randomstr=str(uuid.uuid4()),
         # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
-    envmodules:
-        TOOLS["circexplorer"]["version"],
+    container: config['containers']["circexplorer"]
     shell:
         """
 set -exo pipefail
@@ -427,8 +423,7 @@ rule create_ciri_count_matrix:
         lookup=ANNOTATION_LOOKUP,
         outdir=join(WORKDIR, "results"),
         hostID=HOST + "ID",
-    envmodules:
-        TOOLS["python37"]["version"],
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail
@@ -459,8 +454,7 @@ rule create_circexplorer_count_matrix:
         lookup=ANNOTATION_LOOKUP,
         outdir=join(WORKDIR, "results"),
         hostID=HOST + "ID",
-    envmodules:
-        TOOLS["python37"]["version"],
+    container: config['containers']['base']
     shell:
         """
 cd {params.outdir}
@@ -510,8 +504,7 @@ rule clear:
         quantfile=join(WORKDIR, "results", "{sample}", "CLEAR", "quant.txt"),
     params:
         genepred=rules.create_index.output.genepred_w_geneid,
-    container:
-        "docker://nciccbr/ccbr_clear:latest"
+    container: config['containers']['clear']
     threads: getthreads("clear")
     shell:
         """
@@ -690,8 +683,7 @@ rule dcc:
             "{sample}.dcc.counts_table.tsv.filtered",
         ),
     threads: getthreads("dcc")
-    envmodules:
-        TOOLS["python27"]["version"],
+    container: config['containers']['dcc']
     params:
         peorse=get_peorse,
         dcc_strandedness=config["dcc_strandedness"],
@@ -857,8 +849,7 @@ rule mapsplice:
         outdir=join(WORKDIR, "results", "{sample}", "MapSplice"),
         randomstr=str(uuid.uuid4()),
     threads: getthreads("mapsplice")
-    container:
-        "docker://cgrlab/mapsplice2:latest"
+    container: config['containers']['mapsplice']
     shell:
         """
 set -exo pipefail
@@ -951,9 +942,7 @@ rule mapsplice_postprocess:
         bai=join(
             WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram.crai"
         ),
-    envmodules:
-        TOOLS["samtools"]["version"],
-        TOOLS["python27"]["version"],
+    container: config['containers']["nclscan_py27"]
     params:
         script=join(SCRIPTS_DIR, "create_mapsplice_per_sample_counts_table.py"),
         memG=getmemG("mapsplice_postprocess"),
@@ -1043,8 +1032,7 @@ rule nclscan:
             "NCLscan",
             "{sample}.nclscan.counts_table.tsv.filtered",
         ),
-    envmodules:
-        TOOLS["ncl_required_modules"],
+    container: config['containers']["nclscan_py27"]
     threads: getthreads("nclscan")
     params:
         workdir=WORKDIR,
@@ -1150,9 +1138,7 @@ rule circrnafinder:
         ),
         bsj_min_nreads=config["minreadcount"],
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["perl"]["version"],
-        TOOLS["samtools"]["version"],
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail
@@ -1228,11 +1214,7 @@ rule find_circ:
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["python27"]["version"],
-        TOOLS["bowtie2"]["version"],
-        TOOLS["samtools"]["version"],
-        TOOLS["parallel"]["version"],
+    container: config['containers']["nclscan_py27"]
     threads: getthreads("find_circ")
     shell:
         """
@@ -1576,8 +1558,7 @@ rule create_master_counts_file:
         resultsdir=join(WORKDIR, "results"),
         lookup_table=ANNOTATION_LOOKUP,
         bsj_min_nreads=config["circexplorer_bsj_circRNA_min_reads"],
-    envmodules:
-        TOOLS["python37"]["version"],
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail

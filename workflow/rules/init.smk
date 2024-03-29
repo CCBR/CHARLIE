@@ -233,10 +233,6 @@ for sample in SAMPLES:
 # print(SAMPLESDF)
 # sys.exit()
 
-## Load tools from YAML file
-with open(config["tools"]) as f:
-    TOOLS = yaml.safe_load(f)
-
 ## Load cluster.json
 with open(config["cluster"]) as json_file:
     CLUSTER = yaml.safe_load(json_file)
