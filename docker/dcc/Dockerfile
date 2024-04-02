@@ -8,17 +8,12 @@ ENV BUILD_TAG=${BUILD_TAG}
 ARG REPONAME="000000"
 ENV REPONAME=${REPONAME}
 
-# install conda packages
-COPY environment.txt /data2/
-RUN mamba install -c conda-forge -c bioconda --file /data2/environment.txt
-ENV R_LIBS_USER=/opt2/conda/lib/R/library/
-
 # install DCC
 ENV DCC_VERSION=v0.5.0
-RUN wget https://github.com/dieterich-lab/DCC/archive/refs/tags/v0.5.0.tar.gz && \
+RUN wget https://github.com/dieterich-lab/DCC/archive/refs/tags/${DCC_VERSION}.tar.gz && \
     tar -xzf DCC-${DCC_VERSION}.tar.gz && \
     cd DCC-${DCC_VERSION} && \
-    python setup.py install
+    python2 setup.py install
 RUN which DCC && DCC -h
 
 # Save Dockerfile in the docker
