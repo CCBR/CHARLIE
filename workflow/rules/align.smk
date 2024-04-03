@@ -52,7 +52,7 @@ rule star1p:
         flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR1p"),
         starindexdir=STAR_INDEX_DIR,
-        alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
+        alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
     container: config['containers']["star"]
     threads: getthreads("star1p")
@@ -303,7 +303,7 @@ rule star2p:
         flanksize=FLANKSIZE,
         outdir=join(WORKDIR, "results", "{sample}", "STAR2p"),
         starindexdir=STAR_INDEX_DIR,
-        alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
+        alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star2p")
@@ -475,7 +475,7 @@ rule star_circrnafinder:
         workdir=WORKDIR,
         flanksize=FLANKSIZE,
         starindexdir=STAR_INDEX_DIR,
-        alignTranscriptsPerReadNmax=TOOLS["star"]["alignTranscriptsPerReadNmax"],
+        alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
         randomstr=str(uuid.uuid4()),
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star_circrnafinder")
