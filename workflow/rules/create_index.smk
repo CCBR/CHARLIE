@@ -121,7 +121,7 @@ rule create_bowtie1_index:
         bt2=join(REF_DIR,"ref.1.ebwt")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bowtie1"]["version"]
+    container: config['containers']["bowtie1"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})
