@@ -11,7 +11,8 @@ ENV REPONAME=${REPONAME}
 # install DCC
 ENV DCC_VERSION=v0.5.0
 RUN wget https://github.com/dieterich-lab/DCC/archive/refs/tags/${DCC_VERSION}.tar.gz -O dcc.tar.gz && \
-    tar -xzf dcc.tar.gz && \
+    tar -xzvf dcc.tar.gz && \
+    ls && \
     cd DCC-${DCC_VERSION} && \
     python2 setup.py install
 RUN which DCC && DCC -h
