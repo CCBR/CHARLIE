@@ -9,7 +9,7 @@ ARG REPONAME="000000"
 ENV REPONAME=${REPONAME}
 
 # install DCC
-RUN pip2 install setuptools
+RUN python2 -m pip install --upgrade pip && pip install setuptools
 ENV DCC_VERSION=0.5.0
 RUN wget https://github.com/dieterich-lab/DCC/archive/refs/tags/v${DCC_VERSION}.tar.gz -O dcc.tar.gz && \
     tar -xzvf dcc.tar.gz && \
