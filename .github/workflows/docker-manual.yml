@@ -1,5 +1,7 @@
 name: docker-manual
 
+run-name: docker ${{ inputs.context_dir }}
+
 on:
   workflow_dispatch:
     inputs:
