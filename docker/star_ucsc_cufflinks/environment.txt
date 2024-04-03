@@ -1,3 +1,4 @@
+python=3.6
 cufflinks=2.2.1
 gffread
 sambamba=0.8.2
