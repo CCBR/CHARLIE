@@ -10,9 +10,10 @@ ENV REPONAME=${REPONAME}
 
 # install conda packages
 COPY environment.yml /data2/
-RUN mamba env create -n py3.6 -f /data2/environment.yml
-# Make RUN commands use the new environment:
-SHELL ["mamba", "run", "--no-capture-output", "-n", "py3.6", "/bin/bash", "-c"]
+ENV CONDA_ENV=py3.6
+RUN mamba env create -n ${CONDA_ENV} -f /data2/environment.yml && \
+    echo "conda activate ${CONDA_ENV}" > ~/.bashrc
+ENV PATH="/opt2/conda/envs/${CONDA_ENV}/bin:$PATH"
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # Save Dockerfile in the docker
