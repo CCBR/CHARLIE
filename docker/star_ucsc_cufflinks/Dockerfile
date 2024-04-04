@@ -9,8 +9,10 @@ ARG REPONAME="000000"
 ENV REPONAME=${REPONAME}
 
 # install conda packages
-COPY environment.txt /data2/
-RUN mamba install -c conda-forge -c bioconda --file /data2/environment.txt
+COPY environment.yml /data2/
+RUN mamba env create -n py3.6 -f /data2/environment.yml
+# Make RUN commands use the new environment:
+SHELL ["mamba", "run", "--no-capture-output", "-n", "py3.6", "/bin/bash", "-c"]
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # Save Dockerfile in the docker
