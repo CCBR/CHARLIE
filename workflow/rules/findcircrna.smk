@@ -1064,7 +1064,7 @@ outdir=$(dirname {output.result})
 results_bn=$(basename {output.result})
 
 if [ "{params.peorse}" == "PE" ];then
-{params.nclscan_dir}/NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $TMPDIR --fq1 {input.R1} --fq2 {input.R2}
+NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $TMPDIR --fq1 {input.R1} --fq2 {input.R2}
 rsync -az --progress ${{TMPDIR}}/${{results_bn}} {output.result}
 python {params.script} \\
     --result {output.result} \\
@@ -1079,14 +1079,6 @@ python {params.script} \\
     --host_filter_max {params.maxsize_host} \\
     --virus_filter_min {params.minsize_virus} \\
     --virus_filter_max {params.maxsize_virus}
-# else
-#     outdir=$(dirname {output.result})
-#     if [ ! -d $outdir ];then
-#         mkdir -p $outdir
-#     fi
-#     touch {output.result}
-#     touch {output.ct}
-# This part is redundant as it is already taken care of by get_nclscan_target_files function!
 fi
 """
 
