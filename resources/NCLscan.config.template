@@ -1,10 +1,10 @@
 #############################
 ### NCLscan Configuration ###
 #############################
+### for container: docker://nciccbr/charlie_nclscan:v0.1.0
 
 ## The directory of NCLscan
-NCLscan_dir = /data/Ziegelbauer_lab/tools/NCLscan-1.7.0
-
+NCLscan_dir = /opt2/NCLscan-1.7.0
 
 ## The directory of references and indices
 ## The script "create_reference.py" would create the needed references and indices here.
@@ -29,12 +29,12 @@ lncRNA_transcripts = WORKDIR/ref/ref.dummy.fa
 ## External tools
 ## these are set to "module load" on BIOWULF
 
-bedtools_bin      = /usr/local/apps/bedtools/2.29.0/bin/bedtools
-blat_bin          = /usr/local/apps/blat/3.5/blat
-bwa_bin           = /usr/local/apps/bwa/0.7.17/bwa
-samtools_bin      = /usr/local/apps/samtools/1.15.1/bin/samtools
-novoalign_bin     = /usr/local/apps/novocraft/4.03.05/novoalign
-novoindex_bin     = /usr/local/apps/novocraft/4.03.05/novoindex
+bedtools_bin      = /opt2/conda/bin/bedtools
+blat_bin          = /opt2/conda/bin/blat
+bwa_bin           = /opt2/conda/bin/bwa
+samtools_bin      = /opt2/conda/bin/samtools
+novoalign_bin     = /opt2/conda/bin/novoalign
+novoindex_bin     = /opt2/conda/bin/novoindex
 
 
 ## Bin
