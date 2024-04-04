@@ -3,4 +3,4 @@ blat=35
 bowtie2=2.5.1
 bwa=0.7.17
 samtools=1.15.1
-novoalign=3
+novoalign=3.07.00
