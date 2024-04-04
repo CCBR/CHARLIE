@@ -10,7 +10,7 @@ ENV REPONAME=${REPONAME}
 
 # install conda packages
 COPY environment.txt /data2/
-RUN mamba install -c conda-forge -c bioconda --file /data2/environment.txt
+RUN mamba install -c compbiocore -c conda-forge -c bioconda --file /data2/environment.txt
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # install nclscan
