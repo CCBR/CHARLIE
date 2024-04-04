@@ -122,7 +122,7 @@ containers:
   clear: "docker://nciccbr/ccbr_clear:latest"
   dcc: "docker://nciccbr/charlie_dcc_py27:v0.1.0"
   mapsplice: "docker://cgrlab/mapsplice2:latest"
-  nclscan_py27: "docker://nciccbr/charlie_nclscan_py27:v0.1.0"
+  nclscan: "docker://nciccbr/charlie_nclscan:v0.1.0"
   picard: 'docker://nciccbr/ccbr_picard_2.27.5:v1'
   R: 'docker://nciccbr/ccbr_r_4.3.0:v1'
   star: "docker://nciccbr/ccbr_star_2.7.6a:latest"
