@@ -526,6 +526,8 @@ echo $CLUSTER_SBATCH_CMD
 snakemake $1 -s $SNAKEFILE \
 --directory $WORKDIR \
 --use-envmodules \
+--use-singularity \
+--singularity-args "$SINGULARITY_BINDS" \
 --printshellcmds \
 --latency-wait 120 \
 --configfile $CONFIGFILE \
