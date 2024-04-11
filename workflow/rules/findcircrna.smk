@@ -652,8 +652,7 @@ echo "{input.f3}" > {output.m2}
 # | 6 | Strand           |                                                                              |
 # | 7 | Start-End Region | eg. intron-intergenic, exon-exon, intergenic-intron, etc.                    |
 # | 8 | OverallRegion    | the genomic features circRNA coordinates interval covers                     |
-
-
+#
 # output dcc.counts_table.tsv has the following columns:
 # | # | ColName        |
 # |---|----------------|
@@ -711,8 +710,6 @@ else
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
-conda activate DCC
 cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
 DCC @{input.ss} \\

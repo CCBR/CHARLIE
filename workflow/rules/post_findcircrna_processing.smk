@@ -209,7 +209,7 @@ rule create_circExplorer_linear_spliced_bams:
         additives=ADDITIVES,
         viruses=VIRUSES,
         peorse=get_peorse,
-        bashscript=join(SCRIPTS_DIR, "_create_circExplorer_linear_bam.sh"),
+        bashscript=join(SCRIPTS_DIR, "_create_circExplorer_linear_bam.v2.sh"),
         # pythonscript=join(SCRIPTS_DIR,"_extract_circExplorer_linear_reads.py"),
         # bam2bwscript=join(SCRIPTS_DIR,"bam_to_bigwig.sh"),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),

@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# module load parallel
-# module load python/3.7
-# module load bedtools
-# module load ucsc
-# module load samtools
-
-
 set -e -x -o pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
