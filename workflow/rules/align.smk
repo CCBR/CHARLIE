@@ -570,7 +570,7 @@ rule find_circ_align:
         peorse=get_peorse,
         find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["nclscan_py27"]
+    container: config['containers']["nclscan"]
     threads: getthreads("find_circ_align")
     shell:
         """

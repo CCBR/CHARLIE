@@ -572,6 +572,7 @@ rule annotate_clear_output:
         lookup=ANNOTATION_LOOKUP,
         cleardir=join(WORKDIR, "results", "{sample}", "CLEAR"),
         hostID=HOST + "ID",
+    container: config['containers']['base']
     shell:
         """
 set -exo pipefail
@@ -619,6 +620,7 @@ rule dcc_create_samplesheets:
         ss=join(WORKDIR, "results", "{sample}", "DCC", "samplesheet.txt"),
         m1=join(WORKDIR, "results", "{sample}", "DCC", "mate1.txt"),
         m2=join(WORKDIR, "results", "{sample}", "DCC", "mate2.txt"),
+    container: config['containers']['dcc']
     shell:
         """
 set -exo pipefail
@@ -939,7 +941,7 @@ rule mapsplice_postprocess:
         bai=join(
             WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram.crai"
         ),
-    container: config['containers']["nclscan_py27"]
+    container: config['containers']["nclscan"]
     params:
         script=join(SCRIPTS_DIR, "create_mapsplice_per_sample_counts_table.py"),
         memG=getmemG("mapsplice_postprocess"),
@@ -1029,7 +1031,7 @@ rule nclscan:
             "NCLscan",
             "{sample}.nclscan.counts_table.tsv.filtered",
         ),
-    container: config['containers']["nclscan_py27"]
+    container: config['containers']["nclscan"]
     threads: getthreads("nclscan")
     params:
         workdir=WORKDIR,
@@ -1203,7 +1205,7 @@ rule find_circ:
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["nclscan_py27"]
+    container: config['containers']["nclscan"]
     threads: getthreads("find_circ")
     shell:
         """
