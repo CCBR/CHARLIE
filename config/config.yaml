@@ -86,7 +86,6 @@ maxsize_virus:  5000
 ## you most probably dont need to change these
 scriptsdir: "PIPELINE_HOME/workflow/scripts"
 resourcesdir: "PIPELINE_HOME/resources"
-tools: "PIPELINE_HOME/resources/tools.yaml"
 
 # default cluster
 # cluster: "PIPELINE_HOME/resources/cluster.json"

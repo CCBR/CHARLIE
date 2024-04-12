@@ -182,7 +182,7 @@ if not os.path.exists(join(WORKDIR, "fastqs")):
 if not os.path.exists(join(WORKDIR, "results")):
     os.mkdir(join(WORKDIR, "results"))
 
-REQUIRED_FILES = [config[f] for f in ["samples", "tools", "cluster"]]
+REQUIRED_FILES = [config[f] for f in ["samples", "cluster"]]
 REQUIRED_FILES.append(ANNOTATION_LOOKUP)
 REQUIRED_FILES.extend(FASTAS)
 REQUIRED_FILES.extend(REGIONS)
