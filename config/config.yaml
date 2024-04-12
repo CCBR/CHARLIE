@@ -119,6 +119,7 @@ containers:
   bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
   circexplorer: 'docker://nciccbr/ccbr_circexplorer:v1.0'
   clear: "docker://nciccbr/ccbr_clear:latest"
+  cutadapt: 'nciccbr/ncigb_cutadapt_v1.18:latest'
   dcc: "docker://nciccbr/charlie_dcc:v0.1.0"
   mapsplice: "docker://cgrlab/mapsplice2:latest"
   nclscan: "docker://nciccbr/charlie_nclscan:v0.1.0"

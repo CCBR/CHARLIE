@@ -31,8 +31,7 @@ rule cutadapt:
         cutadapt_q=config["cutadapt_q"],
         adapters=join(RESOURCES_DIR, "TruSeq_and_nextera_adapters.consolidated.fa"),
         randomstr=str(uuid.uuid4()),
-    envmodules:
-        TOOLS["cutadapt"]["version"],
+    container: config['containers']['cutadapt']
     threads: getthreads("cutadapt")
     shell:
         """
