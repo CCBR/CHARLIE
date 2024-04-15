@@ -123,7 +123,7 @@ containers:
   dcc: "docker://nciccbr/charlie_dcc:v0.1.0"
   fastqc: 'nciccbr/ccrgb_qctools:v4.0'
   mapsplice: "docker://cgrlab/mapsplice2:latest"
-  multiqc: 'nciccbr/ccbr_multiqc_1.15:v1'
+  multiqc: 'docker://nciccbr/ccbr_multiqc_1.15:v1'
   nclscan: "docker://nciccbr/charlie_nclscan:v0.1.0"
   picard: 'docker://nciccbr/ccbr_picard_2.27.5:v1'
   R: 'docker://nciccbr/ccbr_r_4.3.0:v1'
