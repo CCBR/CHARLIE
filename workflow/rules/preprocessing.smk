@@ -35,61 +35,61 @@ rule cutadapt:
     threads: getthreads("cutadapt")
     shell:
         """
-set -exo pipefail
+        set -exo pipefail
 
-# set TMPDIR
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+        # set TMPDIR
+        if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
+            TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
+        else
+            TMPDIR="/dev/shm/{params.randomstr}"
+        fi
+        if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
+        if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 
-of1bn=$(basename {output.of1})
-of2bn=$(basename {output.of2})
+        of1bn=$(basename {output.of1})
+        of2bn=$(basename {output.of2})
 
-if [ "{params.peorse}" == "PE" ];then
-    ## Paired-end
-    cutadapt --pair-filter=any \\
-    --nextseq-trim=2 \\
-    --trim-n \\
-    --max-n {params.cutadapt_max_n} \\
-    -n {params.cutadapt_n} -O {params.cutadapt_O} \\
-    -q {params.cutadapt_q},{params.cutadapt_q} -m {params.cutadapt_min_length}:{params.cutadapt_min_length} \\
-    -b file:{params.adapters} \\
-    -B file:{params.adapters} \\
-    -j {threads} \\
-    -o ${{TMPDIR}}/${{of1bn}} -p ${{TMPDIR}}/${{of2bn}} \\
-    {input.R1} {input.R2}
-    
-# filter for average read quality
-    fastq-filter \\
-        -q {params.cutadapt_q} \\
-        -o {output.of1} -o {output.of2} \\
-        ${{TMPDIR}}/${{of1bn}} ${{TMPDIR}}/${{of2bn}}
+        if [ "{params.peorse}" == "PE" ];then
+            ## Paired-end
+            cutadapt --pair-filter=any \\
+            --nextseq-trim=2 \\
+            --trim-n \\
+            --max-n {params.cutadapt_max_n} \\
+            -n {params.cutadapt_n} -O {params.cutadapt_O} \\
+            -q {params.cutadapt_q},{params.cutadapt_q} -m {params.cutadapt_min_length}:{params.cutadapt_min_length} \\
+            -b file:{params.adapters} \\
+            -B file:{params.adapters} \\
+            -j {threads} \\
+            -o ${{TMPDIR}}/${{of1bn}} -p ${{TMPDIR}}/${{of2bn}} \\
+            {input.R1} {input.R2}
+            
+        # filter for average read quality
+            fastq-filter \\
+                -q {params.cutadapt_q} \\
+                -o {output.of1} -o {output.of2} \\
+                ${{TMPDIR}}/${{of1bn}} ${{TMPDIR}}/${{of2bn}}
 
-else
-    ## Single-end
-    cutadapt \\
-    --nextseq-trim=2 \\
-    --trim-n \\
-    --max-n {params.cutadapt_max_n} \\
-    -n {params.cutadapt_n} -O {params.cutadapt_O} \\
-    -q {params.cutadapt_q},{params.cutadapt_q} -m {params.cutadapt_min_length} \\
-    -b file:{params.adapters} \\
-    -j {threads} \\
-    -o ${{TMPDIR}}/${{of1bn}} \\
-    {input.R1}
-    
-    touch {output.of2}
+        else
+            ## Single-end
+            cutadapt \\
+            --nextseq-trim=2 \\
+            --trim-n \\
+            --max-n {params.cutadapt_max_n} \\
+            -n {params.cutadapt_n} -O {params.cutadapt_O} \\
+            -q {params.cutadapt_q},{params.cutadapt_q} -m {params.cutadapt_min_length} \\
+            -b file:{params.adapters} \\
+            -j {threads} \\
+            -o ${{TMPDIR}}/${{of1bn}} \\
+            {input.R1}
+            
+            touch {output.of2}
 
-# filter for average read quality
-    fastq-filter \\
-        -q {params.cutadapt_q} \\
-        -o {output.of1} \\
-        ${{TMPDIR}}/${{of1bn}}
+        # filter for average read quality
+            fastq-filter \\
+                -q {params.cutadapt_q} \\
+                -o {output.of1} \\
+                ${{TMPDIR}}/${{of1bn}}
 
-fi
-"""
+        fi
+        """
