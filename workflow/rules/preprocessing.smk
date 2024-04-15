@@ -45,10 +45,6 @@ else
 fi
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
 
-# set conda environment
-. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh"
-conda activate fastqfilter
-
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 
 of1bn=$(basename {output.of1})
@@ -96,8 +92,4 @@ else
         ${{TMPDIR}}/${{of1bn}}
 
 fi
-
-
-
-
 """
