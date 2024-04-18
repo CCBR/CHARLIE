@@ -2,9 +2,11 @@ channels:
     - conda-forge
     - bioconda
 dependencies:
-    - python=3.6
+    - argparse
     - cufflinks=2.2.1
     - gffread
+    - pandas
+    - python=3.6
     - sambamba=0.8.2
     - samtools=1.16.1
     - star=2.7.6a
