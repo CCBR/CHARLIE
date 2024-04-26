@@ -570,7 +570,7 @@ rule find_circ_align:
         peorse=get_peorse,
         find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["nclscan"]
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("find_circ_align")
     shell:
         """

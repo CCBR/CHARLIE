@@ -26,7 +26,6 @@ ENV PATH="/opt2/NCLscan-${NCLSCAN_VERSION}/:/opt2/NCLscan-${NCLSCAN_VERSION}/bin
 
 # Save Dockerfile in the docker
 COPY Dockerfile /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
-RUN chmod a+r /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
 
 # cleanup
 WORKDIR /data2

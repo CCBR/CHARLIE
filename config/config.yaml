@@ -124,9 +124,8 @@ containers:
   fastqc: 'docker://nciccbr/ccrgb_qctools:v4.0'
   mapsplice: "docker://cgrlab/mapsplice2:latest"
   multiqc: 'docker://nciccbr/ccbr_multiqc_1.15:v1'
-  nclscan: "docker://nciccbr/charlie_nclscan:v0.1.0"
   picard: 'docker://nciccbr/ccbr_picard_2.27.5:v1'
   R: 'docker://nciccbr/ccbr_r_4.3.0:v1'
   star: "docker://nciccbr/ccbr_star_2.7.6a:latest"
-  star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.1.0"
+  star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.2.0"
   ucsc: 'docker://nciccbr/ccbr_ucsc:v1'

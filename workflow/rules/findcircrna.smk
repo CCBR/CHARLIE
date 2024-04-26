@@ -941,7 +941,7 @@ rule mapsplice_postprocess:
         bai=join(
             WORKDIR, "results", "{sample}", "MapSplice", "{sample}.mapsplice.cram.crai"
         ),
-    container: config['containers']["nclscan"]
+    container: config['containers']['star_ucsc_cufflinks']
     params:
         script=join(SCRIPTS_DIR, "create_mapsplice_per_sample_counts_table.py"),
         memG=getmemG("mapsplice_postprocess"),
@@ -1031,7 +1031,7 @@ rule nclscan:
             "NCLscan",
             "{sample}.nclscan.counts_table.tsv.filtered",
         ),
-    container: config['containers']["nclscan"]
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("nclscan")
     params:
         workdir=WORKDIR,
@@ -1205,7 +1205,7 @@ rule find_circ:
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["nclscan"]
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("find_circ")
     shell:
         """
