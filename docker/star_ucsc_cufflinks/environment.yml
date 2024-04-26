@@ -3,8 +3,13 @@ channels:
     - bioconda
 dependencies:
     - argparse
+    - bedtools=2.29.0
+    - blat=35
+    - bowtie2=2.5.1
+    - bwa=0.7.17
     - cufflinks=2.2.1
     - gffread
+    - novoalign=3.07.00
     - pandas
     - python=3.6
     - sambamba=0.8.2

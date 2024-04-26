@@ -16,6 +16,14 @@ RUN mamba env create -n ${CONDA_ENV} -f /data2/environment.yml && \
 ENV PATH="/opt2/conda/envs/${CONDA_ENV}/bin:$PATH"
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
+# install nclscan
+ENV NCLSCAN_VERSION=1.7.0
+RUN wget https://github.com/TreesLab/NCLscan/archive/refs/tags/v${NCLSCAN_VERSION}.tar.gz -O nclscan.tar.gz && \
+    tar -xzvf nclscan.tar.gz -C /opt2/ && \
+    cd /opt2/NCLscan-${NCLSCAN_VERSION}/bin/ && \
+    make
+ENV PATH="/opt2/NCLscan-${NCLSCAN_VERSION}/:/opt2/NCLscan-${NCLSCAN_VERSION}/bin:"
+
 # Save Dockerfile in the docker
 COPY Dockerfile /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
 RUN chmod a+r /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
