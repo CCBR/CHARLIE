@@ -1123,12 +1123,9 @@ rule circrnafinder:
             "{sample}.Chimeric.out.sorted.bam",
         ),
     params:
-        postProcessStarAlignment_script=join(
-            config["circrnafinder_dir"], "postProcessStarAlignment.pl"
-        ),
         bsj_min_nreads=config["minreadcount"],
         randomstr=str(uuid.uuid4()),
-    container: config['containers']['base']
+    container: config['containers']['circRNA_finder']
     shell:
         """
 set -exo pipefail
@@ -1145,7 +1142,7 @@ outDir=$(dirname {output.bed})
 if [ -d $outDir ];then rm -rf $outDir;fi
 if [ ! -d $outDir ];then mkdir -p $outDir;fi
 
-{params.postProcessStarAlignment_script} \\
+postProcessStarAlignment.pl \\
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
 

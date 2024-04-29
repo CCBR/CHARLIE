@@ -104,9 +104,11 @@ cutadapt_q: 20
 high_confidence_core_callers: "circExplorer,circExplorer_bwa"
 high_confidence_core_callers_plus_n: 1
 
-ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" # in docker container
-circrnafinder_dir: "/data/CCBR_Pipeliner/bin/circRNA_finder-1.2"
+# paths in docker containers
+ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" 
 find_circ_dir: "/data/CCBR_Pipeliner/bin/find_circ"
+
+# change this path to a directory containing fasta and GTF files for all host and virus genomes
 fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
 
 annotation_lookups:
@@ -117,6 +119,7 @@ containers:
   base: "docker://nciccbr/ccbr_ubuntu_base_20.04:v6"
   bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
   circexplorer: 'docker://nciccbr/ccbr_circexplorer:v1.0'
+  circRNA_finder: 'docker://nciccbr/charlie_circRNA_finder:v1'
   ciri: 'docker://nciccbr/charlie_ciri2:v1'
   clear: "docker://nciccbr/ccbr_clear:latest"
   cutadapt: 'docker://nciccbr/charlie_cutadapt_fqfilter:v1'
