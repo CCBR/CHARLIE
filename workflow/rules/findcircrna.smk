@@ -1037,7 +1037,6 @@ rule nclscan:
         workdir=WORKDIR,
         sample="{sample}",
         peorse=get_peorse,
-        nclscan_dir=config["nclscan_dir"],
         nclscan_config=config["nclscan_config"],
         script=join(SCRIPTS_DIR, "create_nclscan_per_sample_counts_table.py"),
         randomstr=str(uuid.uuid4()),

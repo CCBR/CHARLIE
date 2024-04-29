@@ -1,9 +1,8 @@
 #############################
 ### NCLscan Configuration ###
 #############################
-### for container: docker://nciccbr/charlie_nclscan:v0.1.0
 
-## The directory of NCLscan
+## The directory of NCLscan in the docker container
 NCLscan_dir = /opt2/NCLscan-1.7.0
 
 ## The directory of references and indices

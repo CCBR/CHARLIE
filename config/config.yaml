@@ -105,7 +105,6 @@ high_confidence_core_callers: "circExplorer,circExplorer_bwa"
 high_confidence_core_callers_plus_n: 1
 
 ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" # in docker container
-nclscan_dir: "/data/CCBR_Pipeliner/bin/NCLscan-1.7.0"
 circrnafinder_dir: "/data/CCBR_Pipeliner/bin/circRNA_finder-1.2"
 find_circ_dir: "/data/CCBR_Pipeliner/bin/find_circ"
 fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"

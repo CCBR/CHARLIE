@@ -21,7 +21,6 @@ rule create_index:
         script2=join(SCRIPTS_DIR, "_multifasta2separatefastas.sh"),
         script3=join(SCRIPTS_DIR, "fix_gtfs.py"),
         randomstr=str(uuid.uuid4()),
-        nclscan_dir=config["nclscan_dir"],
         nclscan_config=config["nclscan_config"],
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("create_index")
@@ -38,7 +37,7 @@ samtools faidx {params.reffa} && \\
 python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
 gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
 touch {output.lncRNA_transcripts_fa}
-{params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
+create_reference.py -c {params.nclscan_config}
 
 gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \\
     python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
