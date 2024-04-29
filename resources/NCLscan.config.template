@@ -27,14 +27,14 @@ lncRNA_transcripts = WORKDIR/ref/ref.dummy.fa
 
 
 ## External tools
-## these are set to "module load" on BIOWULF
+## these are all in the $PATH in the docker container
 
-bedtools_bin      = /opt2/conda/bin/bedtools
-blat_bin          = /opt2/conda/bin/blat
-bwa_bin           = /opt2/conda/bin/bwa
-samtools_bin      = /opt2/conda/bin/samtools
-novoalign_bin     = /opt2/conda/bin/novoalign
-novoindex_bin     = /opt2/conda/bin/novoindex
+bedtools_bin      = bedtools
+blat_bin          = blat
+bwa_bin           = bwa
+samtools_bin      = samtools
+novoalign_bin     = novoalign
+novoindex_bin     = novoindex
 
 
 ## Bin
