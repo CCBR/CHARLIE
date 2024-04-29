@@ -15,11 +15,9 @@ ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # install circRNA_finder
 WORKDIR /opt2
-ENV VERSION=v1.2
+ENV VERSION=1.2
 RUN wget https://github.com/orzechoj/circRNA_finder/archive/refs/tags/v${VERSION}.tar.gz -O circRNA.tar.gz && \
-    tar -xzvf circRNA.tar.gz && \
-    cd circRNA_finder-${VERSION} && \
-    python setup.py install
+    tar -xzvf circRNA.tar.gz
 ENV PATH="/opt2/circRNA_finder-${VERSION}/:$PATH"
 
 # Save Dockerfile in the docker
