@@ -104,7 +104,7 @@ cutadapt_q: 20
 high_confidence_core_callers: "circExplorer,circExplorer_bwa"
 high_confidence_core_callers_plus_n: 1
 
-ciri_perl_script: "/data/CCBR_Pipeliner/bin/CIRI_v2.0.6/CIRI2.pl"
+ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" # in docker container
 nclscan_dir: "/data/CCBR_Pipeliner/bin/NCLscan-1.7.0"
 circrnafinder_dir: "/data/CCBR_Pipeliner/bin/circRNA_finder-1.2"
 find_circ_dir: "/data/CCBR_Pipeliner/bin/find_circ"
@@ -118,6 +118,7 @@ containers:
   base: "docker://nciccbr/ccbr_ubuntu_base_20.04:v6"
   bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
   circexplorer: 'docker://nciccbr/ccbr_circexplorer:v1.0'
+  ciri: 'docker://nciccbr/charlie_ciri2:v1'
   clear: "docker://nciccbr/ccbr_clear:latest"
   cutadapt: 'docker://nciccbr/charlie_cutadapt_fqfilter:v1'
   dcc: "docker://nciccbr/charlie_dcc:v0.1.0"

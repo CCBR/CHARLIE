@@ -284,7 +284,7 @@ rule ciri:
         script=join(SCRIPTS_DIR, "filter_ciriout.py"),
         randomstr=str(uuid.uuid4()),
     threads: getthreads("ciri")
-    container: config['containers']['base']
+    container: config['containers']['ciri']
     shell:
         """
 set -exo pipefail
