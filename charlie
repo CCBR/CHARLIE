@@ -5,7 +5,7 @@
 # CHARLIE
 
 set -eo pipefail
-module purge
+## TODO module statements can only run on biowulf
 
 # decide trigger
 trigger="mtime"
@@ -46,7 +46,7 @@ CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {clus
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
 # fi
-PYTHONVERSION="3.7"
+PYTHONVERSION="3"
 SNAKEMAKEVERSION="7.19.1"
 # SNAKEMAKEVERSION="5.24.1"
 
@@ -273,14 +273,43 @@ function reconfig(){
   echo "$WORKDIR/config.yaml has been updated!"
 }
 
+
+# determine if the platform is biowulf, FRCE, or something else and use modules accordingly
+function get_platform() {
+  if command -v scontrol &> /dev/null ; then
+    platform=$(scontrol show config | grep ClusterName | sed 's/.*= //')
+  else
+    platform=unknown
+  fi
+  echo $platform
+}
+
+# check whether required dependencies are in the path
+function check_deps() {
+  for dep in python snakemake singularity; do
+    command -v $dep &> /dev/null || err "$dep not found in PATH"
+  done
+}
+
+# load modules if available, or check whether they're in the path
+function load_modules() {
+  platform=$(get_platform)
+  if [ "$platform" == "biowulf" ] || [ "$platform" == "fnlcr" ]; then
+    module load python/$PYTHONVERSION
+    module load snakemake/$SNAKEMAKEVERSION
+    module load singularity
+  else
+    check_deps
+  fi
+}
+
 ##########################################################################################
 # RUNCHECK ... check essential files and load required packages
 ##########################################################################################
 
 function runcheck(){
   check_essential_files
-  module load python/$PYTHONVERSION
-  module load snakemake/$SNAKEMAKEVERSION
+  load_modules
 }
 
 ##########################################################################################
@@ -350,7 +379,6 @@ function runlocal() {
   runcheck
   set_singularity_binds
   if [ "$SLURM_JOB_ID" == "" ];then err "runlocal can only be done on an interactive node"; exit 1; fi
-  module load singularity
   run "local"
 }
 
