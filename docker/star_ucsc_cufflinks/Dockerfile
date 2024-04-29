@@ -18,7 +18,7 @@ ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # install find_circ
 WORKDIR /opt2
-ENV VERSION=v1.2
+ENV VERSION=1.2
 RUN wget https://github.com/marvin-jens/find_circ/archive/refs/tags/v${VERSION}.tar.gz -O find_circ.tar.gz && \
     tar -xzvf find_circ.tar.gz && \
     cd find_circ-${VERSION} && \
