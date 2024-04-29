@@ -119,7 +119,7 @@ containers:
   base: "docker://nciccbr/ccbr_ubuntu_base_20.04:v6"
   bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
   circexplorer: 'docker://nciccbr/ccbr_circexplorer:v1.0'
-  circRNA_finder: 'docker://nciccbr/charlie_circRNA_finder:v1'
+  circRNA_finder: 'docker://nciccbr/charlie_circrna_finder:v1'
   ciri: 'docker://nciccbr/charlie_ciri2:v1'
   clear: "docker://nciccbr/ccbr_clear:latest"
   cutadapt: 'docker://nciccbr/charlie_cutadapt_fqfilter:v1'
