@@ -108,7 +108,6 @@ N_RUN_FINDCIRC = _convert_to_int(RUN_FINDCIRC)
 MAPSPLICE_MIN_MAP_LEN = config["mapsplice_min_map_len"]
 MAPSPLICE_FILTERING = config["mapsplice_filtering"]
 FLANKSIZE = config['flanksize']
-FIND_CIRC_DIR = config['find_circ_dir']
 HQCC=config["high_confidence_core_callers"].replace(" ","")
 CALLERS=["circExplorer","ciri","circExplorer_bwa"]
 # if RUN_CLEAR: CALLERS.append("clear")

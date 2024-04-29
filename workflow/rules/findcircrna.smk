@@ -1196,7 +1196,6 @@ rule find_circ:
     params:
         sample="{sample}",
         reffa=REF_FA,
-        find_cir_dir=FIND_CIRC_DIR,
         find_circ_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
@@ -1252,7 +1251,7 @@ for i in $(seq 0 9);do
 
 cat <<EOF >>${{TMPDIR}}/do_find_circ
 cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \\
-{params.find_cir_dir}/find_circ.py \\
+find_circ.py \\
     --genome={params.reffa} \\
     --prefix={params.sample}.find_circ \\
     --name={params.sample} \\

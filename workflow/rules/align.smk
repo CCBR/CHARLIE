@@ -568,7 +568,6 @@ rule find_circ_align:
         sample="{sample}",
         reffa=REF_FA,
         peorse=get_peorse,
-        find_circ_dir=FIND_CIRC_DIR,
         randomstr=str(uuid.uuid4()),
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("find_circ_align")
@@ -625,7 +624,7 @@ samtools view -@{threads} \\
     -f4 \\
     ${{TMPDIR}}/{params.sample}.sorted.bam
 
-{params.find_circ_dir}/unmapped2anchors.py \\
+unmapped2anchors.py \\
     ${{TMPDIR}}/{params.sample}.unmapped.bam | \\
 	gzip -c - > ${{TMPDIR}}/{params.sample}.anchors.fastq.gz
 
