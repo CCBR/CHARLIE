@@ -9,6 +9,7 @@ dependencies:
     - bwa=0.7.17
     - cufflinks=2.2.1
     - gffread
+    - HTSeq
     - novoalign=3.07.00
     - numpy
     - pandas

@@ -127,5 +127,5 @@ containers:
   picard: 'docker://nciccbr/ccbr_picard_2.27.5:v1'
   R: 'docker://nciccbr/ccbr_r_4.3.0:v1'
   star: "docker://nciccbr/ccbr_star_2.7.6a:latest"
-  star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.3.0"
+  star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.4.0"
   ucsc: 'docker://nciccbr/ccbr_ucsc:v1'
