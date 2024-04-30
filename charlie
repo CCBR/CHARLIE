@@ -47,7 +47,7 @@ CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {clus
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
 # fi
 PYTHONVERSION="3"
-SNAKEMAKEVERSION="7.19.1"
+SNAKEMAKEVERSION="7"
 # SNAKEMAKEVERSION="5.24.1"
 
 # set defaults
