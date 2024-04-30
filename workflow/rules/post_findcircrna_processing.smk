@@ -62,7 +62,7 @@ rule create_circExplorer_BSJ_bam:
         flankscript=join(SCRIPTS_DIR, "_append_splice_site_flanks_to_BSJs.py"),
         bam2bwscript=join(SCRIPTS_DIR, "bam_to_bigwig.sh"),
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["ucsc"]
+    container: config['containers']["star_ucsc_cufflinks"]
     threads: getthreads("create_circExplorer_BSJ_bam")
     shell:
         """
