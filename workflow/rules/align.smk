@@ -654,6 +654,6 @@ rule estimate_duplication:
     shell:
         """
 set -exo pipefail
-java -Xmx{params.memG} -jar ${{PICARD_JARPATH}}/picard.jar MarkDuplicates I={input.bam} O=/dev/shm/{params.sample}.mark_dup.bam M={output.metrics}
+picard -Xmx{params.memG} MarkDuplicates -I={input.bam} -O=/dev/shm/{params.sample}.mark_dup.bam -M={output.metrics}
 rm -f /dev/shm/{params.sample}*
 """
