@@ -1,0 +1,6 @@
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - python=3.5
+    - bioconda::dcc=0.5.0

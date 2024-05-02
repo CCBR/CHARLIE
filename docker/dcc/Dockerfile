@@ -9,11 +9,11 @@ ARG REPONAME="000000"
 ENV REPONAME=${REPONAME}
 
 # install DCC
-ENV DCC_VERSION=0.5.0
-RUN wget https://github.com/dieterich-lab/DCC/archive/refs/tags/v${DCC_VERSION}.tar.gz -O dcc.tar.gz && \
-    tar -xzvf dcc.tar.gz && \
-    cd DCC-${DCC_VERSION} && \
-    python setup.py install
+COPY environment.yml /data2/
+ENV CONDA_ENV=dcc
+RUN mamba env create -n ${CONDA_ENV} -f /data2/environment.yml && \
+    echo "conda activate ${CONDA_ENV}" > ~/.bashrc
+ENV PATH="/opt2/conda/envs/${CONDA_ENV}/bin:$PATH"
 RUN which DCC && DCC -h
 
 # Save Dockerfile in the docker
