@@ -8,12 +8,13 @@ ENV BUILD_TAG=${BUILD_TAG}
 ARG REPONAME="000000"
 ENV REPONAME=${REPONAME}
 
-# install DCC
-COPY environment.yml /data2/
-ENV CONDA_ENV=dcc
-RUN mamba env create -n ${CONDA_ENV} -f /data2/environment.yml && \
-    echo "conda activate ${CONDA_ENV}" > ~/.bashrc
-ENV PATH="/opt2/conda/envs/${CONDA_ENV}/bin:$PATH"
+# install DCC development version
+ENV DCC_VERSION=4418a9a12a7f6e883734459f8117eba5d585b59a
+WORKDIR /opt2
+RUN wget https://github.com/dieterich-lab/DCC/archive/${DCC_VERSION}.zip -O dcc.zip && \
+    unzip dcc.zip && \
+    cd DCC-${DCC_VERSION} && \
+    python setup.py install
 RUN which DCC && DCC -h
 
 # Save Dockerfile in the docker
