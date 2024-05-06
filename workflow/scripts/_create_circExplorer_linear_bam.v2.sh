@@ -139,7 +139,7 @@ python3 ${SCRIPT_DIR}/filter_bam.py \
 
 fi
 
-nreads=$(samtools view /gpfs/gsfs8/users/CBLCCBR/kopardevn_tmp/issue57_testing_2/results/GI1_T/circExplorer/GI1_T.bam|wc -l)
+nreads=$(samtools view ${filtered_bam} |wc -l)
 if [ "$nreads" == "0" ];then
     echo "SOMETHING WENT WRONG ...filtered BAM is empty!!"
     exit
