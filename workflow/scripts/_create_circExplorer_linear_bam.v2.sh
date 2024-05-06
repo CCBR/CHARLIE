@@ -33,12 +33,6 @@ parser.add_argument('--threads',required=False, default=56, help='number of thre
 EOF
 
 threads=$THREADS
-if [ "$SLURM_JOB_ID" != "" ];then
-alloccpu=$(sacct -j $SLURM_JOB_ID --format "AllocCPUS"|tail -n1|awk '{print $1}')
-if [ "$alloccpu" -lt "$threads" ];then
-    threads=$alloccpu
-fi
-fi
 
 start0=$(date +%s.%N)
 
