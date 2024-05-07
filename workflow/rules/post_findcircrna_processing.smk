@@ -212,7 +212,7 @@ rule create_circExplorer_linear_spliced_bams:
         bashscript=join(SCRIPTS_DIR, "_create_circExplorer_linear_bam.v2.sh"),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
         randomstr=str(uuid.uuid4()),
-    container: config['containers']["base"]
+    container: config['containers']["star_ucsc_cufflinks"]
     threads: getthreads("create_circExplorer_linear_spliced_bams")
     shell:
         """
