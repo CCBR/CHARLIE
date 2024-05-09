@@ -320,7 +320,7 @@ if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 limitSjdbInsertNsj=$(wc -l {input.pass1sjtab}|awk '{{print $1+1}}')
 if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
 
-output_prefix=$(dirname ${output.bam})/{params.sample}_p2.
+output_prefix=$(dirname {output.bam})/{params.sample}_p2.
 
 if [ "{params.peorse}" == "PE" ];then
 # paired-end
