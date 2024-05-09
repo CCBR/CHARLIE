@@ -344,7 +344,7 @@ if [ "{params.peorse}" == "PE" ];then
     --readFilesIn {input.R1} {input.R2} \\
     --readFilesCommand  zcat \\
     --runThreadN {threads} \\
-    --outFileNamePrefix ${output_prefix} \\
+    --outFileNamePrefix $output_prefix \\
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
@@ -389,7 +389,7 @@ else
     --readFilesIn {input.R1} \\
     --readFilesCommand  zcat \\
     --runThreadN {threads} \\
-    --outFileNamePrefix ${output_prefix} \\
+    --outFileNamePrefix $output_prefix \\
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
@@ -409,7 +409,7 @@ else
     --outBAMcompression 0 \\
     --outSAMattributes All
 
-    rm -rf ${output_prefix}_STARgenome
+    rm -rf ${{output_prefix}}_STARgenome
 fi
 sleep 120
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi

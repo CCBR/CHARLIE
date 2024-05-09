@@ -134,8 +134,6 @@ done
 
 python3 {params.flankscript} --reffa {params.reffa} --inbsjbedgz ${{TMPDIR}}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
 
-
-
 rm -rf $TMPDIR
 """
 
