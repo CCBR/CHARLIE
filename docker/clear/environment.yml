@@ -1,0 +1,24 @@
+name: clear
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bedtools
+  - bowtie
+  - circexplorer2>=2.3.6
+  - cufflinks=2.2.1
+  - docopt
+  - hisat2=2.2.1
+  - pip=20.1.1
+  - pybedtools
+  - pysam>=0.84
+  - python=2.7
+  - python_abi=2.7
+  - readline=8.0
+  - scipy
+  - setuptools=44.0.0
+  - stringtie=2.1.4
+  - tophat
+  - ucsc-gtftogenepred
+  - ucsc-genepredtogtf
