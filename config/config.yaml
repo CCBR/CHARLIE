@@ -120,7 +120,7 @@ containers:
   ciri: 'docker://nciccbr/charlie_ciri2:v1'
   clear: "docker://nciccbr/ccbr_clear:latest"
   cutadapt: 'docker://nciccbr/charlie_cutadapt_fqfilter:v1'
-  dcc: "docker://nciccbr/charlie_dcc:v0.1.0"
+  dcc: "docker://nciccbr/charlie_dcc:v0.2.0"
   fastqc: 'docker://nciccbr/ccrgb_qctools:v4.0'
   mapsplice: "docker://cgrlab/mapsplice2:latest"
   multiqc: 'docker://nciccbr/ccbr_multiqc_1.15:v1'

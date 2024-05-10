@@ -319,6 +319,9 @@ fi
 if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 limitSjdbInsertNsj=$(wc -l {input.pass1sjtab}|awk '{{print $1+1}}')
 if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
+
+output_prefix=$(dirname {output.bam})/{params.sample}_p2.
+
 if [ "{params.peorse}" == "PE" ];then
 # paired-end
     overhang=$(zcat {input.R1} {input.R2} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
@@ -341,7 +344,7 @@ if [ "{params.peorse}" == "PE" ];then
     --readFilesIn {input.R1} {input.R2} \\
     --readFilesCommand  zcat \\
     --runThreadN {threads} \\
-    --outFileNamePrefix {params.sample}_p2. \\
+    --outFileNamePrefix $output_prefix \\
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
@@ -386,7 +389,7 @@ else
     --readFilesIn {input.R1} \\
     --readFilesCommand  zcat \\
     --runThreadN {threads} \\
-    --outFileNamePrefix {params.sample}_p2. \\
+    --outFileNamePrefix $output_prefix \\
     --sjdbFileChrStartEnd {input.pass1sjtab} \\
     --chimSegmentMin 15 \\
     --chimScoreMin 15 \\
@@ -406,7 +409,7 @@ else
     --outBAMcompression 0 \\
     --outSAMattributes All
 
-    rm -rf {params.sample}_p2._STARgenome
+    rm -rf ${{output_prefix}}_STARgenome
 fi
 sleep 120
 if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
@@ -654,6 +657,6 @@ rule estimate_duplication:
     shell:
         """
 set -exo pipefail
-picard -Xmx{params.memG} MarkDuplicates -I={input.bam} -O=/dev/shm/{params.sample}.mark_dup.bam -M={output.metrics}
+picard -Xmx{params.memG} MarkDuplicates -I {input.bam} -O /dev/shm/{params.sample}.mark_dup.bam -M {output.metrics}
 rm -f /dev/shm/{params.sample}*
 """

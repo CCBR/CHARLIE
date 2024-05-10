@@ -33,12 +33,6 @@ parser.add_argument('--threads',required=False, default=56, help='number of thre
 EOF
 
 threads=$THREADS
-if [ "$SLURM_JOB_ID" != "" ];then
-alloccpu=$(sacct -j $SLURM_JOB_ID --format "AllocCPUS"|tail -n1|awk '{print $1}')
-if [ "$alloccpu" -lt "$threads" ];then
-    threads=$alloccpu
-fi
-fi
 
 start0=$(date +%s.%N)
 
@@ -145,7 +139,7 @@ python3 ${SCRIPT_DIR}/filter_bam.py \
 
 fi
 
-nreads=$(samtools view /gpfs/gsfs8/users/CBLCCBR/kopardevn_tmp/issue57_testing_2/results/GI1_T/circExplorer/GI1_T.bam|wc -l)
+nreads=$(samtools view ${filtered_bam} |wc -l)
 if [ "$nreads" == "0" ];then
     echo "SOMETHING WENT WRONG ...filtered BAM is empty!!"
     exit
