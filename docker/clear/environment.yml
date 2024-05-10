@@ -6,17 +6,17 @@ channels:
 dependencies:
   - bedtools
   - bowtie
-  - circexplorer2>=2.3.6
-  - cufflinks=2.2.1
+  - circexplorer2
+  - cufflinks
   - docopt
-  - hisat2=2.2.1
+  - hisat2
   - pip
   - pybedtools
-  - pysam>=0.84
-  - python
+  - pysam
+  - python=2.7
   - scipy
   - setuptools
-  - stringtie=2.1.4
+  - stringtie
   - tophat
   - ucsc-gtftogenepred
   - ucsc-genepredtogtf
