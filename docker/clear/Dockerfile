@@ -5,10 +5,6 @@ RUN apt-get update && apt-get install -y zlib1g zlib1g-dev git build-essential
 # Circexplorer2 --> UCSC boostlibraries cufflinks
 RUN apt-get install -y libboost1.67-tools-dev
 
-# Adding StringTie
-ADD stringtie-2.1.4.Linux_x86_64.tar.gz /opt2
-ENV PATH="stringtie-2.1.4.Linux_x86_64:$PATH"
-
 # install conda packages
 COPY environment.yml /data2/
 ENV CONDA_ENV=clear
