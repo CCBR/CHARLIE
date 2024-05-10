@@ -10,14 +10,12 @@ dependencies:
   - cufflinks=2.2.1
   - docopt
   - hisat2=2.2.1
-  - pip=20.1.1
+  - pip
   - pybedtools
   - pysam>=0.84
-  - python=2.7
-  - python_abi=2.7
-  - readline=8.0
+  - python
   - scipy
-  - setuptools=44.0.0
+  - setuptools
   - stringtie=2.1.4
   - tophat
   - ucsc-gtftogenepred
