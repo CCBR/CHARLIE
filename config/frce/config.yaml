@@ -1,12 +1,12 @@
 ## you probably need to change or comment/uncomment some of these
 #
-# The working dir... output will be in the results subfolder of the .tests/lint_workdir
-workdir: ".tests/lint_workdir"
+# The working dir... output will be in the results subfolder of the workdir
+workdir: "WORKDIR"
 #
 # tab delimited samples file ... should have the following 3 columns
 # sampleName	path_to_R1_fastq	path_to_R2_fastq
 #
-samples: ".tests/lint/samples.tsv"
+samples: "WORKDIR/samples.tsv"
 #
 # Should the CLEAR pipeline be run? True or False WITHOUT quotes
 run_clear: True
@@ -15,7 +15,7 @@ run_clear: True
 run_dcc: True
 #
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
-run_mapsplice: True
+run_mapsplice: False
 mapsplice_min_map_len: 50
 mapsplice_filtering: 2 # 1=less stringent 2=default
 #
@@ -23,15 +23,22 @@ mapsplice_filtering: 2 # 1=less stringent 2=default
 run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
-run_nclscan: True
-nclscan_config: ".tests/lint_workdir/nclscan.config"
+run_nclscan: False
+nclscan_config: "WORKDIR/nclscan.config"
 #
+# Should we also run find_circ? True or False WITHOUT quotes
+run_findcirc: False
+# findcirc_params: "--noncanonical --allhits" # this gives way too many circRNAs
+findcirc_params: "--noncanonical"
 
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
-host: "host"
-additives: "additive" # options are ERCC and BAC16Insert
-viruses: "virus"
+# host:       "hg38"
+# additives:  "ERCC" # options are ERCC and BAC16Insert
+# viruses:    "NC_009333.1"
+host: "HOST"
+additives: "ADDITIVES"
+viruses: "VIRUSES"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
@@ -53,7 +60,7 @@ viruses: "virus"
 #
 #  | RefSeq  Sequence | RefSeq assembly accession | Notes                                                        |
 #  | ---------------- | ------------------------- | ------------------------------------------------------------ |
-#  | KT899744         | KT899744                  | HSV-1 strain KOS                                             |
+#  | KT899744.1       | KT899744.1                | HSV-1 strain KOS                                             |
 #  | MH636806.1       | MH636806.1                | MHV68 (Murine herpesvirus 68 strain WUMS)                    |
 #
 # comma separated list
@@ -67,61 +74,56 @@ star_1pass_filter_host_unannotated: "True"
 star_1pass_filter_viruses_noncanonical: "False"
 star_1pass_filter_viruses_unannotated: "False"
 
+alignTranscriptsPerReadNmax: "20000"
+
 # BSJ filters in bp:
 minsize_host: 150
 minsize_virus: 150
 maxsize_host: 1000000000
 maxsize_virus: 5000
 
-#
-## Resources
-#
-## hg38 vanilla --> hg38 rRNA masked + rRNA appended
-##
-#ref_fa: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa"
-#ref_gtf: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.gtf"
-#regions: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.fa.regions"
-#star_index_dir: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/STAR_index_no_GTF_2.7.6a"
-#ref_bwa_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#ref_hisat_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#ref_bowtie1_index: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA"
-#genepred_w_geneid: "/data/CCBR_Pipeliner/Pipelines/resources/CCBR_circRNA_DAQ/hg38/hg38_rRNA_masked_plus_rRNA.genes.genepred_w_geneid"
-#
-# hg38_rRNA_masked_plus_rRNA_plus_viruses_plus_ERCC
-# * hg38 ... rRNA masked
-# * rRNA ... 45S and 5S sequences
-# * ERCC sequences
-# * viruses:
-
-# ref_fa: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.fa"
-# ref_gtf: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.gtf"
-# regions: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.regions"
-# star_index_dir: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/STAR_index_no_GTF_2.7.6a"
-# ref_bwa_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# ref_hisat_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
-# genepred_w_geneid: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.genes.genepred_w_geneid"
-
-#
-
 ## you most probably dont need to change these
-scriptsdir: "workflow/scripts"
-resourcesdir: "resources"
-cluster: "config/unknown/cluster.json"
-adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
-circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
-minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table
-ciri_perl_script: "/data/Ziegelbauer_lab/tools/CIRI_v2.0.6/CIRI2.pl"
-nclscan_dir: "/data/Ziegelbauer_lab/tools/NCLscan-1.7.0"
-circrnafinder_dir: "/data/Ziegelbauer_lab/tools/circRNA_finder-1.2"
+scriptsdir: "PIPELINE_HOME/workflow/scripts"
+resourcesdir: "PIPELINE_HOME/resources"
+
+# default cluster
+# cluster: "PIPELINE_HOME/resources/cluster.json"
+cluster: "WORKDIR/cluster.json"
+
+adapters: "PIPELINE_HOME/resources/TruSeq_and_nextera_adapters.consolidated.fa"
+circexplorer_bsj_circRNA_min_reads: 3 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
+minreadcount: 3 # this is used to filter circRNAs while creating the per-sample counts table
+flanksize: 18 # 18bp flank on either side of the BSJ .. used by multiple BSJ callers
 dcc_strandedness: "-ss" # "-ss" for stranded library and "--nonstrand" for unstranded
 cutadapt_min_length: 15
 cutadapt_n: 5
 cutadapt_max_n: 0.5
 cutadapt_O: 5
 cutadapt_q: 20
-fastas_gtfs_dir: ".tests/lint/fasta_gtf"
+high_confidence_core_callers: "circExplorer,circExplorer_bwa"
+high_confidence_core_callers_plus_n: 1
+
+ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" # path in docker container
+# change this path to a directory containing fasta and GTF files for all host and virus genomes
+fastas_gtfs_dir: "/mnt/projects/CCBR-Pipelines/db/charlie/fastas_gtfs"
+
 annotation_lookups:
-  hg38: "resources/hg38_2_hg19_lookup.txt"
-  mm39: "resources/mm39_circBase_annotation_lookup.txt"
-  host: "resources/dummy"
+  hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
+  mm39: "PIPELINE_HOME/resources/mm39_circBase_annotation_lookup.txt"
+
+containers:
+  base: "docker://nciccbr/ccbr_ubuntu_base_20.04:v6"
+  bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
+  circexplorer: "docker://nciccbr/ccbr_circexplorer:v1.0"
+  circRNA_finder: "docker://nciccbr/charlie_circrna_finder:v1"
+  ciri: "docker://nciccbr/charlie_ciri2:v1"
+  clear: "docker://nciccbr/ccbr_clear:2"
+  cutadapt: "docker://nciccbr/charlie_cutadapt_fqfilter:v1"
+  dcc: "docker://nciccbr/charlie_dcc:v0.2.0"
+  fastqc: "docker://nciccbr/ccrgb_qctools:v4.0"
+  mapsplice: "docker://cgrlab/mapsplice2:latest"
+  multiqc: "docker://nciccbr/ccbr_multiqc_1.15:v1"
+  picard: "docker://nciccbr/ccbr_picard_2.27.5:v1"
+  R: "docker://nciccbr/ccbr_r_4.3.0:v1"
+  star: "docker://nciccbr/ccbr_star_2.7.6a:latest"
+  star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.4.0"

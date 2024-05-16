@@ -17,7 +17,7 @@ run_dcc: True
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
 run_mapsplice: False
 mapsplice_min_map_len: 50
-mapsplice_filtering: 2  # 1=less stringent 2=default
+mapsplice_filtering: 2 # 1=less stringent 2=default
 #
 # Should the circRNA_finder  be run? True or False WITHOUT quotes
 run_circRNAFinder: True
@@ -31,19 +31,18 @@ run_findcirc: False
 # findcirc_params: "--noncanonical --allhits" # this gives way too many circRNAs
 findcirc_params: "--noncanonical"
 
-
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
 # host:       "hg38"
 # additives:  "ERCC" # options are ERCC and BAC16Insert
 # viruses:    "NC_009333.1"
-host:       "HOST"
-additives:  "ADDITIVES"
-viruses:    "VIRUSES"
+host: "HOST"
+additives: "ADDITIVES"
+viruses: "VIRUSES"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
-# 
+#
 # | RefSeq  Sequence | RefSeq assembly accession | Notes                                                 |
 # | ---------------- | ------------------------- | ----------------------------------------------------- |
 # | NC_007605.1      | GCF_002402265.1           | Human gammaherpesvirus 4 (Epstein-Barr virus)         |
@@ -79,9 +78,9 @@ alignTranscriptsPerReadNmax: "20000"
 
 # BSJ filters in bp:
 minsize_host: 150
-minsize_virus:  150
+minsize_virus: 150
 maxsize_host: 1000000000
-maxsize_virus:  5000
+maxsize_virus: 5000
 
 ## you most probably dont need to change these
 scriptsdir: "PIPELINE_HOME/workflow/scripts"
@@ -115,16 +114,16 @@ annotation_lookups:
 containers:
   base: "docker://nciccbr/ccbr_ubuntu_base_20.04:v6"
   bowtie1: "docker://nciccbr/charlie_bowtie1:v0.1.0"
-  circexplorer: 'docker://nciccbr/ccbr_circexplorer:v1.0'
-  circRNA_finder: 'docker://nciccbr/charlie_circrna_finder:v1'
-  ciri: 'docker://nciccbr/charlie_ciri2:v1'
+  circexplorer: "docker://nciccbr/ccbr_circexplorer:v1.0"
+  circRNA_finder: "docker://nciccbr/charlie_circrna_finder:v1"
+  ciri: "docker://nciccbr/charlie_ciri2:v1"
   clear: "docker://nciccbr/ccbr_clear:2"
-  cutadapt: 'docker://nciccbr/charlie_cutadapt_fqfilter:v1'
+  cutadapt: "docker://nciccbr/charlie_cutadapt_fqfilter:v1"
   dcc: "docker://nciccbr/charlie_dcc:v0.2.0"
-  fastqc: 'docker://nciccbr/ccrgb_qctools:v4.0'
+  fastqc: "docker://nciccbr/ccrgb_qctools:v4.0"
   mapsplice: "docker://cgrlab/mapsplice2:latest"
-  multiqc: 'docker://nciccbr/ccbr_multiqc_1.15:v1'
-  picard: 'docker://nciccbr/ccbr_picard_2.27.5:v1'
-  R: 'docker://nciccbr/ccbr_r_4.3.0:v1'
+  multiqc: "docker://nciccbr/ccbr_multiqc_1.15:v1"
+  picard: "docker://nciccbr/ccbr_picard_2.27.5:v1"
+  R: "docker://nciccbr/ccbr_r_4.3.0:v1"
   star: "docker://nciccbr/ccbr_star_2.7.6a:latest"
   star_ucsc_cufflinks: "docker://nciccbr/charlie_star_ucsc_cufflinks:v0.4.0"

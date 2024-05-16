@@ -23,6 +23,16 @@ function get_git_commitid_tag() {
   echo -ne "$gid\t$tag"
 }
 
+# determine if the platform is biowulf, FRCE, or something else and use modules accordingly
+function get_platform() {
+  if command -v scontrol &> /dev/null ; then
+    platform=$(scontrol show config | grep ClusterName | sed 's/.*= //')
+  else
+    platform=unknown
+  fi
+  echo $platform
+}
+
 ##########################################################################################
 # initial setup
 ##########################################################################################
@@ -41,10 +51,21 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 ##########################################################################################
 
 CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
-# if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
-# if [ "$SLURM_CLUSTER_NAME" == "biowulf" ];then
+
+PLATFORM=$(get_platform)
+if [ "$PLATFORM" == "biowulf" ]; then
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
+elif [ "$platform" == "fnlcr" ]; then
+  EXTRA_SINGULARITY_BINDS="/scratch/local"
+else
+  EXTRA_SINGULARITY_BINDS=""
+  echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
+        config.yaml
+        cluster.json
+        submit_script.sbatch
+    """
+fi
 # fi
 PYTHONVERSION="3"
 SNAKEMAKEVERSION="7"
@@ -70,12 +91,12 @@ function usage() { cat << EOF
 ##########################################################################################
 
 Welcome to charlie(v0.10.1)
- _______  __   __  _______  ______    ___      ___   _______ 
+ _______  __   __  _______  ______    ___      ___   _______
 |       ||  | |  ||   _   ||    _ |  |   |    |   | |       |
 |       ||  |_|  ||  |_|  ||   | ||  |   |    |   | |    ___|
-|       ||       ||       ||   |_||_ |   |    |   | |   |___ 
+|       ||       ||       ||   |_||_ |   |    |   | |   |___
 |      _||       ||       ||    __  ||   |___ |   | |    ___|
-|     |_ |   _   ||   _   ||   |  | ||       ||   | |   |___ 
+|     |_ |   _   ||   _   ||   |  | ||       ||   | |   |___
 |_______||__| |__||__| |__||___|  |_||_______||___| |_______|
 
 C_ircrnas in H_ost A_nd vi_R_uses ana_L_ysis p_I_p_E_line
@@ -143,15 +164,15 @@ Optional Arguments:
 
 
 Example commands:
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=init
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=dryrun
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=run
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=init
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=dryrun
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=run
 
 ##########################################################################################
 
-VersionInfo: 
-  python          : $PYTHONVERSION 
-  snakemake       : $SNAKEMAKEVERSION 
+VersionInfo:
+  python          : $PYTHONVERSION
+  snakemake       : $SNAKEMAKEVERSION
   pipeline_home   : $PIPELINE_HOME
   git commit/tag  : $GIT_COMMIT_TAG
 
@@ -190,13 +211,13 @@ sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
     -e "s/HOST/${HOST}/g" \
     -e "s/ADDITIVES/${ADDITIVES}/g" \
     -e "s/VIRUSES/${VIRUSES}/g" \
-    ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
+    ${PIPELINE_HOME}/config/$PLATFORM/config.yaml > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 fi
 if [ ! -f $CLUSTERFILE ];then
-cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
+cp ${PIPELINE_HOME}/config/$PLATFORM/cluster.json $CLUSTERFILE
 fi
 if [ ! -f $WORKDIR/samples.tsv ];then
 cp $MANIFEST $WORKDIR/samples.tsv
@@ -274,16 +295,6 @@ function reconfig(){
 }
 
 
-# determine if the platform is biowulf, FRCE, or something else and use modules accordingly
-function get_platform() {
-  if command -v scontrol &> /dev/null ; then
-    platform=$(scontrol show config | grep ClusterName | sed 's/.*= //')
-  else
-    platform=unknown
-  fi
-  echo $platform
-}
-
 # check whether required dependencies are in the path
 function check_deps() {
   for dep in python snakemake singularity; do
@@ -340,7 +351,7 @@ function touch() {
 
 function unlock() {
   runcheck
-  run "--unlock"  
+  run "--unlock"
 }
 
 ##########################################################################################
@@ -407,10 +418,10 @@ function create_runinfo {
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
   userlogin=$(whoami)
-  if [[ `which finger 2>/dev/null` ]];then 
-	  username=$(finger $userlogin |grep ^Login | awk -F"Name: " '{print $2}'); 
-  elif [[ `which lslogins 2>/dev/null` ]];then 
-	  username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}'); 
+  if [[ `which finger 2>/dev/null` ]];then
+	  username=$(finger $userlogin |grep ^Login | awk -F"Name: " '{print $2}');
+  elif [[ `which lslogins 2>/dev/null` ]];then
+	  username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}');
   else username="";fi
   echo "Login: $userlogin" >> ${WORKDIR}/runinfo.yaml
   echo "Name: $username" >> ${WORKDIR}/runinfo.yaml
@@ -428,21 +439,21 @@ function preruncleanup() {
   echo "Running..."
 
   # check initialization
-  check_essential_files 
+  check_essential_files
 
   cd $WORKDIR
   modtime=""
   ## Archive previous run files
-  if [ -f ${WORKDIR}/snakemake.log ];then 
+  if [ -f ${WORKDIR}/snakemake.log ];then
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
     mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.${modtime}.log
-    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then 
+    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then
       mv ${WORKDIR}/snakemake.log.HPC_summary.txt ${WORKDIR}/stats/snakemake.${modtime}.log.HPC_summary.txt
     fi
-    if [ -f ${WORKDIR}/snakemake.stats ];then 
+    if [ -f ${WORKDIR}/snakemake.stats ];then
       mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
     fi
-    if [ -f ${WORKDIR}/snakemake.log.jobinfo ];then 
+    if [ -f ${WORKDIR}/snakemake.log.jobinfo ];then
       mv ${WORKDIR}/snakemake.log.jobinfo ${WORKDIR}/stats/snakemake.${modtime}.log.jobinfo
     fi
   fi
@@ -493,7 +504,7 @@ function run() {
   fi
 
   elif [ "$1" == "slurm" ];then
-  
+
   preruncleanup
 
   cat > ${WORKDIR}/submit_script.sbatch << EOF
@@ -533,7 +544,7 @@ if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
-  --configfile $CONFIGFILE 
+  --configfile $CONFIGFILE
 fi
 
 EOF
@@ -618,11 +629,11 @@ function main(){
       ;;
       -v=*|--viruses=*)
         VIRUSES="${i#*=}"
-      ;;      
+      ;;
       -s=*|--manifest=*)
         MANIFEST="${i#*=}"
         if [ ! -f $MANIFEST ];then err "File $MANIFEST does NOT exist!";fi
-      ;;      
+      ;;
       -h|--help)
         usage && exit 0;
       ;;
@@ -667,8 +678,3 @@ function main(){
 ##########################################################################################
 
 main "$@"
-
-
-
-
-
