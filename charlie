@@ -58,7 +58,7 @@ if [ "$PLATFORM" == "biowulf" ]; then
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
   PARTITION="ccr,$PARTITION"
-elif [ "$platform" == "fnlcr" ]; then
+elif [ "$PLATFORM" == "fnlcr" ]; then
   EXTRA_SINGULARITY_BINDS="/scratch/local"
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
