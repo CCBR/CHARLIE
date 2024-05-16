@@ -58,6 +58,8 @@ if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
 elif [ "$platform" == "fnlcr" ]; then
   EXTRA_SINGULARITY_BINDS="/scratch/local"
+  # make sure spooker is in the path
+  PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
 else
   EXTRA_SINGULARITY_BINDS=""
   echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
@@ -520,6 +522,8 @@ module load snakemake/$SNAKEMAKEVERSION
 module load singularity
 
 cd \$SLURM_SUBMIT_DIR
+
+$PATH_PREPEND
 
 snakemake -s $SNAKEFILE \
 --directory $WORKDIR \
