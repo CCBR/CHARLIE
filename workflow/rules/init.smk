@@ -17,7 +17,7 @@ def check_existence(filename):
     """
     filename = filename.strip()
     if not os.path.exists(filename):
-        sys.exit("File: {} does not exists!".format(filename))
+        raise FileNotFoundError(f"File: {filename} does not exist")
     return True
 
 
@@ -28,10 +28,8 @@ def check_readaccess(filename):
     filename = filename.strip()
     check_existence(filename)
     if not os.access(filename, os.R_OK):
-        sys.exit(
-            "File: {} exists, but user cannot read from file due to permissions!".format(
-                filename
-            )
+        raise PermissionError(
+            f"File: {filename} exists, but user cannot read from file due to permissions"
         )
     return True
 
@@ -43,10 +41,8 @@ def check_writeaccess(filename):
     filename = filename.strip()
     check_existence(filename)
     if not os.access(filename, os.W_OK):
-        sys.exit(
-            "File: {} exists, but user cannot write to file due to permissions!".format(
-                filename
-            )
+        raise PermissionError(
+            f"File: {filename} exists, but user cannot write to file due to permissions!"
         )
     return True
 
@@ -88,7 +84,7 @@ def _convert_to_int(variable):
     return -1  # Unknown
 
 
-# resouce absolute path
+# resource absolute path
 WORKDIR = config["workdir"]
 SCRIPTS_DIR = config["scriptsdir"]
 RESOURCES_DIR = config["resourcesdir"]
@@ -121,7 +117,7 @@ HQCC=HQCC.split(",")
 HQCC=list(map(lambda x:x.lower(),HQCC))
 for caller in HQCC:
     if not caller in CALLERS:
-        sys.exit("Caller: {} will not be running but included in high_confidence_core_callers!".format(caller))
+        raise ValueError(f"Caller: {caller} will not be running but included in high_confidence_core_callers. Please edit config.yaml")
 REF_DIR = join(WORKDIR, "ref")
 if not os.path.exists(REF_DIR):
     os.mkdir(REF_DIR)
@@ -155,7 +151,7 @@ if VIRUSES != "":
 else:
     HOST_VIRUSES = HOST
     HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES
-    
+
 REPEATS_GTF = join(FASTAS_GTFS_DIR, HOST + ".repeats.gtf")
 
 HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES_VIRUSES.split(",")
@@ -229,8 +225,6 @@ for sample in SAMPLES:
         SAMPLESDF.loc[[sample], "R2"] = R2filenewname
     else:
         SAMPLESDF.loc[[sample], "PEorSE"] = "SE"
-# print(SAMPLESDF)
-# sys.exit()
 
 ## Load cluster.json
 with open(config["cluster"]) as json_file:
