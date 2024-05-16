@@ -10,7 +10,7 @@ from util import *
 
 
 def test_smk_base():
-    assert smk_base("").endswith("charlie/")
+    assert smk_base("").endswith("CHARLIE/")
 
 
 def test_semantic_version():
