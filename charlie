@@ -53,6 +53,8 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
 
 PARTITION='norm'
+CONDA_ACTIVATE=''
+PATH_PREPEND=''
 PLATFORM=$(get_platform)
 if [ "$PLATFORM" == "biowulf" ]; then
   EXTRA_SINGULARITY_BINDS="/lscratch"
@@ -60,6 +62,8 @@ if [ "$PLATFORM" == "biowulf" ]; then
   PARTITION="ccr,$PARTITION"
 elif [ "$PLATFORM" == "fnlcr" ]; then
   EXTRA_SINGULARITY_BINDS="/scratch/local"
+  # activate conda env
+  CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
 else
@@ -480,38 +484,42 @@ function preruncleanup() {
 
 function run() {
 
+  # if needed, activate conda env and modify the path
+  eval $CONDA_ACTIVATE
+  eval $PATH_PREPEND
+
   if [ "$1" == "local" ];then
 
-  preruncleanup
+    preruncleanup
 
-  snakemake -s $SNAKEFILE\
-  --directory $WORKDIR \
-  --printshellcmds \
-  --use-singularity \
-  --singularity-args "$SINGULARITY_BINDS" \
-  --use-envmodules \
-  --latency-wait 120 \
-  --configfile $CONFIGFILE \
-  --cores all \
-  --rerun-incomplete \
-  --rerun-triggers $trigger \
-  --retries 2 \
-  --keep-going \
-  --stats ${WORKDIR}/snakemake.stats \
-  2>&1|tee ${WORKDIR}/snakemake.log
-
-  if [ "$?" -eq "0" ];then
-    snakemake -s $SNAKEFILE \
-    --report ${WORKDIR}/runlocal_snakemake_report.html \
+    snakemake -s $SNAKEFILE\
     --directory $WORKDIR \
-    --configfile $CONFIGFILE
-  fi
+    --printshellcmds \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --use-envmodules \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cores all \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --retries 2 \
+    --keep-going \
+    --stats ${WORKDIR}/snakemake.stats \
+    2>&1|tee ${WORKDIR}/snakemake.log
+
+    if [ "$?" -eq "0" ];then
+        snakemake -s $SNAKEFILE \
+        --report ${WORKDIR}/runlocal_snakemake_report.html \
+        --directory $WORKDIR \
+        --configfile $CONFIGFILE
+    fi
 
   elif [ "$1" == "slurm" ];then
 
-  preruncleanup
+    preruncleanup
 
-  cat > ${WORKDIR}/submit_script.sbatch << EOF
+    cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
 #SBATCH --job-name="charlie"
 #SBATCH --mem=40g
@@ -524,27 +532,27 @@ module load snakemake/$SNAKEMAKEVERSION
 module load singularity
 
 cd \$SLURM_SUBMIT_DIR
-
+$CONDA_ACTIVATE
 $PATH_PREPEND
 
 snakemake -s $SNAKEFILE \
---directory $WORKDIR \
---use-singularity \
---singularity-args "$SINGULARITY_BINDS" \
---use-envmodules \
---printshellcmds \
---latency-wait 120 \
---configfile $CONFIGFILE \
---cluster-config $CLUSTERFILE \
---cluster "$CLUSTER_SBATCH_CMD" \
---cluster-status $CLUSTERSTATUSCMD \
--j 500 \
---rerun-incomplete \
---rerun-triggers $trigger \
---retries 2 \
---keep-going \
---stats ${WORKDIR}/snakemake.stats \
-2>&1|tee ${WORKDIR}/snakemake.log
+    --directory $WORKDIR \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --use-envmodules \
+    --printshellcmds \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cluster-config $CLUSTERFILE \
+    --cluster "$CLUSTER_SBATCH_CMD" \
+    --cluster-status $CLUSTERSTATUSCMD \
+    -j 500 \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --retries 2 \
+    --keep-going \
+    --stats ${WORKDIR}/snakemake.stats \
+    2>&1 | tee ${WORKDIR}/snakemake.log
 
 if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \
@@ -555,35 +563,35 @@ fi
 
 EOF
 
-  sbatch ${WORKDIR}/submit_script.sbatch
+    sbatch ${WORKDIR}/submit_script.sbatch
 
   elif [ "$1" == "--touch" ];then
 
-snakemake $1 -s $SNAKEFILE \
---directory $WORKDIR \
---configfile $CONFIGFILE \
---cores 1
+    snakemake $1 -s $SNAKEFILE \
+    --directory $WORKDIR \
+    --configfile $CONFIGFILE \
+    --cores 1
 
   else # dry-run and unlock
 
-echo $CLUSTER_SBATCH_CMD
+    echo $CLUSTER_SBATCH_CMD
 
-snakemake $1 -s $SNAKEFILE \
---directory $WORKDIR \
---use-envmodules \
---use-singularity \
---singularity-args "$SINGULARITY_BINDS" \
---printshellcmds \
---latency-wait 120 \
---configfile $CONFIGFILE \
---cluster-config $CLUSTERFILE \
---cluster "$CLUSTER_SBATCH_CMD" \
--j 500 \
---rerun-incomplete \
---rerun-triggers $trigger \
---keep-going \
---reason \
---stats ${WORKDIR}/snakemake.stats
+    snakemake $1 -s $SNAKEFILE \
+    --directory $WORKDIR \
+    --use-envmodules \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --printshellcmds \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cluster-config $CLUSTERFILE \
+    --cluster "$CLUSTER_SBATCH_CMD" \
+    -j 500 \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --keep-going \
+    --reason \
+    --stats ${WORKDIR}/snakemake.stats
 
   fi
 
