@@ -314,7 +314,6 @@ function check_deps() {
 function load_modules() {
   platform=$(get_platform)
   if [ "$platform" == "biowulf" ] || [ "$platform" == "fnlcr" ]; then
-    module load python/$PYTHONVERSION
     module load snakemake/$SNAKEMAKEVERSION
     module load singularity
   else
@@ -527,7 +526,6 @@ function run() {
 #SBATCH --time=48:00:00
 #SBATCH --cpus-per-task=2
 
-module load python/$PYTHONVERSION
 module load snakemake/$SNAKEMAKEVERSION
 module load singularity
 
