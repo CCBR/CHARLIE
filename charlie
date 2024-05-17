@@ -62,14 +62,14 @@ if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
   PARTITION="ccr,$PARTITION"
   CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
-  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity \n$CONDA_ACTIVATE"
+  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $CONDA_ACTIVATE"
 elif [ "$PLATFORM" == "fnlcr" ]; then
   EXTRA_SINGULARITY_BINDS="/scratch/local"
   # activate conda env
   CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
-  MODULE_LOAD="module load singularity \n$CONDA_ACTIVATE \n$PATH_PREPEND"
+  MODULE_LOAD="module load singularity snakemake/$SNAKEMAKEVERSION; $CONDA_ACTIVATE; $PATH_PREPEND"
 else
   EXTRA_SINGULARITY_BINDS=""
   echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
