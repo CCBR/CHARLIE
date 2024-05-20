@@ -70,7 +70,7 @@ elif [ "$PLATFORM" == "fnlcr" ]; then
   CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
-  MODULE_LOAD="module load singularity snakemake/$SNAKEMAKEVERSION; $CONDA_ACTIVATE; $PATH_PREPEND"
+  MODULE_LOAD="module load singularity; $PATH_PREPEND; $CONDA_ACTIVATE"
 else
   EXTRA_SINGULARITY_BINDS=""
   echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
