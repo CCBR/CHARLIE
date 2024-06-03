@@ -316,7 +316,7 @@ if RUN_MAPSPLICE:
             peorse=get_peorse,
             run_mapsplice=N_RUN_MAPSPLICE,
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
-        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
+            tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         threads: getthreads("alignment_stats")
         container: config['containers']["base"]
         shell:
@@ -366,7 +366,7 @@ else:
             peorse=get_peorse,
             run_mapsplice=N_RUN_MAPSPLICE,
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
-        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
+            tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         threads: getthreads("alignment_stats")
         container: config['containers']["base"]
         shell:
