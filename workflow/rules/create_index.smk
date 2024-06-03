@@ -20,7 +20,6 @@ rule create_index:
         script1=join(SCRIPTS_DIR, "_add_geneid2genepred.py"),
         script2=join(SCRIPTS_DIR, "_multifasta2separatefastas.sh"),
         script3=join(SCRIPTS_DIR, "fix_gtfs.py"),
-        randomstr=str(uuid.uuid4()),
         nclscan_config=config["nclscan_config"],
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("create_index")

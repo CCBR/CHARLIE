@@ -3,6 +3,7 @@
 - Major updates to convert CHARLIE from a biowulf-specific to a platform-agnostic pipeline (#102, @kelly-sovacool):
     - All rules now use containers instead of envmodules.
     - Default config and cluster config files are provided for use on biowulf and FRCE.
+    - New entry `TEMPDIR` in the config file sets the temporary directory location for rules that require transient storage.
 
 # CHARLIE 0.10.1
 

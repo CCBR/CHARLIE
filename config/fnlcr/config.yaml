@@ -2,30 +2,32 @@
 #
 # The working dir... output will be in the results subfolder of the workdir
 workdir: "WORKDIR"
-#
+
+# temporary directory for intermediate files that are not saved
+tempdir: '/scratch/local'
+
 # tab delimited samples file ... should have the following 3 columns
 # sampleName	path_to_R1_fastq	path_to_R2_fastq
-#
 samples: "WORKDIR/samples.tsv"
-#
+
 # Should the CLEAR pipeline be run? True or False WITHOUT quotes
 run_clear: True
-#
+
 # Should the DCC pipeline be run? True or False WITHOUT quote
 run_dcc: True
-#
+
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
 run_mapsplice: False
 mapsplice_min_map_len: 50
 mapsplice_filtering: 2 # 1=less stringent 2=default
-#
+
 # Should the circRNA_finder  be run? True or False WITHOUT quotes
 run_circRNAFinder: True
 # Should the NCLscan pipeline be run? True or False WITHOUT quotes
 # This can only be run for PE data
 run_nclscan: False
 nclscan_config: "WORKDIR/nclscan.config"
-#
+
 # Should we also run find_circ? True or False WITHOUT quotes
 run_findcirc: False
 # findcirc_params: "--noncanonical --allhits" # this gives way too many circRNAs

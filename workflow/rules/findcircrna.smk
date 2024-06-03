@@ -197,24 +197,18 @@ rule circExplorer:
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
         bash_script=join(SCRIPTS_DIR,"_run_circExplorer_star.sh"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     container: config['containers']["circexplorer"]
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
+mkdir -p {params.outdir} {params.tmpdir}
 cd {params.outdir}
 bash {params.bash_script} \\
     --junctionfile {input.junctionfile} \\
-    --tmpdir $TMPDIR \\
+    --tmpdir {params.tmpdir} \\
     --outdir {params.outdir} \\
     --samplename {params.sample} \\
     --genepred {params.genepred} \\
@@ -282,18 +276,12 @@ rule ciri:
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
         script=join(SCRIPTS_DIR, "filter_ciriout.py"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     threads: getthreads("ciri")
     container: config['containers']['ciri']
     shell:
         """
-set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.outdir} {params.tmpdir}
 cd {params.outdir}
 if [ "{params.peorse}" == "PE" ];then
     ## paired-end
@@ -314,8 +302,8 @@ perl {params.ciripl} \\
 -F {params.reffa} \\
 -A {input.gtf} \\
 -G {output.cirilog} -T {threads}
-# samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o {output.ciribam} -
-samtools view -@{threads} -bS {params.sample}.bwa.sam | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.ciribam} -
+# samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O CRAM -o {output.ciribam} -
+samtools view -@{threads} -bS {params.sample}.bwa.sam | samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.ciribam} -
 rm -rf {params.sample}.bwa.sam
 python {params.script} \\
     --ciriout {output.ciriout} \\
@@ -371,24 +359,19 @@ rule circExplorer_bwa:
         minsize_virus=config["minsize_virus"],
         maxsize_virus=config["maxsize_virus"],
         bash_script=join(SCRIPTS_DIR,"_run_circExplorer_bwa.sh"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         # script=join(SCRIPTS_DIR, "circExplorer_get_annotated_counts_per_sample.py"),  # this produces an annotated counts table to which counts found in BAMs need to be appended
     threads: getthreads("circExplorer")
     container: config['containers']["circexplorer"]
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
+mkdir -p {params.tmpdir} {params.outdir}
+
 cd {params.outdir}
 bash {params.bash_script} \\
     --bwabam {input.ciribam} \\
-    --tmpdir $TMPDIR \\
+    --tmpdir {params.tmpdir} \\
     --outdir {params.outdir} \\
     --samplename {params.sample} \\
     --genepred {params.genepred} \\
@@ -690,7 +673,7 @@ rule dcc:
         dcc_strandedness=config["dcc_strandedness"],
         rep=REPEATS_GTF,
         fa=REF_FA,
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         script=join(SCRIPTS_DIR, "create_dcc_per_sample_counts_table.py"),
         bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
@@ -705,17 +688,12 @@ rule dcc:
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 
 cd $(dirname {output.cr})
 if [ "{params.peorse}" == "PE" ];then
 DCC @{input.ss} \\
-    --temp ${{TMPDIR}}/DCC \\
+    --temp {params.tmpdir}/DCC \\
     --threads {threads} \\
     --detect --gene \\
     --bam {input.bam} \\
@@ -729,7 +707,7 @@ DCC @{input.ss} \\
     -mt2 @{input.m2}
 else
 DCC @{input.ss} \\
-    --temp ${{TMPDIR}}/DCC \\
+    --temp {params.tmpdir}/DCC \\
     --threads {threads} \\
     --detect --gene \\
     --bam {input.bam} \\
@@ -740,12 +718,12 @@ DCC @{input.ss} \\
     --refseq {params.fa} 
 fi
 
-ls -alrth ${{TMPDIR}}
+ls -alrth {params.tmpdir}
 
-paste {output.cr} {output.linear} | cut -f1-5,9 > ${{TMPDIR}}/CircRNALinearCount
+paste {output.cr} {output.linear} | cut -f1-5,9 > {params.tmpdir}/CircRNALinearCount
 
 python {params.script} \\
-  --CircCoordinates {output.cc} --CircRNALinearCount ${{TMPDIR}}/CircRNALinearCount -o {output.ct}
+  --CircCoordinates {output.cc} --CircRNALinearCount {params.tmpdir}/CircRNALinearCount -o {output.ct}
 
 python {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
@@ -846,18 +824,13 @@ rule mapsplice:
         separate_fastas=join(REF_DIR, "separate_fastas"),
         ebwt=join(REF_DIR, "separate_fastas_index"),
         outdir=join(WORKDIR, "results", "{sample}", "MapSplice"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     threads: getthreads("mapsplice")
     container: config['containers']['mapsplice']
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 
 MSHOME="/opt/MapSplice2"
 # singularity exec -B /data/Ziegelbauer_lab,/data/kopardevn \
@@ -867,12 +840,12 @@ if [ "{params.peorse}" == "PE" ];then
 
 R1fn=$(basename {input.R1})
 R2fn=$(basename {input.R2})
-zcat {input.R1} > ${{TMPDIR}}/${{R1fn%.*}}
-zcat {input.R2} > ${{TMPDIR}}/${{R2fn%.*}}
+zcat {input.R1} > {params.tmpdir}/${{R1fn%.*}}
+zcat {input.R2} > {params.tmpdir}/${{R2fn%.*}}
 
 python $MSHOME/mapsplice.py \\
- -1 ${{TMPDIR}}/${{R1fn%.*}} \\
- -2 ${{TMPDIR}}/${{R2fn%.*}} \\
+ -1 {params.tmpdir}/${{R1fn%.*}} \\
+ -2 {params.tmpdir}/${{R2fn%.*}} \\
  -c {params.separate_fastas} \\
  -p {threads} \\
  --min-map-len {params.minmaplen} \\
@@ -887,10 +860,10 @@ python $MSHOME/mapsplice.py \\
 else
 
 R1fn=$(basename {input.R1})
-zcat {input.R1} > ${{TMPDIR}}/${{R1fn%.*}}
+zcat {input.R1} > {params.tmpdir}/${{R1fn%.*}}
 
 python $MSHOME/mapsplice.py \
- -1 ${{TMPDIR}}/${{R1fn%.*}} \
+ -1 {params.tmpdir}/${{R1fn%.*}} \
  -c {params.separate_fastas} \
  -p {threads} \
  -x {params.ebwt} \
@@ -945,7 +918,7 @@ rule mapsplice_postprocess:
     params:
         script=join(SCRIPTS_DIR, "create_mapsplice_per_sample_counts_table.py"),
         memG=getmemG("mapsplice_postprocess"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         reffa=REF_FA,
@@ -960,12 +933,7 @@ rule mapsplice_postprocess:
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 python {params.script} \\
     --circularRNAstxt {input.circRNAs} \\
     -o {output.ct} \\
@@ -979,8 +947,8 @@ python {params.script} \\
     --host_filter_max {params.maxsize_host} \\
     --virus_filter_min {params.minsize_virus} \\
     --virus_filter_max {params.maxsize_virus}
-cd $TMPDIR
-samtools view -@{threads} -T {params.reffa} -CS {input.sam} | samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O CRAM -o alignments.cram -
+cd {params.tmpdir}
+samtools view -@{threads} -T {params.reffa} -CS {input.sam} | samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O CRAM -o alignments.cram -
 rsync -az --progress alignments.cram {output.bam}
 rsync -az --progress alignments.cram.crai {output.bai}
 """
@@ -1039,7 +1007,7 @@ rule nclscan:
         peorse=get_peorse,
         nclscan_config=config["nclscan_config"],
         script=join(SCRIPTS_DIR, "create_nclscan_per_sample_counts_table.py"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         bsj_min_nreads=config["minreadcount"],
         refregions=REF_REGIONS,
         host=HOST,
@@ -1052,18 +1020,13 @@ rule nclscan:
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 outdir=$(dirname {output.result})
 results_bn=$(basename {output.result})
 
 if [ "{params.peorse}" == "PE" ];then
-NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o $TMPDIR --fq1 {input.R1} --fq2 {input.R2}
-rsync -az --progress ${{TMPDIR}}/${{results_bn}} {output.result}
+NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o {params.tmpdir} --fq1 {input.R1} --fq2 {input.R2}
+rsync -az --progress {params.tmpdir}/${{results_bn}} {output.result}
 python {params.script} \\
     --result {output.result} \\
     -o {output.ct} \\
@@ -1124,17 +1087,12 @@ rule circrnafinder:
         ),
     params:
         bsj_min_nreads=config["minreadcount"],
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['circRNA_finder']
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 
 starDir=$(dirname {input.chimericsam})
 outDir=$(dirname {output.bed})
@@ -1199,7 +1157,7 @@ rule find_circ:
         find_circ_params=config['findcirc_params'],
         min_reads=config['circexplorer_bsj_circRNA_min_reads'],
         collapse_script=join(SCRIPTS_DIR,"_collapse_find_circ.py"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("find_circ")
     shell:
@@ -1207,14 +1165,8 @@ rule find_circ:
 set -exo pipefail
 python --version
 which python
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-
-if [ ! -d $TMPDIR ]; then mkdir -p $TMPDIR;fi
-cd $TMPDIR
+mkdir -p {params.tmpdir}
+cd {params.tmpdir}
 
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.find_circ_bsj_bed})
@@ -1232,41 +1184,41 @@ outdir=$(dirname {output.find_circ_bsj_bed})
 # These _A and _B pairs should be retained in the fastq splits
 
 # find number of lines in fastq file
-cp {input.anchorsfq} ${{TMPDIR}}
+cp {input.anchorsfq} {params.tmpdir}
 fname=$(basename {input.anchorsfq})
 fname_wo_gz=$(echo $fname|sed "s/.gz//g")
 pigz -d $fname
 total_lines=$(wc -l ${{fname_wo_gz}} | awk '{{print $1}}')
 split_nlines=$(echo $total_lines| awk '{{print sprintf("%d", $1/10)}}' | awk '{{print sprintf("%d",($1+7)/8+1)}}' | awk '{{print sprintf("%d",$1*8)}}')
-split -d -l $split_nlines --suffix-length 1 $fname_wo_gz ${{TMPDIR}}/{params.sample}.samsplit.
+split -d -l $split_nlines --suffix-length 1 $fname_wo_gz {params.tmpdir}/{params.sample}.samsplit.
 
-if [ -f ${{TMPDIR}}/do_find_circ ];then rm -f ${{TMPDIR}}/do_find_circ;fi
+if [ -f {params.tmpdir}/do_find_circ ];then rm -f {params.tmpdir}/do_find_circ;fi
 
 for i in $(seq 0 9);do
     bowtie2 -p {threads} \\
         --score-min=C,-15.0 \\
         --reorder --mm \\
-        -q -U ${{TMPDIR}}/{params.sample}.samsplit.${{i}} \\
-        -x ${{refdir}}/ref > ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam
+        -q -U {params.tmpdir}/{params.sample}.samsplit.${{i}} \\
+        -x ${{refdir}}/ref > {params.tmpdir}/{params.sample}.samsplit.${{i}}.sam
 
-cat <<EOF >>${{TMPDIR}}/do_find_circ
-cat ${{TMPDIR}}/{params.sample}.samsplit.${{i}}.sam | \\
+cat <<EOF >>{params.tmpdir}/do_find_circ
+cat {params.tmpdir}/{params.sample}.samsplit.${{i}}.sam | \\
 find_circ.py \\
     --genome={params.reffa} \\
     --prefix={params.sample}.find_circ \\
     --name={params.sample} \\
     {params.find_circ_params} \\
     --stats=${{outdir}}/{params.sample}.bowtie2_stats.${{i}}.txt \\
-    --reads=${{TMPDIR}}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \\
-    > ${{TMPDIR}}/{params.sample}.splice_sites.${{i}}.bed
+    --reads={params.tmpdir}/{params.sample}.bowtie2_spliced_reads.${{i}}.fa \\
+    > {params.tmpdir}/{params.sample}.splice_sites.${{i}}.bed
 EOF
 done
 
-parallel -j 10 < ${{TMPDIR}}/do_find_circ
+parallel -j 10 < {params.tmpdir}/do_find_circ
 
-cat ${{TMPDIR}}/{params.sample}.splice_sites.*.bed > ${{TMPDIR}}/{params.sample}.splice_sites.bed
+cat {params.tmpdir}/{params.sample}.splice_sites.*.bed > {params.tmpdir}/{params.sample}.splice_sites.bed
 
-grep CIRCULAR ${{TMPDIR}}/{params.sample}.splice_sites.bed | \\
+grep CIRCULAR {params.tmpdir}/{params.sample}.splice_sites.bed | \\
     grep ANCHOR_UNIQUE \\
     > {output.find_circ_bsj_bed}
 

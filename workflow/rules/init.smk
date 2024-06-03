@@ -86,6 +86,10 @@ def _convert_to_int(variable):
 
 # resource absolute path
 WORKDIR = config["workdir"]
+TEMPDIR = config["tempdir"]
+if not os.access(TEMPDIR, os.W_OK):
+    raise PermissionError(f"TEMPDIR {TEMPDIR} cannot be written to.\n\tHint: does the path exist and do you have write permissions?")
+
 SCRIPTS_DIR = config["scriptsdir"]
 RESOURCES_DIR = config["resourcesdir"]
 FASTAS_GTFS_DIR = config["fastas_gtfs_dir"]
@@ -106,6 +110,7 @@ MAPSPLICE_FILTERING = config["mapsplice_filtering"]
 FLANKSIZE = config['flanksize']
 HQCC=config["high_confidence_core_callers"].replace(" ","")
 CALLERS=["circExplorer","ciri","circExplorer_bwa"]
+
 # if RUN_CLEAR: CALLERS.append("clear")
 if RUN_DCC: CALLERS.append("dcc")
 if RUN_MAPSPLICE: CALLERS.append("mapsplice")

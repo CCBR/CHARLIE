@@ -53,19 +53,12 @@ rule star1p:
         outdir=join(WORKDIR, "results", "{sample}", "STAR1p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']["star"]
     threads: getthreads("star1p")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-
-if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 if [ "{params.peorse}" == "PE" ];then
 # paired-end
     overhang=$(zcat {input.R1} {input.R2} | awk -v maxlen=100 'NR%4==2 {{if (length($1) > maxlen+0) maxlen=length($1)}}; END {{print maxlen-1}}')
@@ -99,7 +92,7 @@ if [ "{params.peorse}" == "PE" ];then
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang
 
     rm -rf {params.sample}_p1._STARgenome
@@ -135,7 +128,7 @@ if [ "{params.peorse}" == "PE" ];then
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang
 
     rm -rf {params.sample}_mate1._STARgenome
@@ -171,7 +164,7 @@ if [ "{params.peorse}" == "PE" ];then
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang
 
     rm -rf {params.sample}_mate2._STARgenome
@@ -211,7 +204,7 @@ else
     --alignEndsProtrude 10 ConcordantPair \\
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang
     mkdir -p $(dirname {output.mate1_chimeric_junctions})
     touch {output.mate1_chimeric_junctions}
@@ -304,19 +297,13 @@ rule star2p:
         outdir=join(WORKDIR, "results", "{sample}", "STAR2p"),
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star2p")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
 
-if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
 limitSjdbInsertNsj=$(wc -l {input.pass1sjtab}|awk '{{print $1+1}}')
 if [ "$limitSjdbInsertNsj" -lt "400000" ];then limitSjdbInsertNsj="400000";fi
 
@@ -359,7 +346,7 @@ if [ "{params.peorse}" == "PE" ];then
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
@@ -404,7 +391,7 @@ else
     --outFilterIntronMotifs None \\
     --sjdbGTFfile {input.gtf} \\
     --quantMode GeneCounts \\
-    --outTmpDir ${{TMPDIR}} \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbOverhang $overhang \\
     --outBAMcompression 0 \\
     --outSAMattributes All
@@ -412,35 +399,35 @@ else
     rm -rf ${{output_prefix}}_STARgenome
 fi
 sleep 120
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-samtools view -H {output.unsortedbam} > ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam
-cp ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam ${{TMPDIR}}/{params.sample}_p2.chimeric.sam
+mkdir -p {params.tmpdir}
+samtools view -H {output.unsortedbam} > {params.tmpdir}/{params.sample}_p2.non_chimeric.sam
+cp {params.tmpdir}/{params.sample}_p2.non_chimeric.sam {params.tmpdir}/{params.sample}_p2.chimeric.sam
 # ref https://github.com/alexdobin/STAR/issues/678
-samtools view -@ {threads} {output.unsortedbam} | grep "ch:A:1" >> ${{TMPDIR}}/{params.sample}_p2.chimeric.sam
-samtools view -@ {threads} {output.unsortedbam} | grep -v "ch:A:1" >> ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam
+samtools view -@ {threads} {output.unsortedbam} | grep "ch:A:1" >> {params.tmpdir}/{params.sample}_p2.chimeric.sam
+samtools view -@ {threads} {output.unsortedbam} | grep -v "ch:A:1" >> {params.tmpdir}/{params.sample}_p2.non_chimeric.sam
 ls -alrth
 for i in 1 2 3;do
-    if [ ! -d ${{TMPDIR}}/{params.randomstr}_${{i}} ];then mkdir -p ${{TMPDIR}}/{params.randomstr}_${{i}};fi
+    mkdir -p {params.tmpdir}_${{i}}
 done
-samtools view -@ {threads} -b -S ${{TMPDIR}}/{params.sample}_p2.chimeric.sam | \\
+samtools view -@ {threads} -b -S {params.tmpdir}/{params.sample}_p2.chimeric.sam | \\
 samtools sort \\
     -l 9 \\
-    -T ${{TMPDIR}}/{params.randomstr}_1 \\
+    -T {params.tmpdir}_1 \\
     --write-index \\
     -@ {threads} \\
     --output-fmt BAM \\
     -o {output.chimeric_bam} -
-samtools view -@ {threads} -b -S ${{TMPDIR}}/{params.sample}_p2.non_chimeric.sam | \\
+samtools view -@ {threads} -b -S {params.tmpdir}/{params.sample}_p2.non_chimeric.sam | \\
 samtools sort \\
     -l 9 \\
-    -T ${{TMPDIR}}/{params.randomstr}_2 \\
+    -T {params.tmpdir}_2 \\
     --write-index \\
     -@ {threads} \\
     --output-fmt BAM \\
     -o {output.non_chimeric_bam} -
 samtools sort \\
     -l 9 \\
-    -T ${{TMPDIR}}/{params.randomstr}_3 \\
+    -T {params.tmpdir}_3 \\
     --write-index \\
     -@ {threads} \\
     --output-fmt BAM \\
@@ -479,17 +466,12 @@ rule star_circrnafinder:
         flanksize=FLANKSIZE,
         starindexdir=STAR_INDEX_DIR,
         alignTranscriptsPerReadNmax=config["alignTranscriptsPerReadNmax"],
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("star_circrnafinder")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
 
 outdir=$(dirname {output.chimericsam})
 if [ ! -d $outdir ];then mkdir -p $outdir;fi
@@ -514,7 +496,7 @@ if [ "{params.peorse}" == "PE" ];then
     --outFilterMultimapNmax 2 \\
     --outFileNamePrefix {params.sample}. \\
     --outBAMcompression 0 \\
-    --outTmpDir $TMPDIR \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbGTFfile {input.gtf}
 
 else
@@ -536,7 +518,7 @@ else
     --outFilterMultimapNmax 2 \\
     --outFileNamePrefix {params.sample}. \\
     --outBAMcompression 0 \\
-    --outTmpDir $TMPDIR \\
+    --outTmpDir {params.tmpdir} \\
     --sjdbGTFfile {input.gtf}
 
 fi
@@ -571,18 +553,13 @@ rule find_circ_align:
         sample="{sample}",
         reffa=REF_FA,
         peorse=get_peorse,
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("find_circ_align")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 
 refdir=$(dirname {input.bt2})
 outdir=$(dirname {output.anchorsfq})
@@ -598,7 +575,7 @@ bowtie2 \\
     -q \\
     -1 {input.R1} \\
     -2 {input.R2} \\
-    > ${{TMPDIR}}/{params.sample}.sam
+    > {params.tmpdir}/{params.sample}.sam
 else 
 bowtie2 \\
     -p {threads} \\
@@ -608,35 +585,35 @@ bowtie2 \\
     -x ${{refdir}}/ref \\
     -q \\
     -U {input.R1} \\
-    > ${{TMPDIR}}/{params.sample}.sam
+    > {params.tmpdir}/{params.sample}.sam
 fi
 
-samtools view -@{threads} -hbuS -o ${{TMPDIR}}/{params.sample}.unsorted.bam ${{TMPDIR}}/{params.sample}.sam
+samtools view -@{threads} -hbuS -o {params.tmpdir}/{params.sample}.unsorted.bam {params.tmpdir}/{params.sample}.sam
 
 samtools sort -@{threads} \\
     -u \\
     --write-index \\
     --output-fmt BAM \\
-    -T ${{TMPDIR}}/{params.sample}.samtoolssort \\
-    -o ${{TMPDIR}}/{params.sample}.sorted.bam ${{TMPDIR}}/{params.sample}.unsorted.bam
+    -T {params.tmpdir}/{params.sample}.samtoolssort \\
+    -o {params.tmpdir}/{params.sample}.sorted.bam {params.tmpdir}/{params.sample}.unsorted.bam
 
 samtools view -@{threads} \\
     --output-fmt BAM \\
     --write-index \\
-    -o ${{TMPDIR}}/{params.sample}.unmapped.bam \\
+    -o {params.tmpdir}/{params.sample}.unmapped.bam \\
     -f4 \\
-    ${{TMPDIR}}/{params.sample}.sorted.bam
+    {params.tmpdir}/{params.sample}.sorted.bam
 
 unmapped2anchors.py \\
-    ${{TMPDIR}}/{params.sample}.unmapped.bam | \\
-	gzip -c - > ${{TMPDIR}}/{params.sample}.anchors.fastq.gz
+    {params.tmpdir}/{params.sample}.unmapped.bam | \\
+	gzip -c - > {params.tmpdir}/{params.sample}.anchors.fastq.gz
 
-mv ${{TMPDIR}}/{params.sample}.anchors.fastq.gz {output.anchorsfq}
-mv ${{TMPDIR}}/{params.sample}.unmapped.b* ${{outdir}}/
+mv {params.tmpdir}/{params.sample}.anchors.fastq.gz {output.anchorsfq}
+mv {params.tmpdir}/{params.sample}.unmapped.b* ${{outdir}}/
 
 sleep 300 
 
-rm -rf $TMPDIR
+rm -rf {params.tmpdir}
 """
 
 

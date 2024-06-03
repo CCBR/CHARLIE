@@ -61,18 +61,13 @@ rule create_circExplorer_BSJ_bam:
         scriptse=join(SCRIPTS_DIR, "_create_circExplorer_BSJ_bam_se.py"),
         flankscript=join(SCRIPTS_DIR, "_append_splice_site_flanks_to_BSJs.py"),
         bam2bwscript=join(SCRIPTS_DIR, "bam_to_bigwig.sh"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']["star_ucsc_cufflinks"]
     threads: getthreads("create_circExplorer_BSJ_bam")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
+mkdir -p {params.tmpdir}
 
 outdir=$(dirname {output.BSJbam})
 BSJbedbn=$(basename {output.BSJbed})
@@ -82,59 +77,59 @@ if [ "{params.peorse}" == "PE" ];then
 python3 {params.scriptpe} \\
     --inbam {input.chimericbam} \\
     --sample_counts_table {input.countstable} \\
-    --plusbam ${{TMPDIR}}/{params.sample}.BSJ.plus.bam \\
-    --minusbam ${{TMPDIR}}/{params.sample}.BSJ.minus.bam \\
-    --outbam ${{TMPDIR}}/{params.sample}.BSJ.bam \\
-    --bed ${{TMPDIR}}/${{BSJbedbn}} \\
+    --plusbam {params.tmpdir}/{params.sample}.BSJ.plus.bam \\
+    --minusbam {params.tmpdir}/{params.sample}.BSJ.minus.bam \\
+    --outbam {params.tmpdir}/{params.sample}.BSJ.bam \\
+    --bed {params.tmpdir}/${{BSJbedbn}} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
     --host "{params.host}" \\
     --additives "{params.additives}" \\
     --viruses "{params.viruses}" \\
-    --outputhostbams --outputvirusbams --outdir $TMPDIR
+    --outputhostbams --outputvirusbams --outdir {params.tmpdir}
 
 else
 
 python3 {params.scriptse} \\
     --inbam {input.chimericbam} \\
     --sample_counts_table {input.countstable} \\
-    --plusbam ${{TMPDIR}}/{params.sample}.BSJ.plus.bam \\
-    --minusbam ${{TMPDIR}}/{params.sample}.BSJ.minus.bam \\
-    --outbam ${{TMPDIR}}/{params.sample}.BSJ.bam \\
-    --bed ${{TMPDIR}}/${{BSJbedbn}} \\
+    --plusbam {params.tmpdir}/{params.sample}.BSJ.plus.bam \\
+    --minusbam {params.tmpdir}/{params.sample}.BSJ.minus.bam \\
+    --outbam {params.tmpdir}/{params.sample}.BSJ.bam \\
+    --bed {params.tmpdir}/${{BSJbedbn}} \\
     --sample_name {params.sample} \\
     --junctionsfound {output.BSJfoundcounts} \\
     --regions {params.refregions} \\
     --host "{params.host}" \\
     --additives "{params.additives}" \\
     --viruses "{params.viruses}" \\
-    --outputhostbams --outputvirusbams --outdir $TMPDIR
+    --outputhostbams --outputvirusbams --outdir {params.tmpdir}
 
 fi
 
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.plusBSJbam} ${{TMPDIR}}/{params.sample}.BSJ.plus.bam 
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.minusBSJbam} ${{TMPDIR}}/{params.sample}.BSJ.minus.bam 
-samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o {output.BSJbam} ${{TMPDIR}}/{params.sample}.BSJ.bam
+samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.plusBSJbam} {params.tmpdir}/{params.sample}.BSJ.plus.bam 
+samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.minusBSJbam} {params.tmpdir}/{params.sample}.BSJ.minus.bam 
+samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.BSJbam} {params.tmpdir}/{params.sample}.BSJ.bam
 
 for b in {output.plusBSJbam} {output.minusBSJbam} {output.BSJbam} 
 # for b in {output.plusBSJbam} {output.minusBSJbam}
 do
-    bash {params.bam2bwscript} $b $TMPDIR
+    bash {params.bam2bwscript} $b {params.tmpdir}
 done
 
 for i in $(echo {params.host}|tr ',' ' ');do 
-    samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam ${{TMPDIR}}/{params.sample}.${{i}}.BSJ.bam
-    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam $TMPDIR
+    samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}/{params.sample}.${{i}}.BSJ.bam
+    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}
 done
 for i in $(echo {params.viruses}|tr ',' ' ');do 
-    samtools sort -l 9 -T $TMPDIR --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam ${{TMPDIR}}/{params.sample}.${{i}}.BSJ.bam
-    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam $TMPDIR
+    samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}/{params.sample}.${{i}}.BSJ.bam
+    bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}
 done
 
-python3 {params.flankscript} --reffa {params.reffa} --inbsjbedgz ${{TMPDIR}}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
+python3 {params.flankscript} --reffa {params.reffa} --inbsjbedgz {params.tmpdir}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
 
-rm -rf $TMPDIR
+rm -rf {params.tmpdir}
 """
 
 
@@ -209,19 +204,14 @@ rule create_circExplorer_linear_spliced_bams:
         peorse=get_peorse,
         bashscript=join(SCRIPTS_DIR, "_create_circExplorer_linear_bam.v2.sh"),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']["star_ucsc_cufflinks"]
     threads: getthreads("create_circExplorer_linear_spliced_bams")
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-fi
-if [ -d $TMPDIR ];then rm -rf $TMPDIR;fi
-mkdir -p $TMPDIR
+if [ -d {params.tmpdir} ];then rm -rf {params.tmpdir};fi
+mkdir -p {params.tmpdir}
 
 cd {params.outdir}
 
@@ -232,7 +222,7 @@ bash {params.bashscript} \\
     --samplename {params.sample} \\
     --peorse {params.peorse} \\
     --bsjbed {input.bsjbedgz} \\
-    --tmpdir $TMPDIR \\
+    --tmpdir {params.tmpdir} \\
     --rid2jid {output.rid2jid} \\
     --filteredbam {output.filtered_bam} \\
     --linearbsjlist {output.linear_readids} \\
@@ -247,7 +237,7 @@ bash {params.bashscript} \\
     --linearbam {output.linear_bam} \\
     --splicedbam {output.spliced_bam} \\
     --threads {threads}
-rm -rf $TMPDIR
+rm -rf {params.tmpdir}
 """
 
 
@@ -290,16 +280,11 @@ rule create_circExplorer_merged_found_counts_table:
             SCRIPTS_DIR, "create_circExplorer_per_sample_counts_table.py"
         ),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
-fi
+mkdir -p {params.tmpdir}
 python3 {params.pythonscript} \\
     -b {input.bsj_found_counts} \\
     -l {input.linear_spliced_counts} \\
@@ -311,32 +296,6 @@ python3 {params.pythonscript2} \\
     --countstable {output.count_counts_table}
 """
 
-
-# localrules: create_circExplorer_per_sample_counts_table
-# rule create_circExplorer_per_sample_counts_table:
-#     input:
-#         annotation_counts=rules.circExplorer.output.annotation_counts_table,
-#         found_counts=rules.create_circExplorer_merged_found_counts_table.output.found_counts_table
-#     output:
-#         count_counts_table=join(WORKDIR,"results","{sample}","circExplorer","{sample}.circExplorer.counts_table.tsv")
-#     params:
-#         sample="{sample}",
-#         pythonscript=join(SCRIPTS_DIR,"create_circExplorer_per_sample_counts_table.py"),
-#         outdir=join(WORKDIR,"results","{sample}","circExplorer"),
-#         randomstr=str(uuid.uuid4())
-#     shell:"""
-# set -exo pipefail
-# if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-#     TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-# else
-#     TMPDIR="/dev/shm/{params.randomstr}"
-#     mkdir -p $TMPDIR
-# fi
-# python3 {params.pythonscript} \\
-#     --annotationcounts {input.annotation_counts} \\
-#     --allfoundcounts {input.found_counts} \\
-#     --countstable {output.count_counts_table}
-# """
 
 if RUN_MAPSPLICE:
 
@@ -357,32 +316,27 @@ if RUN_MAPSPLICE:
             peorse=get_peorse,
             run_mapsplice=N_RUN_MAPSPLICE,
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
-            randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         threads: getthreads("alignment_stats")
         container: config['containers']["base"]
         shell:
             """
     set -exo pipefail
-    if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-        TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-    else
-        TMPDIR="/dev/shm/{params.randomstr}"
-        mkdir -p $TMPDIR
-    fi
+    mkdir -p {params.tmpdir}
     for bamfile in {input};do
         bamfile_bn=$(basename $bamfile)
         if [ "{params.peorse}" == "PE" ];then
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
         else
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
         fi
-    done > ${{TMPDIR}}/do_bamstats
-    parallel -j 2 < ${{TMPDIR}}/do_bamstats
+    done > {params.tmpdir}/do_bamstats
+    parallel -j 2 < {params.tmpdir}/do_bamstats
 
     print_bam_results () {{
         bamfile=$1
         bamfile_bn=$(basename $bamfile)
-        stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
+        stats_file={params.tmpdir}/${{bamfile_bn}}.counts
         prefix=$2
         while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
     }}
@@ -412,32 +366,27 @@ else:
             peorse=get_peorse,
             run_mapsplice=N_RUN_MAPSPLICE,
             bash2nreads_pyscript=join(SCRIPTS_DIR, "_bam_get_alignment_stats.py"),
-            randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
         threads: getthreads("alignment_stats")
         container: config['containers']["base"]
         shell:
             """
     set -exo pipefail
-    if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-        TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-    else
-        TMPDIR="/dev/shm/{params.randomstr}"
-        mkdir -p $TMPDIR
-    fi
+    mkdir -p {params.tmpdir}
     for bamfile in {input};do
         bamfile_bn=$(basename $bamfile)
         if [ "{params.peorse}" == "PE" ];then
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
         else
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > ${{TMPDIR}}/${{bamfile_bn}}.counts"
+        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
         fi
-    done > ${{TMPDIR}}/do_bamstats
-    parallel -j 2 < ${{TMPDIR}}/do_bamstats
+    done > {params.tmpdir}/do_bamstats
+    parallel -j 2 < {params.tmpdir}/do_bamstats
 
     print_bam_results () {{
         bamfile=$1
         bamfile_bn=$(basename $bamfile)
-        stats_file=${{TMPDIR}}/${{bamfile_bn}}.counts
+        stats_file={params.tmpdir}/${{bamfile_bn}}.counts
         prefix=$2
         while read b a;do echo -ne "${{prefix}}_${{a}}\\t${{b}}\\n";done < $stats_file
     }}
@@ -467,25 +416,21 @@ rule merge_alignment_stats:
     output:
         join(WORKDIR, "results", "alignmentstats.txt"),
     params:
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     shell:
         """
 set -exo pipefail
-if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-    TMPDIR="/lscratch/${{SLURM_JOB_ID}}"
-else
-    TMPDIR="/dev/shm/{params.randomstr}"
-    mkdir -p $TMPDIR
-fi
+mkdir -p {params.tmpdir}
+
 count=0
 for f in {input};do
     count=$((count+1))
     if [ "$count" == "1" ];then
         cp $f {output}
     else
-        cut -f2 $f > ${{TMPDIR}}/${{count}}
-        paste {output} ${{TMPDIR}}/${{count}} > ${{TMPDIR}}/${{count}}.tmp
-        mv ${{TMPDIR}}/${{count}}.tmp {output}
+        cut -f2 $f > {params.tmpdir}/${{count}}
+        paste {output} {params.tmpdir}/${{count}} > {params.tmpdir}/${{count}}.tmp
+        mv {params.tmpdir}/${{count}}.tmp {output}
     fi
 done 
 """

@@ -30,23 +30,14 @@ rule cutadapt:
         cutadapt_O=config["cutadapt_O"],
         cutadapt_q=config["cutadapt_q"],
         adapters=join(RESOURCES_DIR, "TruSeq_and_nextera_adapters.consolidated.fa"),
-        randomstr=str(uuid.uuid4()),
+        tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
     container: config['containers']['cutadapt']
     threads: getthreads("cutadapt")
     shell:
         """
         set -exo pipefail
 
-        # set TMPDIR
-        if [ -d /lscratch/${{SLURM_JOB_ID}} ];then
-            TMPDIR="/lscratch/${{SLURM_JOB_ID}}/{params.randomstr}"
-        else
-            TMPDIR="/dev/shm/{params.randomstr}"
-        fi
-        if [ ! -d $TMPDIR ];then mkdir -p $TMPDIR;fi
-
-        if [ ! -d {params.outdir} ];then mkdir {params.outdir};fi
-
+        mkdir -p {params.tmpdir}
         of1bn=$(basename {output.of1})
         of2bn=$(basename {output.of2})
 
@@ -61,14 +52,14 @@ rule cutadapt:
             -b file:{params.adapters} \\
             -B file:{params.adapters} \\
             -j {threads} \\
-            -o ${{TMPDIR}}/${{of1bn}} -p ${{TMPDIR}}/${{of2bn}} \\
+            -o {params.tmpdir}/${{of1bn}} -p {params.tmpdir}/${{of2bn}} \\
             {input.R1} {input.R2}
             
         # filter for average read quality
             fastq-filter \\
                 -q {params.cutadapt_q} \\
                 -o {output.of1} -o {output.of2} \\
-                ${{TMPDIR}}/${{of1bn}} ${{TMPDIR}}/${{of2bn}}
+                {params.tmpdir}/${{of1bn}} {params.tmpdir}/${{of2bn}}
 
         else
             ## Single-end
@@ -80,7 +71,7 @@ rule cutadapt:
             -q {params.cutadapt_q},{params.cutadapt_q} -m {params.cutadapt_min_length} \\
             -b file:{params.adapters} \\
             -j {threads} \\
-            -o ${{TMPDIR}}/${{of1bn}} \\
+            -o {params.tmpdir}/${{of1bn}} \\
             {input.R1}
             
             touch {output.of2}
@@ -89,7 +80,7 @@ rule cutadapt:
             fastq-filter \\
                 -q {params.cutadapt_q} \\
                 -o {output.of1} \\
-                ${{TMPDIR}}/${{of1bn}}
+                {params.tmpdir}/${{of1bn}}
 
         fi
         """
