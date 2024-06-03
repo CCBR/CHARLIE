@@ -1,5 +1,9 @@
 # CHARLIE development version
 
+- Major updates to convert CHARLIE from a biowulf-specific to a platform-agnostic pipeline (#102, @kelly-sovacool):
+    - All rules now use containers instead of envmodules.
+    - Default config and cluster config files are provided for use on biowulf and FRCE.
+
 # CHARLIE 0.10.1
 
 - strand are reported together, strand from all callers are reported,
