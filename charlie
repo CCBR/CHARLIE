@@ -362,18 +362,9 @@ function unlock() {
 ##########################################################################################
 
 function set_singularity_binds(){
-# this functions tries find what folders to bind
-# biowulf specific
-  echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
-  echo "$WORKDIR" >> ${WORKDIR}/tmp1
-  grep -o '\/.*' <(cat ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)|dos2unix|tr '\t' '\n'|grep -v ' \|\/\/'|sort|uniq >> ${WORKDIR}/tmp1
-  grep gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3,$4,$5}'| grep "[a-zA-Z0-9]" |sort|uniq > ${WORKDIR}/tmp2
-  grep -v gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3}'| grep "[a-zA-Z0-9]"|sort|uniq > ${WORKDIR}/tmp3
-  while read a;do readlink -f $a;done < ${WORKDIR}/tmp3 | grep "[a-zA-Z0-9]"> ${WORKDIR}/tmp4
-  binds=$(cat ${WORKDIR}/tmp2 ${WORKDIR}/tmp3 ${WORKDIR}/tmp4|sort|uniq |tr '\n' ',')
-  rm -f ${WORKDIR}/tmp?
-  binds=$(echo $binds|awk '{print substr($1,1,length($1)-1)}')
-  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+  # this functions tries find what folders to bind
+  # TODO parse config file with pyyaml to determine singularity bind paths
+  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$PIPELINE_HOME,$WORKDIR"
 }
 
 ##########################################################################################

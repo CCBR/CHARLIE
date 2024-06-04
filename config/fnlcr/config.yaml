@@ -4,7 +4,7 @@
 workdir: "WORKDIR"
 
 # temporary directory for intermediate files that are not saved
-tempdir: '/scratch/local'
+tempdir: "/scratch/local"
 
 # tab delimited samples file ... should have the following 3 columns
 # sampleName	path_to_R1_fastq	path_to_R2_fastq
