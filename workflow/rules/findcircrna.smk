@@ -101,7 +101,7 @@ def get_per_sample_files_to_merge(wildcards):
 # | 10 | exonStarts  | Exon start positions         |
 # | 11 | exonEnds    | Exon end positions           |
 
-# outout "known" file has the following columns:
+# output "known" file has the following columns:
 # | #  | ColName     |  Description                        |
 # |----|-------------|-------------------------------------|
 # | 1  | chrom       | Chromosome                          |
@@ -454,7 +454,7 @@ python {params.script2} {params.lookup} {params.hostID}
 # and to extract "Relative expression of circRNA" for downstream purposes
 # CLEAR does not quantify "Relative expression of circRNA" for novel circRNA, ie.,
 # circRNAs not labeled as "known" possible due to poor genome annotation.
-# circRNA is labled as "known" if its coordinates match with exons of known genes!
+# circRNA is labelled as "known" if its coordinates match with exons of known genes!
 # quant.txt is a TSV with the following columns:
 # | #  | ColName     | Description                         |
 # |----|-------------|-------------------------------------|
@@ -715,7 +715,7 @@ DCC @{input.ss} \\
     --annotation {input.gtf} \\
     --chrM -G \\
     --rep_file {params.rep} \\
-    --refseq {params.fa} 
+    --refseq {params.fa}
 fi
 
 ls -alrth {params.tmpdir}
@@ -1280,6 +1280,7 @@ rule merge_per_sample:
         minreadcount=config["minreadcount"],  # this filter is redundant as inputs are already pre-filtered.
         high_confidence_core_callers=config["high_confidence_core_callers"], # comma separated list ... default circExplorer,circExplorer_bwa
         high_confidence_core_callers_plus_n=config["high_confidence_core_callers_plus_n"] # number of callers in addition to core callers that need to call the circRNA for it to be called "High Confidence"
+    container: config['containers']['star_ucsc_cufflinks']
     shell:
         """
 python3 {params.script} \\
