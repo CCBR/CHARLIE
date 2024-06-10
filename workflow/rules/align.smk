@@ -529,10 +529,6 @@ rm -rf {params.sample}._STARpass1
 rm -f {params.sample}.Aligned.out.bam
 
 sleep 120
-
-# Used to sort the BAM file after effect , but realized that it is not required by circRNA_Finder scripts
-# Hence deleting it to save digital footprint by making it temp in output block 
-
 """
 
 rule find_circ_align:
@@ -548,7 +544,7 @@ rule find_circ_align:
             "{sample}",
             "find_circ",
             "{sample}_anchors.fastq.gz",
-        ),        
+        ),
     params:
         sample="{sample}",
         reffa=REF_FA,
@@ -576,7 +572,7 @@ bowtie2 \\
     -1 {input.R1} \\
     -2 {input.R2} \\
     > {params.tmpdir}/{params.sample}.sam
-else 
+else
 bowtie2 \\
     -p {threads} \\
     --very-sensitive \\
@@ -611,7 +607,7 @@ unmapped2anchors.py \\
 mv {params.tmpdir}/{params.sample}.anchors.fastq.gz {output.anchorsfq}
 mv {params.tmpdir}/{params.sample}.unmapped.b* ${{outdir}}/
 
-sleep 300 
+sleep 300
 
 rm -rf {params.tmpdir}
 """
