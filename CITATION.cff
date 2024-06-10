@@ -6,6 +6,11 @@ authors:
   orcid: https://orcid.org/0000-0001-8978-8495
   affiliation: Advanced Biomedical Computational Science, Frederick National Laboratory
     for Cancer Research, Frederick, MD 21702, USA
+- family-names: Sovacool
+  given-names: Kelly
+  orcid: https://orcid.org/0000-0003-3283-829X
+  affiliation: Advanced Biomedical Computational Science, Frederick National Laboratory
+    for Cancer Research, Frederick, MD 21702, USA
 title: 'CHARLIE: Circrnas in Host And viRuses anaLysis pIpEline'
 url: https://ccbr.github.io/CHARLIE/
 repository-code: https://github.com/CCBR/CHARLIE

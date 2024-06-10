@@ -33,8 +33,7 @@ rule fastqc:
     params:
         outdir=join(WORKDIR, "qc", "fastqc"),
     threads: getthreads("fastqc")
-    envmodules:
-        TOOLS["fastqc"]["version"],
+    container: config['containers']['fastqc']
     shell:
         """
 set -exo pipefail
@@ -85,8 +84,7 @@ rule multiqc:
         html=join(WORKDIR, "multiqc_report.html"),
     params:
         outdir=WORKDIR,
-    envmodules:
-        TOOLS["multiqc"]["version"],
+    container: config['containers']['multiqc']
     shell:
         """
 cd {params.outdir}

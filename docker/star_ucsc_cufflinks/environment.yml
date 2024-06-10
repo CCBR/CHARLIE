@@ -1,0 +1,23 @@
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - argparse
+    - bedtools=2.29.0
+    - blat=35
+    - bowtie2=2.5.1
+    - bwa=0.7.17
+    - cufflinks=2.2.1
+    - gffread
+    - HTSeq
+    - novoalign=3.07.00
+    - numpy
+    - pandas
+    - pysam
+    - python=3.6
+    - sambamba=0.8.2
+    - samtools=1.16.1
+    - star=2.7.6a
+    - ucsc-bedgraphtobigwig
+    - ucsc-bedsort
+    - ucsc-gtftogenepred

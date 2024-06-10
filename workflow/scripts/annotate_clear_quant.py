@@ -2,11 +2,6 @@
 # This script annotates quant_txt file from CLEAR workflow with hg38_2_hg19_lookup.txt
 
 import pandas
-import re
-import numpy as np
-from pathlib import Path
-import os
-import matplotlib.pyplot as plt
 import sys
 
 indexcol=sys.argv[3] # hg38 or mm39
