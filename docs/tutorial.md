@@ -174,6 +174,7 @@ The above command creates `<path to output dir>` folder and creates 2 subfolders
 This file is used to fine tune the execution of the pipeline by setting:
 
 * sample sheet location ... aka `samples.tsv`
+* the temporary directory -- make sure this is correct for your computing environment.
 * which circRNA finding tools to use by editing these:
     * run_clear: True
     * run_dcc: True

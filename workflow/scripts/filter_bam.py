@@ -1,12 +1,7 @@
 import pysam
-import sys
 import argparse
-import gzip
-import pprint
 
 def main():
-    # debug = True
-    debug = False
     parser = argparse.ArgumentParser(
         description="Remove all non-proper-pair, chimeric, secondary, supplementary, unmapped alignments from input BAM file"
     )

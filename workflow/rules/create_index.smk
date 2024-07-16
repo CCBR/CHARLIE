@@ -20,16 +20,8 @@ rule create_index:
         script1=join(SCRIPTS_DIR, "_add_geneid2genepred.py"),
         script2=join(SCRIPTS_DIR, "_multifasta2separatefastas.sh"),
         script3=join(SCRIPTS_DIR, "fix_gtfs.py"),
-        randomstr=str(uuid.uuid4()),
-        nclscan_dir=config["nclscan_dir"],
         nclscan_config=config["nclscan_config"],
-    envmodules:
-        TOOLS["star"]["version"],
-        TOOLS["bwa"]["version"],
-        TOOLS["samtools"]["version"],
-        TOOLS["ucsc"]["version"],
-        TOOLS["cufflinks"]["version"],
-        TOOLS["python37"]["version"],
+    container: config['containers']['star_ucsc_cufflinks']
     threads: getthreads("create_index")
     shell:
         """
@@ -44,7 +36,7 @@ samtools faidx {params.reffa} && \\
 python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
 gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
 touch {output.lncRNA_transcripts_fa}
-{params.nclscan_dir}/bin/create_reference.py -c {params.nclscan_config}
+create_reference.py -c {params.nclscan_config}
 
 gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \\
     python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
@@ -61,9 +53,6 @@ STAR \\
 bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
 ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
 # may have to create bowtie1 index here.. has to be a separate rule ... see below
-
-
-
 """
 
 
@@ -79,8 +68,7 @@ rule create_mapsplice_index:
         separate_fastas=join(REF_DIR, "separate_fastas"),
         ebwt=join(REF_DIR, "separate_fastas_index"),
     threads: getthreads("create_mapsplice_index")
-    container:
-        "docker://cgrlab/mapsplice2:latest"
+    container: "docker://cgrlab/mapsplice2:latest"
     shell:
         """
 set -exo pipefail
@@ -99,7 +87,7 @@ rule create_bwa_index:
         log=join(REF_DIR,"bwa_index.log")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bwa"]["version"]
+    container: config['containers']["base"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})
@@ -115,7 +103,7 @@ rule create_bowtie2_index:
         bt2=join(REF_DIR,"ref.1.bt2")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bowtie2"]["version"]
+    container: config['containers']["base"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})
@@ -131,7 +119,7 @@ rule create_bowtie1_index:
         bt2=join(REF_DIR,"ref.1.ebwt")
     params:
         reffa=REF_FA
-    envmodules: TOOLS["bowtie1"]["version"]
+    container: config['containers']["bowtie1"]
     shell:"""
 set -exo pipefail
 refdir=$(dirname {params.reffa})

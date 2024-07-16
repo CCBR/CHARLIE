@@ -1,7 +1,5 @@
 import pysam
-import sys
 import argparse
-import gzip
 import os
 import time
 
