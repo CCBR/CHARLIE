@@ -303,14 +303,19 @@ include: "rules/post_align_processing.smk"
 include: "rules/findcircrna.smk"
 include: "rules/post_findcircrna_processing.smk"
 
+jobby_cmd = f'mkdir -p {WORKDIR}/logs && run_jobby_on_snakemake_log {WORKDIR}/snakemake.log | tee {WORKDIR}/logs/snakemake.log.jobby | cut -f2,3,18 > {WORKDIR}/logs/snakemake.log.jobby.short'
+spook_cmd = f'spooker {WORKDIR} CHARLIE'
+
+def on_complete(msg):
+    print(msg)
+    print(jobby_cmd)
+    shell(jobby_cmd)
+    print(spook_cmd)
+    shell(spook_cmd)
 
 onsuccess:
-    shell(
-        """sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short"""
-    )
+    on_complete("OnSuccess")
 
 
 onerror:
-    shell(
-        """sleep 10; ./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short"""
-    )
+    on_complete("OnError")

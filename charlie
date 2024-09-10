@@ -201,12 +201,6 @@ fi
 if [ ! -f $WORKDIR/samples.tsv ];then
 cp $MANIFEST $WORKDIR/samples.tsv
 fi
-if [ ! -f $JOBBY ];then
-cp ${PIPELINE_HOME}/workflow/scripts/jobby $JOBBY && chmod a+x $JOBBY
-fi
-if [ ! -f $JOBBY2 ];then
-cp ${PIPELINE_HOME}/workflow/scripts/run_jobby_on_snakemake_log $WORKDIR && chmod a+x $JOBBY2
-fi
 
 #create log and stats folders
 if [ ! -d $WORKDIR/logs ]; then mkdir -p $WORKDIR/logs;echo "Logs Dir: $WORKDIR/logs";fi
@@ -222,7 +216,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv nclscan.config jobby cluster.json; do
+  for f in config.yaml samples.tsv nclscan.config cluster.json; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -607,9 +601,6 @@ function main(){
   # required files
   CONFIGFILE="${WORKDIR}/config.yaml"
   CLUSTERFILE="${WORKDIR}/cluster.json"
-  JOBBY="${WORKDIR}/jobby"
-  JOBBY2="${WORKDIR}/run_jobby_on_snakemake_log"
-
   CLUSTERSTATUSCMD="${PIPELINE_HOME}/resources/cluster_status.sh"
 
   # change group to Ziegelbauer_lab before doing anything
