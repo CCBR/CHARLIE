@@ -128,6 +128,7 @@ Required Arguments:
 
 Optional Arguments:
 
+--singcache|-c  : singularity cache directory. Default is `/data/${USER}/.singularity` if available, or falls back to `${WORKDIR}/.singularity`. Use this flag to specify a different singularity cache directory.
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
 --additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)

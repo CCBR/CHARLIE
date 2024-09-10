@@ -483,6 +483,8 @@ function run() {
 
     preruncleanup
 
+    $EXPORT_SING_CACHE_DIR_CMD
+
     snakemake -s $SNAKEFILE\
     --directory $WORKDIR \
     --printshellcmds \
@@ -520,6 +522,7 @@ function run() {
 
 cd \$SLURM_SUBMIT_DIR
 $MODULE_LOAD
+$EXPORT_SING_CACHE_DIR_CMD
 
 snakemake -s $SNAKEFILE \
     --directory $WORKDIR \
@@ -618,6 +621,9 @@ function main(){
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
       ;;
+      -c=*|--singcache=*)
+        SING_CACHE_DIR="${i#*=}"
+      ;;
       -z|--changegrp)
         CHANGEGRP=1
       ;;
@@ -644,6 +650,17 @@ function main(){
   done
   WORKDIR=$(readlink -f "$WORKDIR")
   echo "Working Dir: $WORKDIR"
+
+  if [[ -z "$SING_CACHE_DIR" ]]; then
+    if [[ -d "/data/$USER" ]]; then
+      SING_CACHE_DIR="/data/$USER/.singularity"
+    else
+      SING_CACHE_DIR="${WORKDIR}/.singularity"
+    fi
+    echo "singularity cache dir (--singcache) is not set, using ${SING_CACHE_DIR}"
+  fi
+  mkdir -p $SING_CACHE_DIR
+  EXPORT_SING_CACHE_DIR_CMD="export SINGULARITY_CACHEDIR=\"${SING_CACHE_DIR}\""
 
   # required files
   CONFIGFILE="${WORKDIR}/config.yaml"

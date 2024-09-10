@@ -1,9 +1,10 @@
 # CHARLIE development version
 
 - Major updates to convert CHARLIE from a biowulf-specific to a platform-agnostic pipeline (#102, @kelly-sovacool):
-    - All rules now use containers instead of envmodules.
-    - Default config and cluster config files are provided for use on biowulf and FRCE.
-    - New entry `TEMPDIR` in the config file sets the temporary directory location for rules that require transient storage.
+  - All rules now use containers instead of envmodules.
+  - Default config and cluster config files are provided for use on biowulf and FRCE.
+  - New entry `TEMPDIR` in the config file sets the temporary directory location for rules that require transient storage.
+  - New `--singcache` argument to provide a singularity cache dir location. The singularity cache dir is automatically set inside `/data/$USER/` or `$WORKDIR/` if `--singcache` is not provided.
 
 # CHARLIE 0.10.1
 
@@ -29,7 +30,7 @@ Significant upgrades since the last release:
 - new job reporting using jobby and its derivatives
 - separated creation of BWA and BOWTIE2 index from creation of STAR index to speed things up
 - parallelized find_circ
-- better cleanup (eg. deleting _STARgenome folders, etc.) for much smaller digital footprint
+- better cleanup (eg. deleting \_STARgenome folders, etc.) for much smaller digital footprint
 - multitude of comments throughout the snakefiles including listing of output file column descriptions
 - preliminary GH actions added
 
@@ -64,8 +65,8 @@ Significant upgrades since the last release:
 # CHARLIE 0.6.1
 
 - customBSJs recalled from STAR alignments
-    - only for PE
-    - removes erroneously called CircExplorer BSJs
+  - only for PE
+  - removes erroneously called CircExplorer BSJs
 - create sense and anti-sense BSJ BAMs and BW for each reference (host+viruses)
 - find reads which contribute to CIRI BSJs but not on the STAR list of BSJ reads, see if they contribute to novel (not called by STAR) BSJs and append novel BSJs to customBSJ list
 
