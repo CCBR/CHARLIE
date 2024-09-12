@@ -309,9 +309,8 @@ output:
 │   ├── GI1_N.R1.fastq.gz -> /data/CCBR_Pipeliner/testdata/circRNA/human/GI1_N_ss.R1.fastq.gz
 │   ├── GI1_N.R2.fastq.gz -> /data/CCBR_Pipeliner/testdata/circRNA/human/GI1_N_ss.R2.fastq.gz
 │   └── GI1_T.R1.fastq.gz -> /data/CCBR_Pipeliner/testdata/circRNA/human/GI1_T_ss.R1.fastq.gz
-├── jobby
-├── jobinfo.short
-├── jobinfo.txt
+├── logs/snakemake.log.jobby.short
+├── logs/snakemake.log.jobby.txt
 ├── logs
 │   ... log files ... 
 │   ... skipping ...
@@ -984,7 +983,6 @@ output:
 │   ├── stranded_STAR_GeneCounts.tsv
 │   └── unstranded_STAR_GeneCounts.tsv
 ├── runinfo.yaml
-├── run_jobby_on_snakemake_log
 ├── runslurm_snakemake_report.html
 ├── samples.tsv
 ├── snakemake.log
@@ -1002,7 +1000,7 @@ output:
 Using the following command to find FAILED jobs:
 
 ```bash
-grep FAIL jobinfo.short
+grep FAIL logs/snakemake.log.jobby.short
 ```
 
 The above command also gives `.err` and `.out` log files which can give further insights on reasons for failure and changes required to be made for a successful run.

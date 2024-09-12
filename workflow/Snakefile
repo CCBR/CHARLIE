@@ -305,7 +305,7 @@ include: "rules/post_findcircrna_processing.smk"
 
 on_finish_cmd = f"""
 sleep 10
-./run_jobby_on_snakemake_log ./snakemake.log | tee jobinfo.txt | cut -f2,3,18 > jobinfo.short
+mkdir -p {WORKDIR}/log && run_jobby_on_snakemake_log {WORKDIR}/snakemake.log | tee {WORKDIR}/log/snakemake.log.jobby | cut -f2,3,18 > {WORKDIR}/log/snakemake.log.jobby.short
 if command -v spooker &> /dev/null; then
     spooker {WORKDIR} CHARLIE
 else
@@ -313,12 +313,14 @@ else
 fi
 """
 
+def on_complete(msg):
+    print(msg)
+    print(on_finish_cmd)
+    shell(on_finish_cmd)
+
 onsuccess:
-    shell(
-        on_finish_cmd
-    )
+    on_complete("OnSuccess")
+
 
 onerror:
-    shell(
-        on_finish_cmd
-    )
+    on_complete("OnError")
