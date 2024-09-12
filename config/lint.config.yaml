@@ -17,7 +17,7 @@ run_dcc: True
 # Should the MapSplice pipeline be run? True or False WITHOUT quotes
 run_mapsplice: True
 mapsplice_min_map_len: 50
-mapsplice_filtering: 2  # 1=less stringent 2=default
+mapsplice_filtering: 2 # 1=less stringent 2=default
 #
 # Should the circRNA_finder  be run? True or False WITHOUT quotes
 run_circRNAFinder: True
@@ -27,7 +27,6 @@ run_nclscan: True
 nclscan_config: ".tests/lint_workdir/nclscan.config"
 #
 
-
 # select references .... host + viruses(comma-separated):
 # select host: # options are hg38 or mm39
 host: "host"
@@ -36,7 +35,7 @@ viruses: "virus"
 # select viruses and other (ERCC/BAC): options are
 # ERCC
 # BAC16Insert
-# 
+#
 # | RefSeq  Sequence | RefSeq assembly accession | Notes                                                 |
 # | ---------------- | ------------------------- | ----------------------------------------------------- |
 # | NC_007605.1      | GCF_002402265.1           | Human gammaherpesvirus 4 (Epstein-Barr virus)         |
@@ -70,10 +69,9 @@ star_1pass_filter_viruses_unannotated: "False"
 
 # BSJ filters in bp:
 minsize_host: 150
-minsize_virus:  150
+minsize_virus: 150
 maxsize_host: 1000000000
-maxsize_virus:  5000
-
+maxsize_virus: 5000
 
 #
 ## Resources
@@ -95,8 +93,6 @@ maxsize_virus:  5000
 # * ERCC sequences
 # * viruses:
 
-
-
 # ref_fa: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.fa"
 # ref_gtf: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.gtf"
 # regions: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.regions"
@@ -106,16 +102,12 @@ maxsize_virus:  5000
 # ref_bowtie1_index: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68"
 # genepred_w_geneid: "/data/Ziegelbauer_lab/resources/mm39_ERCC_HSV1_MHV68/mm39_ERCC_HSV1_MHV68.genes.genepred_w_geneid"
 
-
 #
-
-
 
 ## you most probably dont need to change these
 scriptsdir: "workflow/scripts"
 resourcesdir: "resources"
-tools: "resources/tools.yaml"
-cluster: "resources/cluster.json"
+cluster: "config/unknown/cluster.json"
 adapters: "resources/TruSeq_and_nextera_adapters.consolidated.fa"
 circexplorer_bsj_circRNA_min_reads: 2 # in addition to "known" and "low-conf" circRNAs identified by circexplorer, we also include those found in back_spliced.bed file but not classified as known/low-conf only if the number of reads supporting the BSJ call is greater than this number
 minreadcount: 2 # this is used to filter circRNAs while creating the per-sample counts table

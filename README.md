@@ -1,22 +1,23 @@
 # CHARLIE
+
 ![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)
 
-
 ### Table of Contents
+
 - [CHARLIE - **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line](#charlie)
-    - [Table of Contents](#table-of-contents)
-    - [1. Introduction](#1-introduction)
-    - [2. Flowchart](#2-flowchart)
-    - [3. Software Dependencies](#3-software-dependencies)
-    - [4. Usage](#4-usage)
-    - [5. License](#5-license)
-    - [6. Testing](#6-testing)
-      - [6.1 Test data](#61-test-data)
-      - [6.2 Expected output](#62-expected-output)
+  - [Table of Contents](#table-of-contents)
+  - [1. Introduction](#1-introduction)
+  - [2. Flowchart](#2-flowchart)
+  - [3. Software Dependencies](#3-software-dependencies)
+  - [4. Usage](#4-usage)
+  - [5. License](#5-license)
+  - [6. Testing](#6-testing)
+    - [6.1 Test data](#61-test-data)
+    - [6.2 Expected output](#62-expected-output)
 
 ### 1. Introduction
 
- **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
+**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
 
 Things to know about CHARLIE:
 
@@ -24,26 +25,26 @@ Things to know about CHARLIE:
 - Primirarily developed to run on [BIOWULF](https://hpc.nih.gov/)
 - Reach out to [Vishal Koparde](mailto:vishal.koparde@nihgov) for questions/comments/requests.
 
-
 This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other tools in parallel to detect, quantify and annotate circRNAs. Here is a list of tools that can be run using CHARLIE:
 
-| circRNA Detection Tool | Aligner(s) | Run by default |
-| ---------------------- | ---------- | -------------- |
-| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)          | STAR<sup>1</sup>       | Yes            |
-| [CIRI2](https://sourceforge.net/projects/ciri/files/CIRI2/)                  | BWA<sup>1</sup>        | Yes            |
-| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)          | BWA<sup>1</sup>        | Yes            |
-| [CLEAR](https://github.com/YangLab/CLEAR)                  | STAR<sup>1</sup>       | Yes            |
-| [DCC](https://github.com/dieterich-lab/DCC)                    | STAR<sup>2</sup>       | Yes            |
-| [circRNAFinder](https://github.com/bioxfu/circRNAFinder)          | STAR<sup>3</sup>       | Yes            |
-| [find_circ](https://github.com/marvin-jens/find_circ)              | Bowtie2    | Yes            |
-| [MapSplice](https://github.com/merckey/MapSplice2)              | BWA<sup>2</sup>        | No             |
-| [NCLScan](https://github.com/TreesLab/NCLscan)                | NovoAlign  | No             |
+| circRNA Detection Tool                                      | Aligner(s)       | Run by default |
+| ----------------------------------------------------------- | ---------------- | -------------- |
+| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)   | STAR<sup>1</sup> | Yes            |
+| [CIRI2](https://sourceforge.net/projects/ciri/files/CIRI2/) | BWA<sup>1</sup>  | Yes            |
+| [CIRCExplorer2](https://github.com/YangLab/CIRCexplorer2)   | BWA<sup>1</sup>  | Yes            |
+| [CLEAR](https://github.com/YangLab/CLEAR)                   | STAR<sup>1</sup> | Yes            |
+| [DCC](https://github.com/dieterich-lab/DCC)                 | STAR<sup>2</sup> | Yes            |
+| [circRNAFinder](https://github.com/bioxfu/circRNAFinder)    | STAR<sup>3</sup> | Yes            |
+| [find_circ](https://github.com/marvin-jens/find_circ)       | Bowtie2          | Yes            |
+| [MapSplice](https://github.com/merckey/MapSplice2)          | BWA<sup>2</sup>  | No             |
+| [NCLScan](https://github.com/TreesLab/NCLscan)              | NovoAlign        | No             |
 
 > Note: STAR<sup>1</sup>, STAR<sup>2</sup>, STAR<sup>3</sup> denote 3 different sets of alignment parameters, etc.
 
 > Note: BWA<sup>1</sup>, BWA<sup>2</sup> denote 2 different alignment parameters, etc.
 
 ### 2. Flowchart
+
 ![](docs/images/CHARLIE_v0.8.x.png)
 
 For complete documentation with tutorial go [here](https://CCBR.github.io/CHARLIE/).
@@ -54,33 +55,32 @@ For complete documentation with tutorial go [here](https://CCBR.github.io/CHARLI
 
 The following version of various bioinformatics tools are using within CHARLIE:
 
-| tool          | version   |
-| ------------- | --------- |
-| blat          | 3.5       |
-| bedtools      | 2.30.0    |
-| bowtie        | 2-2.5.1   |
-| bowtie        | 1.3.1     |
-| bwa           | 0.7.17    |
-| circexplorer2 | 2.3.8     |
-| cufflinks     | 2.2.1     |
-| cutadapt      | 4.4       |
-| fastqc        | 0.11.9    |
-| hisat         | 2.2.2.1   |
-| java          | 18.0.1.1  |
-| multiqc       | 1.9       |
-| parallel      | 20231122  |
-| perl          | 5.34      |
-| picard        | 2.27.3    |
-| python        | 2.7       |
-| python        | 3.8       |
-| sambamba      | 0.8.2     |
-| samtools      | 1.16.1    |
-| STAR          | 2.7.6a    |
-| stringtie     | 2.2.1     |
-| ucsc          | 450       |
-| R             | 4.0.5     |
-| novocraft     | 4.03.05   |
-
+| tool          | version  |
+| ------------- | -------- |
+| blat          | 3.5      |
+| bedtools      | 2.30.0   |
+| bowtie        | 2-2.5.1  |
+| bowtie        | 1.3.1    |
+| bwa           | 0.7.17   |
+| circexplorer2 | 2.3.8    |
+| cufflinks     | 2.2.1    |
+| cutadapt      | 4.4      |
+| fastqc        | 0.11.9   |
+| hisat         | 2.2.2.1  |
+| java          | 18.0.1.1 |
+| multiqc       | 1.9      |
+| parallel      | 20231122 |
+| perl          | 5.34     |
+| picard        | 2.27.3   |
+| python        | 2.7      |
+| python        | 3.8      |
+| sambamba      | 0.8.2    |
+| samtools      | 1.16.1   |
+| STAR          | 2.7.6a   |
+| stringtie     | 2.2.1    |
+| ucsc          | 450      |
+| R             | 4.0.5    |
+| novocraft     | 4.03.05  |
 
 ### 4. Usage
 
@@ -155,6 +155,7 @@ Required Arguments:
 
 Optional Arguments:
 
+--singcache|-c  : singularity cache directory. Default is `/data/${USER}/.singularity` if available, or falls back to `${WORKDIR}/.singularity`. Use this flag to specify a different singularity cache directory.
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
 --additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
@@ -219,8 +220,8 @@ This will create the folder provided by `-w=`. The user should have write permis
 
 Test data (1 paired-end subsample and 1 single-end subsample) have been including under the `.tests/dummy_fastqs` folder. After running in `-m=init`, `samples.tsv` should be edited to point the copies of the above mentioned samples with the column headers:
 
-- sampleName	
-- path_to_R1_fastq	
+- sampleName
+- path_to_R1_fastq
 - path_to_R2_fastq
 
 Column `path_to_R2_fastq` will be blank in case of single-end samples.
@@ -234,6 +235,7 @@ bash <path to charlie> -w=<path to output dir> -m=dryrun
 This will create the reference fasta and gtf file based on the selections made in the `config.yaml`.
 
 #### Run
+
 If `-m=dryrun` was sucessful, then simply do `-m=run`. The output will look something like this
 
 ```
@@ -307,5 +309,5 @@ Expected output from the sample data is stored under `.tests/expected_output`.
 More details about running test data can be found [here](https://ccbr.github.io/CHARLIE/tutorial).
 
 > DISCLAIMER:
-> 
+>
 > CHARLIE is built to be run only on [BIOWULF](https://hpc.nih.gov). A newer HPC-agnostic version of CHARLIE is planned for 2024.

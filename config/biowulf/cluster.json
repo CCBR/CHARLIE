@@ -5,9 +5,9 @@
         "partition": "ccr,norm",
         "threads": "2",
         "time": "4:00:00",
-        "name"      : "{rule}.{wildcards}",
-        "output"    : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.out",
-        "error"     : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.err"
+        "name": "{rule}.{wildcards}",
+        "output": "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.out",
+        "error": "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.err"
     },
     "cutadapt": {
         "mem": "120g",
@@ -22,12 +22,12 @@
     "find_circ_align": {
         "mem": "120g",
         "threads": "56",
-        "time": "6:00:00"        
+        "time": "6:00:00"
     },
     "find_circ": {
         "mem": "120g",
         "threads": "56",
-        "time": "6:00:00"        
+        "time": "6:00:00"
     },
     "mapsplice": {
         "mem": "200g",
@@ -80,7 +80,7 @@
     "star_circrnafinder": {
         "mem": "200g",
         "threads": "56",
-        "time": "6:00:00"        
+        "time": "6:00:00"
     },
     "estimate_duplication": {
         "mem": "200g",
@@ -92,7 +92,7 @@
         "threads": "4",
         "time": "4:00:00"
     },
-    "create_circExplorer_linear_spliced_bams":{
+    "create_circExplorer_linear_spliced_bams": {
         "mem": "120g",
         "threads": "56",
         "time": "8:00:00"
@@ -102,11 +102,11 @@
     },
     "split_splice_reads_BAM_create_BW": {
         "mem": "120g",
-        "time": "24:00:00"        
+        "time": "24:00:00"
     },
     "split_linear_reads_BAM_create_BW": {
         "mem": "120g",
-        "time": "24:00:00"        
+        "time": "24:00:00"
     },
     "alignment_stats": {
         "time": "1:00:00"

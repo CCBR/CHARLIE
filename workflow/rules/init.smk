@@ -17,7 +17,7 @@ def check_existence(filename):
     """
     filename = filename.strip()
     if not os.path.exists(filename):
-        sys.exit("File: {} does not exists!".format(filename))
+        raise FileNotFoundError(f"File: {filename} does not exist")
     return True
 
 
@@ -28,10 +28,8 @@ def check_readaccess(filename):
     filename = filename.strip()
     check_existence(filename)
     if not os.access(filename, os.R_OK):
-        sys.exit(
-            "File: {} exists, but user cannot read from file due to permissions!".format(
-                filename
-            )
+        raise PermissionError(
+            f"File: {filename} exists, but user cannot read from file due to permissions"
         )
     return True
 
@@ -43,10 +41,8 @@ def check_writeaccess(filename):
     filename = filename.strip()
     check_existence(filename)
     if not os.access(filename, os.W_OK):
-        sys.exit(
-            "File: {} exists, but user cannot write to file due to permissions!".format(
-                filename
-            )
+        raise PermissionError(
+            f"File: {filename} exists, but user cannot write to file due to permissions!"
         )
     return True
 
@@ -88,8 +84,12 @@ def _convert_to_int(variable):
     return -1  # Unknown
 
 
-# resouce absolute path
+# resource absolute path
 WORKDIR = config["workdir"]
+TEMPDIR = config["tempdir"]
+if not os.access(TEMPDIR, os.W_OK):
+    raise PermissionError(f"TEMPDIR {TEMPDIR} cannot be written to.\n\tHint: does the path exist and do you have write permissions?")
+
 SCRIPTS_DIR = config["scriptsdir"]
 RESOURCES_DIR = config["resourcesdir"]
 FASTAS_GTFS_DIR = config["fastas_gtfs_dir"]
@@ -108,9 +108,9 @@ N_RUN_FINDCIRC = _convert_to_int(RUN_FINDCIRC)
 MAPSPLICE_MIN_MAP_LEN = config["mapsplice_min_map_len"]
 MAPSPLICE_FILTERING = config["mapsplice_filtering"]
 FLANKSIZE = config['flanksize']
-FIND_CIRC_DIR = config['find_circ_dir']
 HQCC=config["high_confidence_core_callers"].replace(" ","")
 CALLERS=["circExplorer","ciri","circExplorer_bwa"]
+
 # if RUN_CLEAR: CALLERS.append("clear")
 if RUN_DCC: CALLERS.append("dcc")
 if RUN_MAPSPLICE: CALLERS.append("mapsplice")
@@ -122,7 +122,7 @@ HQCC=HQCC.split(",")
 HQCC=list(map(lambda x:x.lower(),HQCC))
 for caller in HQCC:
     if not caller in CALLERS:
-        sys.exit("Caller: {} will not be running but included in high_confidence_core_callers!".format(caller))
+        raise ValueError(f"Caller: {caller} will not be running but included in high_confidence_core_callers. Please edit config.yaml")
 REF_DIR = join(WORKDIR, "ref")
 if not os.path.exists(REF_DIR):
     os.mkdir(REF_DIR)
@@ -156,7 +156,7 @@ if VIRUSES != "":
 else:
     HOST_VIRUSES = HOST
     HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES
-    
+
 REPEATS_GTF = join(FASTAS_GTFS_DIR, HOST + ".repeats.gtf")
 
 HOST_ADDITIVES_VIRUSES = HOST_ADDITIVES_VIRUSES.split(",")
@@ -182,7 +182,7 @@ if not os.path.exists(join(WORKDIR, "fastqs")):
 if not os.path.exists(join(WORKDIR, "results")):
     os.mkdir(join(WORKDIR, "results"))
 
-REQUIRED_FILES = [config[f] for f in ["samples", "tools", "cluster"]]
+REQUIRED_FILES = [config[f] for f in ["samples", "cluster"]]
 REQUIRED_FILES.append(ANNOTATION_LOOKUP)
 REQUIRED_FILES.extend(FASTAS)
 REQUIRED_FILES.extend(REGIONS)
@@ -230,12 +230,6 @@ for sample in SAMPLES:
         SAMPLESDF.loc[[sample], "R2"] = R2filenewname
     else:
         SAMPLESDF.loc[[sample], "PEorSE"] = "SE"
-# print(SAMPLESDF)
-# sys.exit()
-
-## Load tools from YAML file
-with open(config["tools"]) as f:
-    TOOLS = yaml.safe_load(f)
 
 ## Load cluster.json
 with open(config["cluster"]) as json_file:

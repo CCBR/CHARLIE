@@ -128,6 +128,7 @@ Required Arguments:
 
 Optional Arguments:
 
+--singcache|-c  : singularity cache directory. Default is `/data/${USER}/.singularity` if available, or falls back to `${WORKDIR}/.singularity`. Use this flag to specify a different singularity cache directory.
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
 --additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
@@ -174,6 +175,7 @@ The above command creates `<path to output dir>` folder and creates 2 subfolders
 This file is used to fine tune the execution of the pipeline by setting:
 
 * sample sheet location ... aka `samples.tsv`
+* the temporary directory -- make sure this is correct for your computing environment.
 * which circRNA finding tools to use by editing these:
     * run_clear: True
     * run_dcc: True

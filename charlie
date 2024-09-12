@@ -5,7 +5,7 @@
 # CHARLIE
 
 set -eo pipefail
-module purge
+## TODO module statements can only run on biowulf
 
 # decide trigger
 trigger="mtime"
@@ -21,6 +21,16 @@ function get_git_commitid_tag() {
   gid=$(git rev-parse HEAD)
   tag=$(git describe --tags $gid)
   echo -ne "$gid\t$tag"
+}
+
+# determine if the platform is biowulf, FRCE, or something else and use modules accordingly
+function get_platform() {
+  if command -v scontrol &> /dev/null ; then
+    platform=$(scontrol show config | grep ClusterName | sed 's/.*= //')
+  else
+    platform=unknown
+  fi
+  echo $platform
 }
 
 ##########################################################################################
@@ -40,15 +50,35 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 # Some more set up
 ##########################################################################################
 
+PYTHONVERSION="3"
+SNAKEMAKEVERSION="7"
 CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
-# if [ "$HOSTNAME" == "biowulf.nih.gov" ];then
-# if [ "$SLURM_CLUSTER_NAME" == "biowulf" ];then
+PARTITION='norm'
+CONDA_ACTIVATE=''
+PATH_PREPEND=''
+MODULE_LOAD=''
+PLATFORM=$(get_platform)
+if [ "$PLATFORM" == "biowulf" ]; then
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
-# fi
-PYTHONVERSION="3.7"
-SNAKEMAKEVERSION="7.19.1"
-# SNAKEMAKEVERSION="5.24.1"
+  PARTITION="ccr,$PARTITION"
+  CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
+  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $CONDA_ACTIVATE"
+elif [ "$PLATFORM" == "fnlcr" ]; then
+  EXTRA_SINGULARITY_BINDS="/scratch/local"
+  # activate conda env
+  CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
+  # make sure spooker is in the path
+  PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
+  MODULE_LOAD="module load singularity; $PATH_PREPEND; $CONDA_ACTIVATE"
+else
+  EXTRA_SINGULARITY_BINDS=""
+  echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
+        config.yaml
+        cluster.json
+        submit_script.sbatch
+    """
+fi
 
 # set defaults
 HOST="hg38"
@@ -70,12 +100,12 @@ function usage() { cat << EOF
 ##########################################################################################
 
 Welcome to charlie(v0.10.1)
- _______  __   __  _______  ______    ___      ___   _______ 
+ _______  __   __  _______  ______    ___      ___   _______
 |       ||  | |  ||   _   ||    _ |  |   |    |   | |       |
 |       ||  |_|  ||  |_|  ||   | ||  |   |    |   | |    ___|
-|       ||       ||       ||   |_||_ |   |    |   | |   |___ 
+|       ||       ||       ||   |_||_ |   |    |   | |   |___
 |      _||       ||       ||    __  ||   |___ |   | |    ___|
-|     |_ |   _   ||   _   ||   |  | ||       ||   | |   |___ 
+|     |_ |   _   ||   _   ||   |  | ||       ||   | |   |___
 |_______||__| |__||__| |__||___|  |_||_______||___| |_______|
 
 C_ircrnas in H_ost A_nd vi_R_uses ana_L_ysis p_I_p_E_line
@@ -143,15 +173,15 @@ Optional Arguments:
 
 
 Example commands:
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=init
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=dryrun
-  bash ${SCRIPTNAME} -w=/my/ouput/folder -m=run
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=init
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=dryrun
+  bash ${SCRIPTNAME} -w=/my/output/folder -m=run
 
 ##########################################################################################
 
-VersionInfo: 
-  python          : $PYTHONVERSION 
-  snakemake       : $SNAKEMAKEVERSION 
+VersionInfo:
+  python          : $PYTHONVERSION
+  snakemake       : $SNAKEMAKEVERSION
   pipeline_home   : $PIPELINE_HOME
   git commit/tag  : $GIT_COMMIT_TAG
 
@@ -190,13 +220,13 @@ sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
     -e "s/HOST/${HOST}/g" \
     -e "s/ADDITIVES/${ADDITIVES}/g" \
     -e "s/VIRUSES/${VIRUSES}/g" \
-    ${PIPELINE_HOME}/config/config.yaml > $CONFIGFILE
+    ${PIPELINE_HOME}/config/$PLATFORM/config.yaml > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 fi
 if [ ! -f $CLUSTERFILE ];then
-cp ${PIPELINE_HOME}/resources/cluster.json $CLUSTERFILE
+cp ${PIPELINE_HOME}/config/$PLATFORM/cluster.json $CLUSTERFILE
 fi
 if [ ! -f $WORKDIR/samples.tsv ];then
 cp $MANIFEST $WORKDIR/samples.tsv
@@ -267,14 +297,27 @@ function reconfig(){
   echo "$WORKDIR/config.yaml has been updated!"
 }
 
+
+# check whether required dependencies are in the path
+function check_deps() {
+  for dep in python snakemake singularity; do
+    command -v $dep &> /dev/null || err "$dep not found in PATH"
+  done
+}
+
+# load modules if available, or check whether they're in the path
+function load_modules() {
+  eval $MODULE_LOAD
+  check_deps
+}
+
 ##########################################################################################
 # RUNCHECK ... check essential files and load required packages
 ##########################################################################################
 
 function runcheck(){
   check_essential_files
-  module load python/$PYTHONVERSION
-  module load snakemake/$SNAKEMAKEVERSION
+  load_modules
 }
 
 ##########################################################################################
@@ -305,7 +348,7 @@ function touch() {
 
 function unlock() {
   runcheck
-  run "--unlock"  
+  run "--unlock"
 }
 
 ##########################################################################################
@@ -313,8 +356,8 @@ function unlock() {
 ##########################################################################################
 
 function set_singularity_binds(){
-# this functions tries find what folders to bind
-# biowulf specific
+  # this functions tries find what folders to bind
+  # TODO parse config file with pyyaml to determine singularity bind paths
   echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
   echo "$WORKDIR" >> ${WORKDIR}/tmp1
   grep -o '\/.*' <(cat ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)|dos2unix|tr '\t' '\n'|grep -v ' \|\/\/'|sort|uniq >> ${WORKDIR}/tmp1
@@ -344,7 +387,6 @@ function runlocal() {
   runcheck
   set_singularity_binds
   if [ "$SLURM_JOB_ID" == "" ];then err "runlocal can only be done on an interactive node"; exit 1; fi
-  module load singularity
   run "local"
 }
 
@@ -373,10 +415,10 @@ function create_runinfo {
   echo "Pipeline Dir: $PIPELINE_HOME" > ${WORKDIR}/runinfo.yaml
   echo "Git Commit/Tag: $GIT_COMMIT_TAG" >> ${WORKDIR}/runinfo.yaml
   userlogin=$(whoami)
-  if [[ `which finger 2>/dev/null` ]];then 
-	  username=$(finger $userlogin |grep ^Login | awk -F"Name: " '{print $2}'); 
-  elif [[ `which lslogins 2>/dev/null` ]];then 
-	  username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}'); 
+  if [[ `which finger 2>/dev/null` ]];then
+	  username=$(finger $userlogin |grep ^Login | awk -F"Name: " '{print $2}');
+  elif [[ `which lslogins 2>/dev/null` ]];then
+	  username=$(lslogins -u $userlogin | grep ^Geco | awk -F": " '{print $2}' | awk '{$1=$1;print}');
   else username="";fi
   echo "Login: $userlogin" >> ${WORKDIR}/runinfo.yaml
   echo "Name: $username" >> ${WORKDIR}/runinfo.yaml
@@ -394,21 +436,21 @@ function preruncleanup() {
   echo "Running..."
 
   # check initialization
-  check_essential_files 
+  check_essential_files
 
   cd $WORKDIR
   modtime=""
   ## Archive previous run files
-  if [ -f ${WORKDIR}/snakemake.log ];then 
+  if [ -f ${WORKDIR}/snakemake.log ];then
     modtime=$(stat ${WORKDIR}/snakemake.log |grep Modify|awk '{print $2,$3}'|awk -F"." '{print $1}'|sed "s/ //g"|sed "s/-//g"|sed "s/://g")
     mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.${modtime}.log
-    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then 
+    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then
       mv ${WORKDIR}/snakemake.log.HPC_summary.txt ${WORKDIR}/stats/snakemake.${modtime}.log.HPC_summary.txt
     fi
-    if [ -f ${WORKDIR}/snakemake.stats ];then 
+    if [ -f ${WORKDIR}/snakemake.stats ];then
       mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
     fi
-    if [ -f ${WORKDIR}/snakemake.log.jobinfo ];then 
+    if [ -f ${WORKDIR}/snakemake.log.jobinfo ];then
       mv ${WORKDIR}/snakemake.log.jobinfo ${WORKDIR}/stats/snakemake.${modtime}.log.jobinfo
     fi
   fi
@@ -433,104 +475,106 @@ function run() {
 
   if [ "$1" == "local" ];then
 
-  preruncleanup
+    preruncleanup
 
-  snakemake -s $SNAKEFILE\
-  --directory $WORKDIR \
-  --printshellcmds \
-  --use-singularity \
-  --singularity-args "$SINGULARITY_BINDS" \
-  --use-envmodules \
-  --latency-wait 120 \
-  --configfile $CONFIGFILE \
-  --cores all \
-  --rerun-incomplete \
-  --rerun-triggers $trigger \
-  --retries 2 \
-  --keep-going \
-  --stats ${WORKDIR}/snakemake.stats \
-  2>&1|tee ${WORKDIR}/snakemake.log
+    $EXPORT_SING_CACHE_DIR_CMD
 
-  if [ "$?" -eq "0" ];then
-    snakemake -s $SNAKEFILE \
-    --report ${WORKDIR}/runlocal_snakemake_report.html \
+    snakemake -s $SNAKEFILE\
     --directory $WORKDIR \
-    --configfile $CONFIGFILE
-  fi
+    --printshellcmds \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --use-envmodules \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cores all \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --retries 2 \
+    --keep-going \
+    --stats ${WORKDIR}/snakemake.stats \
+    2>&1|tee ${WORKDIR}/snakemake.log
+
+    if [ "$?" -eq "0" ];then
+        snakemake -s $SNAKEFILE \
+        --report ${WORKDIR}/runlocal_snakemake_report.html \
+        --directory $WORKDIR \
+        --configfile $CONFIGFILE
+    fi
 
   elif [ "$1" == "slurm" ];then
-  
-  preruncleanup
 
-  cat > ${WORKDIR}/submit_script.sbatch << EOF
+    preruncleanup
+
+    cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
 #SBATCH --job-name="charlie"
 #SBATCH --mem=40g
-#SBATCH --partition="ccr,norm"
+#SBATCH --partition="$PARTITION"
 #SBATCH --time=48:00:00
 #SBATCH --cpus-per-task=2
 
-module load python/$PYTHONVERSION
-module load snakemake/$SNAKEMAKEVERSION
-module load singularity
-
 cd \$SLURM_SUBMIT_DIR
+$MODULE_LOAD
+$EXPORT_SING_CACHE_DIR_CMD
 
 snakemake -s $SNAKEFILE \
---directory $WORKDIR \
---use-singularity \
---singularity-args "$SINGULARITY_BINDS" \
---use-envmodules \
---printshellcmds \
---latency-wait 120 \
---configfile $CONFIGFILE \
---cluster-config $CLUSTERFILE \
---cluster "$CLUSTER_SBATCH_CMD" \
---cluster-status $CLUSTERSTATUSCMD \
--j 500 \
---rerun-incomplete \
---rerun-triggers $trigger \
---retries 2 \
---keep-going \
---stats ${WORKDIR}/snakemake.stats \
-2>&1|tee ${WORKDIR}/snakemake.log
+    --directory $WORKDIR \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --use-envmodules \
+    --printshellcmds \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cluster-config $CLUSTERFILE \
+    --cluster "$CLUSTER_SBATCH_CMD" \
+    --cluster-status $CLUSTERSTATUSCMD \
+    -j 500 \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --retries 2 \
+    --keep-going \
+    --stats ${WORKDIR}/snakemake.stats \
+    2>&1 | tee ${WORKDIR}/snakemake.log
 
 if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \
   --directory $WORKDIR \
   --report ${WORKDIR}/runslurm_snakemake_report.html \
-  --configfile $CONFIGFILE 
+  --configfile $CONFIGFILE
 fi
 
 EOF
 
-  sbatch ${WORKDIR}/submit_script.sbatch
+    sbatch ${WORKDIR}/submit_script.sbatch
 
   elif [ "$1" == "--touch" ];then
 
-snakemake $1 -s $SNAKEFILE \
---directory $WORKDIR \
---configfile $CONFIGFILE \
---cores 1
+    snakemake $1 -s $SNAKEFILE \
+    --directory $WORKDIR \
+    --configfile $CONFIGFILE \
+    --cores 1
 
   else # dry-run and unlock
 
-echo $CLUSTER_SBATCH_CMD
+    echo $CLUSTER_SBATCH_CMD
 
-snakemake $1 -s $SNAKEFILE \
---directory $WORKDIR \
---use-envmodules \
---printshellcmds \
---latency-wait 120 \
---configfile $CONFIGFILE \
---cluster-config $CLUSTERFILE \
---cluster "$CLUSTER_SBATCH_CMD" \
--j 500 \
---rerun-incomplete \
---rerun-triggers $trigger \
---keep-going \
---reason \
---stats ${WORKDIR}/snakemake.stats
+    snakemake $1 -s $SNAKEFILE \
+    --directory $WORKDIR \
+    --use-envmodules \
+    --use-singularity \
+    --singularity-args "$SINGULARITY_BINDS" \
+    --printshellcmds \
+    --latency-wait 120 \
+    --configfile $CONFIGFILE \
+    --cluster-config $CLUSTERFILE \
+    --cluster "$CLUSTER_SBATCH_CMD" \
+    -j 500 \
+    --rerun-incomplete \
+    --rerun-triggers $trigger \
+    --keep-going \
+    --reason \
+    --stats ${WORKDIR}/snakemake.stats
 
   fi
 
@@ -571,6 +615,9 @@ function main(){
       -w=*|--workdir=*)
         WORKDIR="${i#*=}"
       ;;
+      -c=*|--singcache=*)
+        SING_CACHE_DIR="${i#*=}"
+      ;;
       -z|--changegrp)
         CHANGEGRP=1
       ;;
@@ -582,11 +629,11 @@ function main(){
       ;;
       -v=*|--viruses=*)
         VIRUSES="${i#*=}"
-      ;;      
+      ;;
       -s=*|--manifest=*)
         MANIFEST="${i#*=}"
         if [ ! -f $MANIFEST ];then err "File $MANIFEST does NOT exist!";fi
-      ;;      
+      ;;
       -h|--help)
         usage && exit 0;
       ;;
@@ -597,6 +644,17 @@ function main(){
   done
   WORKDIR=$(readlink -f "$WORKDIR")
   echo "Working Dir: $WORKDIR"
+
+  if [[ -z "$SING_CACHE_DIR" ]]; then
+    if [[ -d "/data/$USER" ]]; then
+      SING_CACHE_DIR="/data/$USER/.singularity"
+    else
+      SING_CACHE_DIR="${WORKDIR}/.singularity"
+    fi
+    echo "singularity cache dir (--singcache) is not set, using ${SING_CACHE_DIR}"
+  fi
+  mkdir -p $SING_CACHE_DIR
+  EXPORT_SING_CACHE_DIR_CMD="export SINGULARITY_CACHEDIR=\"${SING_CACHE_DIR}\""
 
   # required files
   CONFIGFILE="${WORKDIR}/config.yaml"
@@ -628,8 +686,3 @@ function main(){
 ##########################################################################################
 
 main "$@"
-
-
-
-
-

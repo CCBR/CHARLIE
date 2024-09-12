@@ -22,3 +22,5 @@ resources/mouse_mm9_circRNAs_putative_spliced_sequence.fa.gz
 workflow/scripts/copy_strand_info.py
 .tests/lint_workdir
 **/tmp*
+**__pycache__/**
+*.pyc
