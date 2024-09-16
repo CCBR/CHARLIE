@@ -9,6 +9,7 @@
 [![PRs](https://img.shields.io/github/issues-pr/CCBR/CHARLIE)](https://github.com/CCBR/CHARLIE/pulls)
 ![forks](https://img.shields.io/github/forks/CCBR/CHARLIE)
 ![stars](https://img.shields.io/github/stars/CCBR/CHARLIE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13770166.svg)](https://doi.org/10.5281/zenodo.13770166)
 
 See the website for detailed information, documentation, and examples:
 <https://ccbr.github.io/CHARLIE/>

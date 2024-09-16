@@ -21,6 +21,6 @@ type: software
 identifiers:
   - description: Archived snapshots of all versions
     type: doi
-    value: 10.5281/zenodo.10516079
+    value: 10.5281/zenodo.13770166
 version: v0.11.0
 date-released: "2024-09-16"
