@@ -5,6 +5,7 @@
   - Default config and cluster config files are provided for use on biowulf and FRCE.
   - New entry `TEMPDIR` in the config file sets the temporary directory location for rules that require transient storage.
   - New `--singcache` argument to provide a singularity cache dir location. The singularity cache dir is automatically set inside `/data/$USER/` or `$WORKDIR/` if `--singcache` is not provided.
+- Minor documentation improvements. (#114, @kelly-sovacool)
 
 ## CHARLIE 0.10.1
 
