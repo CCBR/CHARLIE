@@ -4,7 +4,7 @@ site_author: Vishal Koparde, Ph.D.
 # Repository
 repo_name: CCBR/CHARLIE
 repo_url: https://github.com/CCBR/CHARLIE
-edit_url: https://github.com/CCBR/CHARLIE/edit/main
+edit_uri: https://github.com/CCBR/CHARLIE/edit/main
 
 # Copyright
 copyright: Copyright &copy; 2023 CCR Collaborative Bioinformatics Resource

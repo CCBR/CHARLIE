@@ -1,10 +1,17 @@
 # CHARLIE
 
-![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)
+**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
+
+[![build](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml/badge.svg)](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml)
+[![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/issues)
+[![img](https://img.shields.io/github/issues-pr/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/pulls)
+![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)
+![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)
+[![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/blob/main/LICENSE)
 
 ### Table of Contents
 
-- [CHARLIE - **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line](#charlie)
+- [CHARLIE](#charlie)
   - [Table of Contents](#table-of-contents)
   - [1. Introduction](#1-introduction)
   - [2. Flowchart](#2-flowchart)
@@ -45,11 +52,11 @@ This circularRNA detection pipeline uses CIRCExplorer2, CIRI2 and many other too
 
 ### 2. Flowchart
 
-![](docs/images/CHARLIE_v0.8.x.png)
+![flowchart](https://raw.githubusercontent.com/CCBR/CHARLIE/main/docs/images/CHARLIE_v0.8.x.png)
 
-For complete documentation with tutorial go [here](https://CCBR.github.io/CHARLIE/).
+For complete documentation, view the website <https://CCBR.github.io/CHARLIE/>.
 
-> DISCLAIMER: New circRNA tools have been added CHARLIE and the documentation is currently out of date!
+> ⚠️ DISCLAIMER: New circRNA tools have been added CHARLIE and the documentation is currently out of date!
 
 ### 3. Software Dependencies
 
@@ -165,9 +172,9 @@ Optional Arguments:
 
 
 Example commands:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=init
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=dryrun
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/ouput/folder -m=run
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=init
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=dryrun
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=run
 
 ##########################################################################################
 
@@ -236,7 +243,7 @@ This will create the reference fasta and gtf file based on the selections made i
 
 #### Run
 
-If `-m=dryrun` was sucessful, then simply do `-m=run`. The output will look something like this
+If `-m=dryrun` was successful, then simply do `-m=run`. The output will look something like this
 
 ```
 ... ... skipping ~1000 lines
