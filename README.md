@@ -4,11 +4,11 @@
 
 [![build](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml/badge.svg)](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml)
 [![docs](https://github.com/CCBR/CHARLIE/actions/workflows/docs-mkdocs.yml/badge.svg)](https://ccbr.github.io/CHARLIE)
+[![license](https://img.shields.io/github/license/CCBR/CHARLIE)](https://github.com/CCBR/CHARLIE/blob/main/LICENSE)
 [![issues](https://img.shields.io/github/issues/CCBR/CHARLIE)](https://github.com/CCBR/CHARLIE/issues)
 [![PRs](https://img.shields.io/github/issues-pr/CCBR/CHARLIE)](https://github.com/CCBR/CHARLIE/pulls)
 ![forks](https://img.shields.io/github/forks/CCBR/CHARLIE)
 ![stars](https://img.shields.io/github/stars/CCBR/CHARLIE)
-[![license](https://img.shields.io/github/license/CCBR/CHARLIE)](https://github.com/CCBR/CHARLIE/blob/main/LICENSE)
 
 See the website for detailed information, documentation, and examples:
 <https://ccbr.github.io/CHARLIE/>
