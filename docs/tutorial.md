@@ -1,27 +1,22 @@
-# CHARLIE
-
-![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
-
-### Tutorial
+# Tutorial
 
 #### Prerequisites
 
-* [Biowulf](https://hpc.nih.gov/) account: Biowulf account can be requested [here](https://hpc.nih.gov/docs/accounts.html).
+- [Biowulf](https://hpc.nih.gov/) account: Biowulf account can be requested [here](https://hpc.nih.gov/docs/accounts.html).
 
-* Membership to Ziegelbauer user group on Biowulf. You can check this by typing the following command:
+- Membership to Ziegelbauer user group on Biowulf. You can check this by typing the following command:
 
   ```bash
   % groups
   ```
-  
 
 output:
 
-  ```bash
-  CCBR kopardevn Ziegelbauer_lab
-  ```
+```bash
+CCBR kopardevn Ziegelbauer_lab
+```
 
-  If `Ziegelbauer_lab` is not listed then you can email a request to be added to the groups [here](mailto:staff@hpc.nih.gov)
+If `Ziegelbauer_lab` is not listed then you can email a request to be added to the groups [here](mailto:staff@hpc.nih.gov)
 
 #### Location
 
@@ -153,8 +148,8 @@ VersionInfo:
 ##########################################################################################
 ```
 
->NOTE:
->You can replace `v0.10.0` in the above command with the latest version to use a newer version. `run_circrna_daq.sh` was called `test.sh` in versions older than `v0.4.0`.
+> NOTE:
+> You can replace `v0.10.0` in the above command with the latest version to use a newer version. `run_circrna_daq.sh` was called `test.sh` in versions older than `v0.4.0`.
 
 To initial the working directory run:
 
@@ -174,16 +169,16 @@ The above command creates `<path to output dir>` folder and creates 2 subfolders
 
 This file is used to fine tune the execution of the pipeline by setting:
 
-* sample sheet location ... aka `samples.tsv`
-* the temporary directory -- make sure this is correct for your computing environment.
-* which circRNA finding tools to use by editing these:
-    * run_clear: True
-    * run_dcc: True
-    * run_mapsplice: False
-    * run_circRNAFinder: True
-    * run_nclscan: False
-    * run_findcirc: False
-* describes the location of other resources/indexes/tools etc. Generally, these do NOT need to be changed.
+- sample sheet location ... aka `samples.tsv`
+- the temporary directory -- make sure this is correct for your computing environment.
+- which circRNA finding tools to use by editing these:
+  - run_clear: True
+  - run_dcc: True
+  - run_mapsplice: False
+  - run_circRNAFinder: True
+  - run_nclscan: False
+  - run_findcirc: False
+- describes the location of other resources/indexes/tools etc. Generally, these do NOT need to be changed.
 
 ##### samples.tsv
 
@@ -312,7 +307,7 @@ output:
 ├── logs/snakemake.log.jobby.short
 ├── logs/snakemake.log.jobby.txt
 ├── logs
-│   ... log files ... 
+│   ... log files ...
 │   ... skipping ...
 ├── nclscan.config
 ├── qc
@@ -1005,47 +1000,46 @@ grep FAIL logs/snakemake.log.jobby.short
 
 The above command also gives `.err` and `.out` log files which can give further insights on reasons for failure and changes required to be made for a successful run.
 
-
 #### Expected output:
 
 The main output file is `results/circRNA_master_counts.tsv.gz`. Here are the top 3 tiles from an example output:
 
-| Column_number | Column_title                                   | Example_1  | Example_2  | Example_3  |
-| ------------- | ---------------------------------------------- | ---------- | ---------- | ---------- |
-| 1             | chrom                                          | GL000220.1 | GL000220.1 | GL000220.1 |
-| 2             | start                                          | 107635     | 112482     | 118578     |
-| 3             | end                                            | 151634     | 156427     | 118759     |
-| 4             | circExplorer_strand                            | \-1        | \-1        | \-1        |
-| 5             | circExplorer_bwa_strand                        | .          | .          | .          |
-| 6             | ciri_strand                                    | \-1        | \-1        | \-1        |
-| 7             | dcc_strand                                     | \-1        | \-1        | \-1        |
-| 8             | circrnafinder_strand                           | \-1        | \-1        | \-1        |
-| 9             | flanking_sites_+                               | CC##GC     | GC##CC     | CC##GC     |
-| 10            | flanking_sites_-                               | GG##GC     | GC##GG     | GG##GC     |
-| 11            | sample_name                                    | GI1_N      | GI1_N      | GI1_N      |
-| 12            | ntools                                         | 1          | 1          | 1          |
-| 13            | HQ                                             | N          | N          | N          |
-| 14            | circExplorer_read_count                        | \-1        | \-1        | \-1        |
-| 15            | circExplorer_found_BSJcounts                   | \-1        | \-1        | \-1        |
-| 16            | circExplorer_found_linear_BSJ_+_counts         | \-1        | \-1        | \-1        |
-| 17            | circExplorer_found_linear_spliced_BSJ_+_counts | \-1        | \-1        | \-1        |
-| 18            | circExplorer_found_linear_BSJ_-_counts         | \-1        | \-1        | \-1        |
-| 19            | circExplorer_found_linear_spliced_BSJ_-_counts | \-1        | \-1        | \-1        |
-| 20            | circExplorer_found_linear_BSJ_._counts         | \-1        | \-1        | \-1        |
-| 21            | circExplorer_found_linear_spliced_BSJ_._counts | \-1        | \-1        | \-1        |
-| 22            | ciri_read_count                                | \-1        | \-1        | \-1        |
-| 23            | ciri_linear_read_count                         | \-1        | \-1        | \-1        |
-| 24            | circExplorer_bwa_read_count                    | 3          | 7          | 3          |
-| 25            | dcc_read_count                                 | \-1        | \-1        | \-1        |
-| 26            | dcc_linear_read_count                          | \-1        | \-1        | \-1        |
-| 27            | circrnafinder_read_count                       | \-1        | \-1        | \-1        |
-| 28            | hqcounts                                       | 1          | 1          | 1          |
-| 29            | nonhqcounts                                    | 0          | 0          | 0          |
-| 30            | circExplorer_annotation                        | Unknown    | Unknown    | Unknown    |
-| 31            | ciri_annotation                                | Unknown    | Unknown    | Unknown    |
-| 32            | circExplorer_bwa_annotation                    | novel      | novel      | novel      |
-| 33            | dcc_gene                                       | Unknown    | Unknown    | Unknown    |
-| 34            | dcc_junction_type                              | Unknown    | Unknown    | Unknown    |
-| 35            | dcc_annotation                                 | Unknown    | Unknown    | Unknown    |
+| Column_number | Column_title                                    | Example_1  | Example_2  | Example_3  |
+| ------------- | ----------------------------------------------- | ---------- | ---------- | ---------- |
+| 1             | chrom                                           | GL000220.1 | GL000220.1 | GL000220.1 |
+| 2             | start                                           | 107635     | 112482     | 118578     |
+| 3             | end                                             | 151634     | 156427     | 118759     |
+| 4             | circExplorer_strand                             | \-1        | \-1        | \-1        |
+| 5             | circExplorer_bwa_strand                         | .          | .          | .          |
+| 6             | ciri_strand                                     | \-1        | \-1        | \-1        |
+| 7             | dcc_strand                                      | \-1        | \-1        | \-1        |
+| 8             | circrnafinder_strand                            | \-1        | \-1        | \-1        |
+| 9             | flanking*sites*+                                | CC##GC     | GC##CC     | CC##GC     |
+| 10            | flanking*sites*-                                | GG##GC     | GC##GG     | GG##GC     |
+| 11            | sample_name                                     | GI1_N      | GI1_N      | GI1_N      |
+| 12            | ntools                                          | 1          | 1          | 1          |
+| 13            | HQ                                              | N          | N          | N          |
+| 14            | circExplorer_read_count                         | \-1        | \-1        | \-1        |
+| 15            | circExplorer_found_BSJcounts                    | \-1        | \-1        | \-1        |
+| 16            | circExplorer*found_linear_BSJ*+\_counts         | \-1        | \-1        | \-1        |
+| 17            | circExplorer*found_linear_spliced_BSJ*+\_counts | \-1        | \-1        | \-1        |
+| 18            | circExplorer*found_linear_BSJ*-\_counts         | \-1        | \-1        | \-1        |
+| 19            | circExplorer*found_linear_spliced_BSJ*-\_counts | \-1        | \-1        | \-1        |
+| 20            | circExplorer*found_linear_BSJ*.\_counts         | \-1        | \-1        | \-1        |
+| 21            | circExplorer*found_linear_spliced_BSJ*.\_counts | \-1        | \-1        | \-1        |
+| 22            | ciri_read_count                                 | \-1        | \-1        | \-1        |
+| 23            | ciri_linear_read_count                          | \-1        | \-1        | \-1        |
+| 24            | circExplorer_bwa_read_count                     | 3          | 7          | 3          |
+| 25            | dcc_read_count                                  | \-1        | \-1        | \-1        |
+| 26            | dcc_linear_read_count                           | \-1        | \-1        | \-1        |
+| 27            | circrnafinder_read_count                        | \-1        | \-1        | \-1        |
+| 28            | hqcounts                                        | 1          | 1          | 1          |
+| 29            | nonhqcounts                                     | 0          | 0          | 0          |
+| 30            | circExplorer_annotation                         | Unknown    | Unknown    | Unknown    |
+| 31            | ciri_annotation                                 | Unknown    | Unknown    | Unknown    |
+| 32            | circExplorer_bwa_annotation                     | novel      | novel      | novel      |
+| 33            | dcc_gene                                        | Unknown    | Unknown    | Unknown    |
+| 34            | dcc_junction_type                               | Unknown    | Unknown    | Unknown    |
+| 35            | dcc_annotation                                  | Unknown    | Unknown    | Unknown    |
 
 Expected output from the sample data is stored under `.tests/expected_output`.

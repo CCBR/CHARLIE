@@ -1,12 +1,10 @@
-## CHARLIE
-
-![img](https://img.shields.io/github/issues/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/forks/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/stars/kopardev/circRNA?style=for-the-badge)![img](https://img.shields.io/github/license/kopardev/circRNA?style=for-the-badge)
+## References
 
 The reference sequences comprises of the host genome and the viral genomes.
 
 ### Fasta
 
-*hg38* and *mm39* genome builds are chosen to represent hosts. Ribosomal sequences (*45S, 5S*) are downloaded from NCBI. *hg38* and *mm39* were masked for rRNA sequence and *45S* and *5S* sequences from NCBI are appended as separate chromosomes. The following viral sequences were appended to the rRNA masked *hg38* reference:
+_hg38_ and _mm39_ genome builds are chosen to represent hosts. Ribosomal sequences (_45S, 5S_) are downloaded from NCBI. _hg38_ and _mm39_ were masked for rRNA sequence and _45S_ and _5S_ sequences from NCBI are appended as separate chromosomes. The following viral sequences were appended to the rRNA masked _hg38_ reference:
 
 ```bash
 HOSTS:
@@ -31,6 +29,6 @@ VIRUSES:
   * MH636806.1    [MHV68 (Murine herpesvirus 68 strain WUMS)]
 ```
 
-Location: The entire resource bundle is available at `/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs` on BIOWULF. This location also have additional bash scritpts required for aggregating annotations and building indices required by different aligners. 
+Location: The entire resource bundle is available at `/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs` on BIOWULF. This location also have additional bash scritpts required for aggregating annotations and building indices required by different aligners.
 
-When `-m=dryrun` is run for the first time after initialization (`-m=init`), the appropriate host+additives+viruses fasta and gtf files are created on the fly, which are then used to build aligner reference indexes automatically. 
+When `-m=dryrun` is run for the first time after initialization (`-m=init`), the appropriate host+additives+viruses fasta and gtf files are created on the fly, which are then used to build aligner reference indexes automatically.
