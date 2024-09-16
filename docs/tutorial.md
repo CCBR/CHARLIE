@@ -133,9 +133,9 @@ Optional Arguments:
 
 
 Example commands:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/ouput/folder -m=init
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/ouput/folder -m=dryrun
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/ouput/folder -m=run
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=init
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=dryrun
+  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=run
 
 ##########################################################################################
 

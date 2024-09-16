@@ -29,6 +29,6 @@ VIRUSES:
   * MH636806.1    [MHV68 (Murine herpesvirus 68 strain WUMS)]
 ```
 
-Location: The entire resource bundle is available at `/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs` on BIOWULF. This location also have additional bash scritpts required for aggregating annotations and building indices required by different aligners.
+Location: The entire resource bundle is available at `/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs` on BIOWULF. This location also have additional bash scripts required for aggregating annotations and building indices required by different aligners.
 
 When `-m=dryrun` is run for the first time after initialization (`-m=init`), the appropriate host+additives+viruses fasta and gtf files are created on the fly, which are then used to build aligner reference indexes automatically.
