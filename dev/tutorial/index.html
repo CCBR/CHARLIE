@@ -1,0 +1,859 @@
+<!doctype html><html lang=en class=no-js> <head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Vishal Koparde, Ph.D."><link href=../flowchart/ rel=prev><link href=../references/ rel=next><link rel=icon href=../assets/images/favicon.png><meta name=generator content="mkdocs-1.5.3, mkdocs-material-9.1.6"><title>Tutorial - CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)</title><link rel=stylesheet href=../assets/stylesheets/main.ded33207.min.css><link rel=stylesheet href=../assets/stylesheets/palette.a0c5b2b5.min.css><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback"><style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style><script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script></head> <body dir=ltr data-md-color-scheme=default data-md-color-primary=indigo data-md-color-accent=indigo> <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script> <input class=md-toggle data-md-toggle=drawer type=checkbox id=__drawer autocomplete=off> <input class=md-toggle data-md-toggle=search type=checkbox id=__search autocomplete=off> <label class=md-overlay for=__drawer></label> <div data-md-component=skip> <a href=#tutorial class=md-skip> Skip to content </a> </div> <div data-md-component=announce> </div> <div data-md-color-scheme=default data-md-component=outdated hidden> </div> <header class=md-header data-md-component=header> <nav class="md-header__inner md-grid" aria-label=Header> <a href=.. title="CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)" class="md-header__button md-logo" aria-label="CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)" data-md-component=logo> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg> </a> <label class="md-header__button md-icon" for=__drawer> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg> </label> <div class=md-header__title data-md-component=header-title> <div class=md-header__ellipsis> <div class=md-header__topic> <span class=md-ellipsis> CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline) </span> </div> <div class=md-header__topic data-md-component=header-topic> <span class=md-ellipsis> Tutorial </span> </div> </div> </div> <form class=md-header__option data-md-component=palette> <input class=md-option data-md-color-media data-md-color-scheme=default data-md-color-primary=indigo data-md-color-accent=indigo aria-label="Switch to dark mode" type=radio name=__palette id=__palette_1> <label class="md-header__button md-icon" title="Switch to dark mode" for=__palette_2 hidden> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> </label> <input class=md-option data-md-color-media data-md-color-scheme=slate data-md-color-primary=red data-md-color-accent=red aria-label="Switch to light mode" type=radio name=__palette id=__palette_2> <label class="md-header__button md-icon" title="Switch to light mode" for=__palette_1 hidden> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg> </label> </form> <label class="md-header__button md-icon" for=__search> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg> </label> <div class=md-search data-md-component=search role=dialog> <label class=md-search__overlay for=__search></label> <div class=md-search__inner role=search> <form class=md-search__form name=search> <input type=text class=md-search__input name=query aria-label=Search placeholder=Search autocapitalize=off autocorrect=off autocomplete=off spellcheck=false data-md-component=search-query required> <label class="md-search__icon md-icon" for=__search> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg> </label> <nav class=md-search__options aria-label=Search> <button type=reset class="md-search__icon md-icon" title=Clear aria-label=Clear tabindex=-1> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg> </button> </nav> </form> <div class=md-search__output> <div class=md-search__scrollwrap data-md-scrollfix> <div class=md-search-result data-md-component=search-result> <div class=md-search-result__meta> Initializing search </div> <ol class=md-search-result__list role=presentation></ol> </div> </div> </div> </div> </div> <div class=md-header__source> <a href=https://github.com/CCBR/CHARLIE title="Go to repository" class=md-source data-md-component=source> <div class="md-source__icon md-icon"> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 448 512"><!-- Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg> </div> <div class=md-source__repository> CCBR/CHARLIE </div> </a> </div> </nav> </header> <div class=md-container data-md-component=container> <nav class=md-tabs aria-label=Tabs data-md-component=tabs> <div class=md-grid> <ul class=md-tabs__list> <li class=md-tabs__item> <a href=.. class=md-tabs__link> Home </a> </li> <li class=md-tabs__item> <a href=../flowchart/ class=md-tabs__link> Workflow </a> </li> <li class=md-tabs__item> <a href=./ class="md-tabs__link md-tabs__link--active"> Tutorial </a> </li> <li class=md-tabs__item> <a href=../references/ class=md-tabs__link> References </a> </li> <li class=md-tabs__item> <a href=../CHANGELOG/ class=md-tabs__link> Changelog </a> </li> <li class=md-tabs__item> <a href=../contributing/ class=md-tabs__link> How to contribute </a> </li> </ul> </div> </nav> <main class=md-main data-md-component=main> <div class="md-main__inner md-grid"> <div class="md-sidebar md-sidebar--primary" data-md-component=sidebar data-md-type=navigation> <div class=md-sidebar__scrollwrap> <div class=md-sidebar__inner> <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label=Navigation data-md-level=0> <label class=md-nav__title for=__drawer> <a href=.. title="CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)" class="md-nav__button md-logo" aria-label="CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline)" data-md-component=logo> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg> </a> CHARLIE (Circrnas in Host And viRuses anaLysis pIpEline) </label> <div class=md-nav__source> <a href=https://github.com/CCBR/CHARLIE title="Go to repository" class=md-source data-md-component=source> <div class="md-source__icon md-icon"> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 448 512"><!-- Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg> </div> <div class=md-source__repository> CCBR/CHARLIE </div> </a> </div> <ul class=md-nav__list data-md-scrollfix> <li class=md-nav__item> <a href=.. class=md-nav__link> Home </a> </li> <li class=md-nav__item> <a href=../flowchart/ class=md-nav__link> Workflow </a> </li> <li class="md-nav__item md-nav__item--active"> <input class="md-nav__toggle md-toggle" type=checkbox id=__toc> <label class="md-nav__link md-nav__link--active" for=__toc> Tutorial <span class="md-nav__icon md-icon"></span> </label> <a href=./ class="md-nav__link md-nav__link--active"> Tutorial </a> <nav class="md-nav md-nav--secondary" aria-label="Table of contents"> <label class=md-nav__title for=__toc> <span class="md-nav__icon md-icon"></span> Table of contents </label> <ul class=md-nav__list data-md-component=toc data-md-scrollfix> <li class=md-nav__item> <a href=#prerequisites class=md-nav__link> Prerequisites </a> </li> <li class=md-nav__item> <a href=#location class=md-nav__link> Location </a> </li> <li class=md-nav__item> <a href=#init class=md-nav__link> Init </a> <nav class=md-nav aria-label=Init> <ul class=md-nav__list> <li class=md-nav__item> <a href=#configyaml class=md-nav__link> config.yaml </a> </li> <li class=md-nav__item> <a href=#samplestsv class=md-nav__link> samples.tsv </a> </li> </ul> </nav> </li> <li class=md-nav__item> <a href=#dryrun class=md-nav__link> Dryrun </a> </li> <li class=md-nav__item> <a href=#run class=md-nav__link> Run </a> </li> <li class=md-nav__item> <a href=#error-tracking class=md-nav__link> Error tracking </a> </li> <li class=md-nav__item> <a href=#expected-output class=md-nav__link> Expected output: </a> </li> </ul> </nav> </li> <li class=md-nav__item> <a href=../references/ class=md-nav__link> References </a> </li> <li class=md-nav__item> <a href=../CHANGELOG/ class=md-nav__link> Changelog </a> </li> <li class=md-nav__item> <a href=../contributing/ class=md-nav__link> How to contribute </a> </li> </ul> </nav> </div> </div> </div> <div class=md-content data-md-component=content> <article class="md-content__inner md-typeset"> <h1 id=tutorial>Tutorial<a class=headerlink href=#tutorial title="Permanent link">&para;</a></h1> <h4 id=prerequisites>Prerequisites<a class=headerlink href=#prerequisites title="Permanent link">&para;</a></h4> <ul> <li> <p><a href=https://hpc.nih.gov/ >Biowulf</a> account: Biowulf account can be requested <a href=https://hpc.nih.gov/docs/accounts.html>here</a>.</p> </li> <li> <p>Membership to Ziegelbauer user group on Biowulf. You can check this by typing the following command:</p> </li> </ul> <div class=highlight><pre><span></span><code>%<span class=w> </span>groups
+</code></pre></div> <p>output:</p> <div class=highlight><pre><span></span><code>CCBR<span class=w> </span>kopardevn<span class=w> </span>Ziegelbauer_lab
+</code></pre></div> <p>If <code>Ziegelbauer_lab</code> is not listed then you can email a request to be added to the groups <a href=mailto:staff@hpc.nih.gov>here</a></p> <h4 id=location>Location<a class=headerlink href=#location title="Permanent link">&para;</a></h4> <p>Different versions of circRNA DAQ pipeline have been parked at <code>/data/Ziegelbauer_lab/Pipelines/circRNA</code></p> <div class=highlight><pre><span></span><code>%<span class=w> </span>ls<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA
+</code></pre></div> <p>output:</p> <div class=highlight><pre><span></span><code>v0.1.0
+v0.10.0
+v0.10.0-dev
+v0.2.1
+v0.3.3
+v0.4.2
+v0.5.2
+v0.6.5
+v0.7.0
+v0.8
+v0.9.0
+</code></pre></div> <p>The exacts versions listed here may changed as newer versions are added. Also, the <code>dev</code> version is pointing to the most recent untagged version of the pipeline (use at own risk!)</p> <h4 id=init>Init<a class=headerlink href=#init title="Permanent link">&para;</a></h4> <p>To get help about the pipeline you can run:</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>bash<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie
+</code></pre></div> <p>output:</p> <div class=highlight><pre><span></span><code><span class=c1>##########################################################################################</span>
+
+Welcome<span class=w> </span>to<span class=w> </span>charlie<span class=o>(</span>v0.10.0-dev<span class=o>)</span>
+<span class=w> </span>_______<span class=w>  </span>__<span class=w>   </span>__<span class=w>  </span>_______<span class=w>  </span>______<span class=w>    </span>___<span class=w>      </span>___<span class=w>   </span>_______
+<span class=p>|</span><span class=w>       </span><span class=o>||</span><span class=w>  </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>  </span><span class=o>||</span><span class=w>   </span>_<span class=w>   </span><span class=o>||</span><span class=w>    </span>_<span class=w> </span><span class=p>|</span><span class=w>  </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w>    </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>       </span><span class=p>|</span>
+<span class=p>|</span><span class=w>       </span><span class=o>||</span><span class=w>  </span><span class=p>|</span>_<span class=p>|</span><span class=w>  </span><span class=o>||</span><span class=w>  </span><span class=p>|</span>_<span class=p>|</span><span class=w>  </span><span class=o>||</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=o>||</span><span class=w>  </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w>    </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>    </span>___<span class=p>|</span>
+<span class=p>|</span><span class=w>       </span><span class=o>||</span><span class=w>       </span><span class=o>||</span><span class=w>       </span><span class=o>||</span><span class=w>   </span><span class=p>|</span>_<span class=o>||</span>_<span class=w> </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w>    </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>   </span><span class=p>|</span>___
+<span class=p>|</span><span class=w>      </span>_<span class=o>||</span><span class=w>       </span><span class=o>||</span><span class=w>       </span><span class=o>||</span><span class=w>    </span>__<span class=w>  </span><span class=o>||</span><span class=w>   </span><span class=p>|</span>___<span class=w> </span><span class=p>|</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>    </span>___<span class=p>|</span>
+<span class=p>|</span><span class=w>     </span><span class=p>|</span>_<span class=w> </span><span class=p>|</span><span class=w>   </span>_<span class=w>   </span><span class=o>||</span><span class=w>   </span>_<span class=w>   </span><span class=o>||</span><span class=w>   </span><span class=p>|</span><span class=w>  </span><span class=p>|</span><span class=w> </span><span class=o>||</span><span class=w>       </span><span class=o>||</span><span class=w>   </span><span class=p>|</span><span class=w> </span><span class=p>|</span><span class=w>   </span><span class=p>|</span>___
+<span class=p>|</span>_______<span class=o>||</span>__<span class=p>|</span><span class=w> </span><span class=p>|</span>__<span class=o>||</span>__<span class=p>|</span><span class=w> </span><span class=p>|</span>__<span class=o>||</span>___<span class=p>|</span><span class=w>  </span><span class=p>|</span>_<span class=o>||</span>_______<span class=o>||</span>___<span class=p>|</span><span class=w> </span><span class=p>|</span>_______<span class=p>|</span>
+
+C_ircrnas<span class=w> </span><span class=k>in</span><span class=w> </span>H_ost<span class=w> </span>A_nd<span class=w> </span>vi_R_uses<span class=w> </span>ana_L_ysis<span class=w> </span>p_I_p_E_line
+
+<span class=c1>##########################################################################################</span>
+
+This<span class=w> </span>pipeline<span class=w> </span>was<span class=w> </span>built<span class=w> </span>by<span class=w> </span>CCBR<span class=w> </span><span class=o>(</span>https://bioinformatics.ccr.cancer.gov/ccbr<span class=o>)</span>
+Please<span class=w> </span>contact<span class=w> </span>Vishal<span class=w> </span>Koparde<span class=w> </span><span class=k>for</span><span class=w> </span>comments/questions<span class=w> </span><span class=o>(</span>vishal.koparde@nih.gov<span class=o>)</span>
+
+<span class=c1>##########################################################################################</span>
+
+CHARLIE<span class=w> </span>can<span class=w> </span>be<span class=w> </span>used<span class=w> </span>to<span class=w> </span>DAQ<span class=o>(</span>Detect/Annotate/Quantify<span class=o>)</span><span class=w> </span>circRNAs<span class=w> </span><span class=k>in</span><span class=w> </span>hosts<span class=w> </span>and<span class=w> </span>viruses.
+
+Here<span class=w> </span>is<span class=w> </span>the<span class=w> </span>list<span class=w> </span>of<span class=w> </span>hosts<span class=w> </span>and<span class=w> </span>viruses<span class=w> </span>that<span class=w> </span>are<span class=w> </span>currently<span class=w> </span>supported:
+
+HOSTS:
+<span class=w>  </span>*<span class=w> </span>hg38<span class=w>          </span><span class=o>[</span>Human<span class=o>]</span>
+<span class=w>  </span>*<span class=w> </span>mm39<span class=w>          </span><span class=o>[</span>Mouse<span class=o>]</span>
+
+ADDITIVES:
+<span class=w>  </span>*<span class=w> </span>ERCC<span class=w>          </span><span class=o>[</span>External<span class=w> </span>RNA<span class=w> </span>Control<span class=w> </span>Consortium<span class=w> </span>sequences<span class=o>]</span>
+<span class=w>  </span>*<span class=w> </span>BAC16Insert<span class=w>   </span><span class=o>[</span>insert<span class=w> </span>from<span class=w> </span>rKSHV.219-derived<span class=w> </span>BAC<span class=w> </span>clone<span class=w> </span>of<span class=w> </span>the<span class=w> </span>full-length<span class=w> </span>KSHV<span class=w> </span>genome<span class=o>]</span>
+
+VIRUSES:
+<span class=w>  </span>*<span class=w> </span>NC_007605.1<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>gammaherpesvirus<span class=w> </span><span class=m>4</span><span class=w> </span><span class=o>(</span>Epstein-Barr<span class=w> </span>virus<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_006273.2<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>betaherpesvirus<span class=w> </span><span class=m>5</span><span class=w> </span><span class=o>(</span>Cytomegalovirus<span class=w> </span><span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_001664.4<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>betaherpesvirus<span class=w> </span>6A<span class=w> </span><span class=o>(</span>HHV-6A<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_000898.1<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>betaherpesvirus<span class=w> </span>6B<span class=w> </span><span class=o>(</span>HHV-6B<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_001716.2<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>betaherpesvirus<span class=w> </span><span class=m>7</span><span class=w> </span><span class=o>(</span>HHV-7<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_009333.1<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>gammaherpesvirus<span class=w> </span><span class=m>8</span><span class=w> </span><span class=o>(</span>KSHV<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>NC_045512.2<span class=w>   </span><span class=o>[</span>Severe<span class=w> </span>acute<span class=w> </span>respiratory<span class=w> </span>syndrome<span class=o>(</span>SARS<span class=o>)</span>-related<span class=w> </span>coronavirus<span class=o>]</span>
+<span class=w>  </span>*<span class=w> </span>MN485971.1<span class=w>    </span><span class=o>[</span>HIV<span class=w> </span>from<span class=w> </span>Belgium<span class=o>]</span>
+<span class=w>  </span>*<span class=w> </span>NC_001806.2<span class=w>   </span><span class=o>[</span>Human<span class=w> </span>alphaherpesvirus<span class=w> </span><span class=m>1</span><span class=w> </span><span class=o>(</span>Herpes<span class=w> </span>simplex<span class=w> </span>virus<span class=w> </span><span class=nb>type</span><span class=w> </span><span class=m>1</span><span class=o>)](</span>strain<span class=w> </span><span class=m>17</span><span class=o>)</span><span class=w> </span><span class=o>(</span>HSV-1<span class=o>)]</span>
+<span class=w>  </span>*<span class=w> </span>KT899744.1<span class=w>    </span><span class=o>[</span>HSV-1<span class=w> </span>strain<span class=w> </span>KOS<span class=o>]</span>
+<span class=w>  </span>*<span class=w> </span>MH636806.1<span class=w>    </span><span class=o>[</span>MHV68<span class=w> </span><span class=o>(</span>Murine<span class=w> </span>herpesvirus<span class=w> </span><span class=m>68</span><span class=w> </span>strain<span class=w> </span>WUMS<span class=o>)]</span>
+
+<span class=c1>##########################################################################################</span>
+
+USAGE:
+<span class=w>  </span>bash<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie<span class=w> </span>-w/--workdir<span class=o>=</span>&lt;WORKDIR&gt;<span class=w> </span>-m/--runmode<span class=o>=</span>&lt;RUNMODE&gt;
+
+Required<span class=w> </span>Arguments:
+<span class=m>1</span>.<span class=w>  </span>WORKDIR<span class=w>     </span>:<span class=w> </span><span class=o>[</span>Type:<span class=w> </span>String<span class=o>]</span>:<span class=w> </span>Absolute<span class=w> </span>or<span class=w> </span>relative<span class=w> </span>path<span class=w> </span>to<span class=w> </span>the<span class=w> </span>output<span class=w> </span>folder<span class=w> </span>with<span class=w> </span>write<span class=w> </span>permissions.
+
+<span class=m>2</span>.<span class=w>  </span>RUNMODE<span class=w>     </span>:<span class=w> </span><span class=o>[</span>Type:<span class=w> </span>String<span class=o>]</span><span class=w> </span>Valid<span class=w> </span>options:
+<span class=w>    </span>*<span class=w> </span>init<span class=w>      </span>:<span class=w> </span>initialize<span class=w> </span>workdir
+<span class=w>    </span>*<span class=w> </span>dryrun<span class=w>    </span>:<span class=w> </span>dry<span class=w> </span>run<span class=w> </span>snakemake<span class=w> </span>to<span class=w> </span>generate<span class=w> </span>DAG
+<span class=w>    </span>*<span class=w> </span>run<span class=w>       </span>:<span class=w> </span>run<span class=w> </span>with<span class=w> </span>slurm
+<span class=w>    </span>*<span class=w> </span>runlocal<span class=w>  </span>:<span class=w> </span>run<span class=w> </span>without<span class=w> </span>submitting<span class=w> </span>to<span class=w> </span>sbatch
+<span class=w>    </span>ADVANCED<span class=w> </span>RUNMODES<span class=w> </span><span class=o>(</span>use<span class=w> </span>with<span class=w> </span>caution!!<span class=o>)</span>
+<span class=w>    </span>*<span class=w> </span>unlock<span class=w>    </span>:<span class=w> </span>unlock<span class=w> </span>WORKDIR<span class=w> </span><span class=k>if</span><span class=w> </span>locked<span class=w> </span>by<span class=w> </span>snakemake<span class=w> </span>NEVER<span class=w> </span>UNLOCK<span class=w> </span>WORKDIR<span class=w> </span>WHERE<span class=w> </span>PIPELINE<span class=w> </span>IS<span class=w> </span>CURRENTLY<span class=w> </span>RUNNING!
+<span class=w>    </span>*<span class=w> </span>reconfig<span class=w>  </span>:<span class=w> </span>recreate<span class=w> </span>config<span class=w> </span>file<span class=w> </span><span class=k>in</span><span class=w> </span>WORKDIR<span class=w> </span><span class=o>(</span>debugging<span class=w> </span>option<span class=o>)</span><span class=w> </span>EDITS<span class=w> </span>TO<span class=w> </span>config.yaml<span class=w> </span>WILL<span class=w> </span>BE<span class=w> </span>LOST!
+<span class=w>    </span>*<span class=w> </span>reset<span class=w>     </span>:<span class=w> </span>DELETE<span class=w> </span>workdir<span class=w> </span>dir<span class=w> </span>and<span class=w> </span>re-init<span class=w> </span>it<span class=w> </span><span class=o>(</span>debugging<span class=w> </span>option<span class=o>)</span><span class=w> </span>EDITS<span class=w> </span>TO<span class=w> </span>ALL<span class=w> </span>FILES<span class=w> </span>IN<span class=w> </span>WORKDIR<span class=w> </span>WILL<span class=w> </span>BE<span class=w> </span>LOST!
+<span class=w>    </span>*<span class=w> </span>printbinds:<span class=w> </span>print<span class=w> </span>singularity<span class=w> </span>binds<span class=w> </span><span class=o>(</span>paths<span class=o>)</span>
+<span class=w>    </span>*<span class=w> </span><span class=nb>local</span><span class=w>     </span>:<span class=w> </span>same<span class=w> </span>as<span class=w> </span>runlocal
+
+Optional<span class=w> </span>Arguments:
+
+--singcache<span class=p>|</span>-c<span class=w>  </span>:<span class=w> </span>singularity<span class=w> </span>cache<span class=w> </span>directory.<span class=w> </span>Default<span class=w> </span>is<span class=w> </span><span class=sb>`</span>/data/<span class=si>${</span><span class=nv>USER</span><span class=si>}</span>/.singularity<span class=sb>`</span><span class=w> </span><span class=k>if</span><span class=w> </span>available,<span class=w> </span>or<span class=w> </span>falls<span class=w> </span>back<span class=w> </span>to<span class=w> </span><span class=sb>`</span><span class=si>${</span><span class=nv>WORKDIR</span><span class=si>}</span>/.singularity<span class=sb>`</span>.<span class=w> </span>Use<span class=w> </span>this<span class=w> </span>flag<span class=w> </span>to<span class=w> </span>specify<span class=w> </span>a<span class=w> </span>different<span class=w> </span>singularity<span class=w> </span>cache<span class=w> </span>directory.
+--host<span class=p>|</span>-g<span class=w>       </span>:<span class=w> </span>supply<span class=w> </span>host<span class=w> </span>at<span class=w> </span><span class=nb>command</span><span class=w> </span>line.<span class=w> </span>hg38<span class=w> </span>or<span class=w> </span>mm39.<span class=w>                                            </span><span class=o>(</span>--runmode<span class=o>=</span>init<span class=w> </span>only<span class=o>)</span>
+--additives<span class=p>|</span>-a<span class=w>  </span>:<span class=w> </span>supply<span class=w> </span>comma-separated<span class=w> </span>list<span class=w> </span>of<span class=w> </span>additives<span class=w> </span>at<span class=w> </span><span class=nb>command</span><span class=w> </span>line.<span class=w> </span>ERCC<span class=w> </span>or<span class=w> </span>BAC16Insert<span class=w> </span>or<span class=w> </span>both<span class=w> </span><span class=o>(</span>--runmode<span class=o>=</span>init<span class=w> </span>only<span class=o>)</span>
+--viruses<span class=p>|</span>-v<span class=w>    </span>:<span class=w> </span>supply<span class=w> </span>comma-separated<span class=w> </span>list<span class=w> </span>of<span class=w> </span>viruses<span class=w> </span>at<span class=w> </span><span class=nb>command</span><span class=w> </span>line<span class=w>                                </span><span class=o>(</span>--runmode<span class=o>=</span>init<span class=w> </span>only<span class=o>)</span>
+--manifest<span class=p>|</span>-s<span class=w>   </span>:<span class=w> </span>absolute<span class=w> </span>path<span class=w> </span>to<span class=w> </span>samples.tsv.<span class=w> </span>This<span class=w> </span>will<span class=w> </span>be<span class=w> </span>copied<span class=w> </span>to<span class=w> </span>output<span class=w> </span>folder<span class=w>                    </span><span class=o>(</span>--runmode<span class=o>=</span>init<span class=w> </span>only<span class=o>)</span>
+--changegrp<span class=p>|</span>-z<span class=w>  </span>:<span class=w> </span>change<span class=w> </span>group<span class=w> </span>to<span class=w> </span><span class=s2>&quot;Ziegelbauer_lab&quot;</span><span class=w> </span>before<span class=w> </span>running<span class=w> </span>anything.<span class=w> </span>Biowulf-only.<span class=w> </span>Useful<span class=w> </span><span class=k>for</span><span class=w> </span>correctly<span class=w> </span>setting<span class=w> </span>permissions.
+--help<span class=p>|</span>-h<span class=w>       </span>:<span class=w> </span>print<span class=w> </span>this<span class=w> </span><span class=nb>help</span>
+
+
+Example<span class=w> </span>commands:
+<span class=w>  </span>bash<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie<span class=w> </span>-w<span class=o>=</span>/my/output/folder<span class=w> </span>-m<span class=o>=</span>init
+<span class=w>  </span>bash<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie<span class=w> </span>-w<span class=o>=</span>/my/output/folder<span class=w> </span>-m<span class=o>=</span>dryrun
+<span class=w>  </span>bash<span class=w> </span>/data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie<span class=w> </span>-w<span class=o>=</span>/my/output/folder<span class=w> </span>-m<span class=o>=</span>run
+
+<span class=c1>##########################################################################################</span>
+
+VersionInfo:
+<span class=w>  </span>python<span class=w>          </span>:<span class=w> </span><span class=m>3</span>.7
+<span class=w>  </span>snakemake<span class=w>       </span>:<span class=w> </span><span class=m>7</span>.19.1
+<span class=w>  </span>pipeline_home<span class=w>   </span>:<span class=w> </span>/vf/users/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev
+<span class=w>  </span>git<span class=w> </span>commit/tag<span class=w>  </span>:<span class=w> </span>b2cf2f089788651041b16bf4378c2c5172c13cb2<span class=w>    </span>v0.10.0-2-gb2cf2f0
+
+<span class=c1>##########################################################################################</span>
+</code></pre></div> <blockquote> <p>NOTE: You can replace <code>v0.10.0</code> in the above command with the latest version to use a newer version. <code>run_circrna_daq.sh</code> was called <code>test.sh</code> in versions older than <code>v0.4.0</code>.</p> </blockquote> <p>To initial the working directory run:</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>bash<span class=w> </span>&lt;path<span class=w> </span>to<span class=w> </span>charlie&gt;<span class=w> </span>-w<span class=o>=</span>&lt;path<span class=w> </span>to<span class=w> </span>output<span class=w> </span>dir&gt;<span class=w> </span>-m<span class=o>=</span>init
+</code></pre></div> <p>This assumes that <code>&lt;path to output dir&gt;</code> does not exist before running the above command and is at a location where write permissions are available.</p> <p>The above command creates <code>&lt;path to output dir&gt;</code> folder and creates 2 subfolders <code>logs</code> and <code>stats</code> inside that folder along with <code>config.yaml</code> and <code>samples.tsv</code> files.</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>tree<span class=w> </span>&lt;path<span class=w> </span>to<span class=w> </span>output<span class=w> </span>dir&gt;
+</code></pre></div> <h5 id=configyaml>config.yaml<a class=headerlink href=#configyaml title="Permanent link">&para;</a></h5> <p>This file is used to fine tune the execution of the pipeline by setting:</p> <ul> <li>sample sheet location ... aka <code>samples.tsv</code></li> <li>the temporary directory -- make sure this is correct for your computing environment.</li> <li>which circRNA finding tools to use by editing these:</li> <li>run_clear: True</li> <li>run_dcc: True</li> <li>run_mapsplice: False</li> <li>run_circRNAFinder: True</li> <li>run_nclscan: False</li> <li>run_findcirc: False</li> <li>describes the location of other resources/indexes/tools etc. Generally, these do NOT need to be changed.</li> </ul> <h5 id=samplestsv>samples.tsv<a class=headerlink href=#samplestsv title="Permanent link">&para;</a></h5> <p>Tab delimited definition of sample sheet. The header is fixed and each row represents a sample. It has 3 columns:</p> <ol> <li>sampleName = Name of the sample. This has to be unique.</li> <li>path_to_R1_fastq = absolute path to the read1 fastq.gz file.</li> <li>path_to_R2_fastq = absolute path to the read2 fastq.gz file. If the sample was sequenced in single-end mode, then leave this blank.</li> </ol> <p>The <code>.tests/dummy_fastqs</code> folder in the repo has test dataset:</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>tree<span class=w> </span>.tests/dummy_fastqs
+.tests/dummy_fastqs
+├──<span class=w> </span>GI1_N.R1.fastq.gz
+├──<span class=w> </span>GI1_N.R2.fastq.gz
+└──<span class=w> </span>GI1_T.R1.fastq.gz
+</code></pre></div> <p><code>GI1_N</code> is a PE sample while <code>GI1_T</code> is a SE sample.</p> <h4 id=dryrun>Dryrun<a class=headerlink href=#dryrun title="Permanent link">&para;</a></h4> <p>Once the <code>samples.tsv</code> file has been edited appropriately to include the desired samples, it is a good idea to <strong>dryrun</strong> the pipeline to ensure that everything will work as desired. Dryrun can be run as follows:</p> <div class=highlight><pre><span></span><code>bash<span class=w> </span>&lt;path<span class=w> </span>to<span class=w> </span>charlie&gt;<span class=w> </span>-w<span class=o>=</span>&lt;path<span class=w> </span>to<span class=w> </span>output<span class=w> </span>dir&gt;<span class=w> </span>-m<span class=o>=</span>dryrun
+</code></pre></div> <p>This will create the reference fasta and gtf file based on the selections made in the <code>config.yaml</code>. Hence, can take a few minutes to run.</p> <h4 id=run>Run<a class=headerlink href=#run title="Permanent link">&para;</a></h4> <p>Upon verifying that dryrun is successful. You can then submit the job to the cluster using the following command:</p> <div class=highlight><pre><span></span><code>bash<span class=w> </span>&lt;path<span class=w> </span>to<span class=w> </span>charlie&gt;<span class=w> </span>-w<span class=o>=</span>&lt;path<span class=w> </span>to<span class=w> </span>output<span class=w> </span>dir&gt;<span class=w> </span>-m<span class=o>=</span>run
+</code></pre></div> <p>which will produce something like this:</p> <div class=highlight><pre><span></span><code>... ... skipping ~1000 lines
+...
+...
+Job stats:
+job                                              count    min threads    max threads
+---------------------------------------------  -------  ----------
+all                                                  1              1              1
+annotate_clear_output                                2              1              1
+circExplorer                                         2              2              2
+circExplorer_bwa                                     2              2              2
+circrnafinder                                        2              1              1
+ciri                                                 2             56             56
+clear                                                2              2              2
+create_bowtie2_index                                 1              1              1
+create_bwa_index                                     1              1              1
+create_circExplorer_BSJ_bam                          2              4              4
+create_circExplorer_linear_spliced_bams              2             56             56
+create_circExplorer_merged_found_counts_table        2              1              1
+create_hq_bams                                       2              1              1
+create_index                                         1             56             56
+create_master_counts_file                            1              1              1
+cutadapt                                             2             56             56
+dcc                                                  2              4              4
+dcc_create_samplesheets                              2              1              1
+estimate_duplication                                 2              1              1
+fastqc                                               2              4              4
+find_circ                                            2             56             56
+find_circ_align                                      2             56             56
+merge_SJ_tabs                                        1              2              2
+merge_alignment_stats                                1              1              1
+merge_genecounts                                     1              1              1
+merge_per_sample                                     2              1              1
+star1p                                               2             56             56
+star2p                                               2             56             56
+star_circrnafinder                                   2             56             56
+total                                               52              1             56
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        alignment_stats, all, annotate_clear_output, circExplorer, circExplorer_bwa, circrnafinder, ciri, clear, create_circExplorer_BSJ_bam, create_circExplorer_linear_spliced_bams, create_circExplorer_merged_found_counts_table, create_hq_bams, create_master_counts_file, dcc, dcc_create_samplesheets, estimate_duplication, fastqc, find_circ, find_circ_align, merge_SJ_tabs, merge_alignment_stats, merge_genecounts, merge_per_sample, star1p, star2p, star_circrnafinder
+    missing output files:
+        alignment_stats, annotate_clear_output, circExplorer, circExplorer_bwa, circrnafinder, ciri, clear, create_bowtie2_index, create_bwa_index, create_circExplorer_BSJ_bam, create_circExplorer_linear_spliced_bams, create_circExplorer_merged_found_counts_table, create_hq_bams, create_index, create_master_counts_file, cutadapt, dcc, dcc_create_samplesheets, estimate_duplication, fastqc, find_circ, find_circ_align, merge_SJ_tabs, merge_alignment_stats, merge_genecounts, merge_per_sample, star1p, star2p, star_circrnafinder
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
+Running...
+14743440
+</code></pre></div> <p>In this example, <code>14743440</code> is the jobid returned by the slurm job scheduler on biowulf. This means that the job was successfully submitted, it will spawn off other subjobs which in-turn will be run and outputs will be moved to the <code>results</code> folder created inside the working directory supplied at command line. You can check the status of your queue of jobs in biowulf running:</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>squeue<span class=w> </span>-u<span class=w> </span><span class=sb>`</span>whoami<span class=sb>`</span>
+</code></pre></div> <p>output:</p> <div class=highlight><pre><span></span><code><span class=w>             </span>JOBID<span class=w> </span>PARTITION<span class=w>     </span>NAME<span class=w>     </span>USER<span class=w> </span>ST<span class=w>       </span>TIME<span class=w>  </span>NODES<span class=w> </span>NODELIST<span class=o>(</span>REASON<span class=o>)</span>
+<span class=w>           </span><span class=m>14743440</span><span class=w>  </span>ccr,norm<span class=w>  </span>circRNA<span class=w> </span>kopardev<span class=w> </span>PD<span class=w>       </span><span class=m>0</span>:00<span class=w>      </span><span class=m>1</span><span class=w> </span><span class=o>(</span>None<span class=o>)</span>
+</code></pre></div> <p><code>ST</code> in the above results stands for Status and <code>PD</code> means Pending. The status will change from pending(<code>PD</code>) to running(<code>R</code>) to completed as jobs are run on the cluster.</p> <p>Next, just sit tight until the pipeline finishes. You can keep monitoring the queue as shown above. If there are no jobs running on biowulf, then your pipeline has finished (or errored out!)</p> <p>Once completed the output should something like this:</p> <div class=highlight><pre><span></span><code>%<span class=w> </span>tree<span class=w> </span>&lt;path<span class=w> </span>to<span class=w> </span>output<span class=w> </span>dir&gt;
+</code></pre></div> <p>output:</p> <div class=highlight><pre><span></span><code>.
+├──<span class=w> </span>cluster.json
+├──<span class=w> </span>config.yaml
+├──<span class=w> </span>dryrun.231222103505.log
+├──<span class=w> </span>fastqs
+│<span class=w>   </span>├──<span class=w> </span>GI1_N.R1.fastq.gz<span class=w> </span>-&gt;<span class=w> </span>/data/CCBR_Pipeliner/testdata/circRNA/human/GI1_N_ss.R1.fastq.gz
+│<span class=w>   </span>├──<span class=w> </span>GI1_N.R2.fastq.gz<span class=w> </span>-&gt;<span class=w> </span>/data/CCBR_Pipeliner/testdata/circRNA/human/GI1_N_ss.R2.fastq.gz
+│<span class=w>   </span>└──<span class=w> </span>GI1_T.R1.fastq.gz<span class=w> </span>-&gt;<span class=w> </span>/data/CCBR_Pipeliner/testdata/circRNA/human/GI1_T_ss.R1.fastq.gz
+├──<span class=w> </span>logs/snakemake.log.jobby.short
+├──<span class=w> </span>logs/snakemake.log.jobby.txt
+├──<span class=w> </span>logs
+│<span class=w>   </span>...<span class=w> </span>log<span class=w> </span>files<span class=w> </span>...
+│<span class=w>   </span>...<span class=w> </span>skipping<span class=w> </span>...
+├──<span class=w> </span>nclscan.config
+├──<span class=w> </span>qc
+│<span class=w>   </span>├──<span class=w> </span>fastqc
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R1_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R1_fastqc.zip
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R1.trim_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R1.trim_fastqc.zip
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R2_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R2_fastqc.zip
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R2.trim_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.R2.trim_fastqc.zip
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.R1_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.R1_fastqc.zip
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.R1.trim_fastqc.html
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.R1.trim_fastqc.zip
+│<span class=w>   </span>└──<span class=w> </span>picard_MarkDuplicates
+│<span class=w>       </span>├──<span class=w> </span>GI1_N.MarkDuplicates.metrics.txt
+│<span class=w>       </span>└──<span class=w> </span>GI1_T.MarkDuplicates.metrics.txt
+├──<span class=w> </span>ref
+│<span class=w>   </span>├──<span class=w> </span>bwa_index.log
+│<span class=w>   </span>├──<span class=w> </span>gene_id_2_gene_name.tsv
+│<span class=w>   </span>├──<span class=w> </span>NCLscan_index
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa.amb
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa.ann
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa.bwt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa.pac
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.fa.sa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>AllRef.ndx
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>RepChrM.fa
+│<span class=w>   </span>├──<span class=w> </span>ref.1.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.2.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.3.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.4.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.amb
+│<span class=w>   </span>├──<span class=w> </span>ref.ann
+│<span class=w>   </span>├──<span class=w> </span>ref.bwt
+│<span class=w>   </span>├──<span class=w> </span>ref.dummy.fa
+│<span class=w>   </span>├──<span class=w> </span>ref.fa
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.byo_index
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.fai
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.regions
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.regions.host
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.regions.viruses
+│<span class=w>   </span>├──<span class=w> </span>ref.fa.sizes
+│<span class=w>   </span>├──<span class=w> </span>ref.fixed.gtf
+│<span class=w>   </span>├──<span class=w> </span>ref.genes.genepred
+│<span class=w>   </span>├──<span class=w> </span>ref.genes.genepred_w_geneid
+│<span class=w>   </span>├──<span class=w> </span>ref.gtf
+│<span class=w>   </span>├──<span class=w> </span>ref.pac
+│<span class=w>   </span>├──<span class=w> </span>ref.rev.1.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.rev.2.bt2
+│<span class=w>   </span>├──<span class=w> </span>ref.sa
+│<span class=w>   </span>├──<span class=w> </span>ref.transcripts.fa
+│<span class=w>   </span>├──<span class=w> </span>separate_fastas
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr10.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr11.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr12.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr13.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr14.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr15.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr16.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr17.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr18.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr19.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr20.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr21.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr22.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr2.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr3.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr45S.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr4.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr5.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr5S.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr6.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr7.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr8.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chr9.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chrM.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chrX.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>chrY.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00002.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00003.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00004.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00009.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00012.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00013.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00014.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00016.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00017.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00019.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00022.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00024.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00025.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00028.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00031.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00033.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00034.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00035.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00039.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00040.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00041.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00042.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00043.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00044.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00046.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00048.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00051.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00053.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00054.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00057.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00058.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00059.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00060.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00061.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00062.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00067.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00069.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00071.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00073.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00074.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00075.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00076.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00077.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00078.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00079.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00081.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00083.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00084.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00085.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00086.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00092.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00095.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00096.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00097.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00098.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00099.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00104.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00108.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00109.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00111.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00112.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00113.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00116.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00117.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00120.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00123.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00126.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00130.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00131.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00134.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00136.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00137.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00138.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00142.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00143.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00144.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00145.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00147.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00148.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00150.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00154.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00156.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00157.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00158.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00160.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00162.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00163.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00164.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00165.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00168.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00170.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ERCC_00171.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000008.2.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000009.2.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000194.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000195.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000205.2.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000208.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000213.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000214.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000216.2.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000218.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000219.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000220.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000221.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000224.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000225.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GL000226.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270302.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270303.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270304.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270305.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270310.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270311.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270312.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270315.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270316.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270317.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270320.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270322.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270329.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270330.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270333.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270334.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270335.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270336.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270337.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270338.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270340.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270362.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270363.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270364.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270366.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270371.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270372.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270373.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270374.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270375.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270376.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270378.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270379.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270381.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270382.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270383.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270384.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270385.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270386.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270387.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270388.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270389.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270390.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270391.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270392.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270393.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270394.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270395.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270396.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270411.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270412.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270414.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270417.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270418.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270419.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270420.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270422.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270423.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270424.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270425.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270429.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270435.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270438.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270442.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270448.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270465.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270466.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270467.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270468.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270507.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270508.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270509.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270510.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270511.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270512.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270515.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270516.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270517.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270518.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270519.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270521.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270522.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270528.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270529.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270530.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270538.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270539.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270544.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270548.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270579.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270580.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270581.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270582.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270583.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270584.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270587.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270588.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270589.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270590.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270591.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270593.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270706.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270707.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270708.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270709.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270710.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270711.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270712.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270713.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270714.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270715.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270716.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270717.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270718.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270719.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270720.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270721.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270722.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270723.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270724.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270725.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270726.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270727.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270728.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270729.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270730.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270731.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270732.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270733.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270734.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270735.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270736.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270737.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270738.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270739.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270740.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270741.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270742.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270743.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270744.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270745.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270746.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270747.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270748.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270749.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270750.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270751.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270752.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270753.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270754.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270755.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270756.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>KI270757.1.fa
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>NC_009333.1.fa
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>separate_fastas.lst
+│<span class=w>   </span>└──<span class=w> </span>STAR_no_GTF
+│<span class=w>       </span>├──<span class=w> </span>chrLength.txt
+│<span class=w>       </span>├──<span class=w> </span>chrNameLength.txt
+│<span class=w>       </span>├──<span class=w> </span>chrName.txt
+│<span class=w>       </span>├──<span class=w> </span>chrStart.txt
+│<span class=w>       </span>├──<span class=w> </span>Genome
+│<span class=w>       </span>├──<span class=w> </span>genomeParameters.txt
+│<span class=w>       </span>├──<span class=w> </span>Log.out
+│<span class=w>       </span>├──<span class=w> </span>SA
+│<span class=w>       </span>└──<span class=w> </span>SAindex
+├──<span class=w> </span>results
+│<span class=w>   </span>├──<span class=w> </span>alignmentstats.txt
+│<span class=w>   </span>├──<span class=w> </span>circRNA_master_counts.tsv.gz
+│<span class=w>   </span>├──<span class=w> </span>GI1_N
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>alignmentstats.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circExplorer
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.back_spliced_junction.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.back_spliced_junction.strand_fixed.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.bed.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.foundcounts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.minus.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.minus.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.minus.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.plus.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.plus.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.BSJ.plus.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circExplorer.annotation_counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circExplorer.counts_table.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_circexplorer_parse.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circularRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.hg38.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.hg38.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.hg38.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_BSJ.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.BSJ.readids.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.linear_spliced.counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.NC_009333.1.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.NC_009333.1.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.NC_009333.1.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.readcounts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.rid2jid.tsv.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced_BSJ.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.BSJ.readids.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.spliced.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>low_conf_GI1_N.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>low_conf_GI1_N.circRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circExplorer_BWA
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.back_spliced_junction.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.back_spliced_junction.strand_fixed.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circExplorer_bwa.annotation_counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_circexplorer_parse.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circularRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>low_conf_GI1_N.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>low_conf_GI1_N.circRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circRNA_finder
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Chimeric.out.sorted.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Chimeric.out.sorted.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circRNA_finder.counts_table.tsv.filtered
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.filteredJunctions.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.s_filteredJunctions.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N.s_filteredJunctions_fw.bed
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ciri
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CIRIerror.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.bwa.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.ciri.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.ciri.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.ciri.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.ciri.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N.ciri.out.filtered
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CLEAR
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>quant.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>quant.txt.annotated
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>DCC
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircCoordinates
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircRNACount
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircSkipJunctions
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>DCC-2023-12-20_1149.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.dcc.counts_table.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.dcc.counts_table.tsv.filtered
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>LinearCount
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate2.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>samplesheet.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>find_circ
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_anchors.fastq.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.unmapped.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N.unmapped.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.circRNA_counts.txt.gz
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>merge_per_sample.sh
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR1p
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p1.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p1.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p1.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p1.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p1.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate1
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_mate1.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_mate1.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_mate1.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_mate1.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N_mate1.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>mate2
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N_mate2.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N_mate2.Chimeric.out.junction.fixed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N_mate2.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N_mate2.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N_mate2.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>└──<span class=w> </span>GI1_N_mate2.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR2p
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.chimeric.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.chimeric.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.non_chimeric.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.non_chimeric.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N_p2.ReadsPerGene.out.tab
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N_p2.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR_circRNAFinder
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Chimeric.out.sam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_N.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>trim
+│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_N.R1.trim.fastq.gz
+│<span class=w>   </span>│<span class=w>       </span>└──<span class=w> </span>GI1_N.R2.trim.fastq.gz
+│<span class=w>   </span>├──<span class=w> </span>GI1_T
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>alignmentstats.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circExplorer
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.back_spliced_junction.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.back_spliced_junction.strand_fixed.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.bed.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.foundcounts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.minus.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.minus.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.minus.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.plus.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.plus.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.BSJ.plus.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circExplorer.annotation_counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circExplorer.counts_table.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_circexplorer_parse.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circularRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.hg38.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.hg38.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.hg38.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_BSJ.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.BSJ.readids.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.linear_spliced.counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.NC_009333.1.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.NC_009333.1.BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.NC_009333.1.BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.readcounts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.rid2jid.tsv.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced_BSJ.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.BSJ.readids.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.hg38.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.hg38.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.NC_009333.1.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.spliced.NC_009333.1.bw
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>low_conf_GI1_T.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>low_conf_GI1_T.circRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circExplorer_BWA
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.back_spliced_junction.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.back_spliced_junction.strand_fixed.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circExplorer_bwa.annotation_counts.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_circexplorer_parse.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circularRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>low_conf_GI1_T.circRNA_known.filter1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>low_conf_GI1_T.circRNA_known.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>circRNA_finder
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Chimeric.out.sorted.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Chimeric.out.sorted.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circRNA_finder.counts_table.tsv.filtered
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.filteredJunctions.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.s_filteredJunctions.bed
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.s_filteredJunctions_fw.bed
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>ciri
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CIRIerror.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.bwa.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.ciri.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.ciri.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.ciri.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.ciri.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.ciri.out.filtered
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CLEAR
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>quant.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>quant.txt.annotated
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>DCC
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircCoordinates
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircRNACount
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>CircSkipJunctions
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>DCC-2023-12-20_1206.log
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.dcc.counts_table.tsv
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.dcc.counts_table.tsv.filtered
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>LinearCount
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate1.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate2.txt
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>samplesheet.txt
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>find_circ
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_anchors.fastq.gz
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.unmapped.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.unmapped.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.circRNA_counts.txt.gz
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>merge_per_sample.sh
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR1p
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Chimeric.out.junction.circRNA
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Chimeric.out.junction.circRNAmapped
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p1.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>mate1
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T_mate1.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>mate2
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>       </span>└──<span class=w> </span>GI1_T_mate2.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR2p
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.chimeric.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.chimeric.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.non_chimeric.bam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.non_chimeric.bam.csi
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T_p2.ReadsPerGene.out.tab
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T_p2.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>STAR_circRNAFinder
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Chimeric.out.junction
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Chimeric.out.sam
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Log.final.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Log.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.Log.progress.out
+│<span class=w>   </span>│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.SJ.out.tab
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>trim
+│<span class=w>   </span>│<span class=w>       </span>├──<span class=w> </span>GI1_T.R1.trim.fastq.gz
+│<span class=w>   </span>│<span class=w>       </span>└──<span class=w> </span>GI1_T.R2.trim.fastq.gz
+│<span class=w>   </span>├──<span class=w> </span>HQ_BSJ_bams
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.hg38.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.hg38.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.NC_009333.1.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_N.NC_009333.1.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.hg38.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.hg38.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>│<span class=w>   </span>├──<span class=w> </span>GI1_T.NC_009333.1.HQ_only.BSJ.bam
+│<span class=w>   </span>│<span class=w>   </span>└──<span class=w> </span>GI1_T.NC_009333.1.HQ_only.BSJ.bam.bai
+│<span class=w>   </span>├──<span class=w> </span>pass1.out.tab
+│<span class=w>   </span>├──<span class=w> </span>revstranded_STAR_GeneCounts.tsv
+│<span class=w>   </span>├──<span class=w> </span>stranded_STAR_GeneCounts.tsv
+│<span class=w>   </span>└──<span class=w> </span>unstranded_STAR_GeneCounts.tsv
+├──<span class=w> </span>runinfo.yaml
+├──<span class=w> </span>runslurm_snakemake_report.html
+├──<span class=w> </span>samples.tsv
+├──<span class=w> </span>snakemake.log
+├──<span class=w> </span>snakemake.stats
+├──<span class=w> </span>stats
+│<span class=w>   </span>├──<span class=w> </span>dryrun.231222102114.log
+│<span class=w>   </span>├──<span class=w> </span>runinfo.modtime.yaml
+│<span class=w>   </span>└──<span class=w> </span>snakemake.20231222104214.log
+├──<span class=w> </span>submit_script.sbatch
+└──<span class=w> </span>tools.txt
+</code></pre></div> <h4 id=error-tracking>Error tracking<a class=headerlink href=#error-tracking title="Permanent link">&para;</a></h4> <p>Using the following command to find FAILED jobs:</p> <div class=highlight><pre><span></span><code>grep<span class=w> </span>FAIL<span class=w> </span>logs/snakemake.log.jobby.short
+</code></pre></div> <p>The above command also gives <code>.err</code> and <code>.out</code> log files which can give further insights on reasons for failure and changes required to be made for a successful run.</p> <h4 id=expected-output>Expected output:<a class=headerlink href=#expected-output title="Permanent link">&para;</a></h4> <p>The main output file is <code>results/circRNA_master_counts.tsv.gz</code>. Here are the top 3 tiles from an example output:</p> <table> <thead> <tr> <th>Column_number</th> <th>Column_title</th> <th>Example_1</th> <th>Example_2</th> <th>Example_3</th> </tr> </thead> <tbody> <tr> <td>1</td> <td>chrom</td> <td>GL000220.1</td> <td>GL000220.1</td> <td>GL000220.1</td> </tr> <tr> <td>2</td> <td>start</td> <td>107635</td> <td>112482</td> <td>118578</td> </tr> <tr> <td>3</td> <td>end</td> <td>151634</td> <td>156427</td> <td>118759</td> </tr> <tr> <td>4</td> <td>circExplorer_strand</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>5</td> <td>circExplorer_bwa_strand</td> <td>.</td> <td>.</td> <td>.</td> </tr> <tr> <td>6</td> <td>ciri_strand</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>7</td> <td>dcc_strand</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>8</td> <td>circrnafinder_strand</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>9</td> <td>flanking<em>sites</em>+</td> <td>CC##GC</td> <td>GC##CC</td> <td>CC##GC</td> </tr> <tr> <td>10</td> <td>flanking<em>sites</em>-</td> <td>GG##GC</td> <td>GC##GG</td> <td>GG##GC</td> </tr> <tr> <td>11</td> <td>sample_name</td> <td>GI1_N</td> <td>GI1_N</td> <td>GI1_N</td> </tr> <tr> <td>12</td> <td>ntools</td> <td>1</td> <td>1</td> <td>1</td> </tr> <tr> <td>13</td> <td>HQ</td> <td>N</td> <td>N</td> <td>N</td> </tr> <tr> <td>14</td> <td>circExplorer_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>15</td> <td>circExplorer_found_BSJcounts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>16</td> <td>circExplorer<em>found_linear_BSJ</em>+_counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>17</td> <td>circExplorer<em>found_linear_spliced_BSJ</em>+_counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>18</td> <td>circExplorer<em>found_linear_BSJ</em>-_counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>19</td> <td>circExplorer<em>found_linear_spliced_BSJ</em>-_counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>20</td> <td>circExplorer<em>found_linear_BSJ</em>._counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>21</td> <td>circExplorer<em>found_linear_spliced_BSJ</em>._counts</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>22</td> <td>ciri_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>23</td> <td>ciri_linear_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>24</td> <td>circExplorer_bwa_read_count</td> <td>3</td> <td>7</td> <td>3</td> </tr> <tr> <td>25</td> <td>dcc_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>26</td> <td>dcc_linear_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>27</td> <td>circrnafinder_read_count</td> <td>-1</td> <td>-1</td> <td>-1</td> </tr> <tr> <td>28</td> <td>hqcounts</td> <td>1</td> <td>1</td> <td>1</td> </tr> <tr> <td>29</td> <td>nonhqcounts</td> <td>0</td> <td>0</td> <td>0</td> </tr> <tr> <td>30</td> <td>circExplorer_annotation</td> <td>Unknown</td> <td>Unknown</td> <td>Unknown</td> </tr> <tr> <td>31</td> <td>ciri_annotation</td> <td>Unknown</td> <td>Unknown</td> <td>Unknown</td> </tr> <tr> <td>32</td> <td>circExplorer_bwa_annotation</td> <td>novel</td> <td>novel</td> <td>novel</td> </tr> <tr> <td>33</td> <td>dcc_gene</td> <td>Unknown</td> <td>Unknown</td> <td>Unknown</td> </tr> <tr> <td>34</td> <td>dcc_junction_type</td> <td>Unknown</td> <td>Unknown</td> <td>Unknown</td> </tr> <tr> <td>35</td> <td>dcc_annotation</td> <td>Unknown</td> <td>Unknown</td> <td>Unknown</td> </tr> </tbody> </table> <p>Expected output from the sample data is stored under <code>.tests/expected_output</code>.</p> <hr> <div class=md-source-file> <small> Last update: 2024-09-16 </small> </div> </article> </div> </div> <button type=button class="md-top md-icon" data-md-component=top hidden> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg> Back to top </button> </main> <footer class=md-footer> <div class="md-footer-meta md-typeset"> <div class="md-footer-meta__inner md-grid"> <div class=md-copyright> <div class=md-copyright__highlight> Copyright &copy; 2023 CCR Collaborative Bioinformatics Resource </div> Made with <a href=https://squidfunk.github.io/mkdocs-material/ target=_blank rel=noopener> Material for MkDocs </a> </div> <div class=md-social> <a href=http://bioinformatics.cancer.gov target=_blank rel=noopener title=bioinformatics.cancer.gov class=md-social__link> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 640 512"><!-- Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M144 0a80 80 0 1 1 0 160 80 80 0 1 1 0-160zm368 0a80 80 0 1 1 0 160 80 80 0 1 1 0-160zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7-1.3 7.2-1.9 14.7-1.9 22.3 0 38.2 16.8 72.5 43.3 96H21.3C9.6 320 0 310.4 0 298.7zM405.3 320h-.7c26.6-23.5 43.3-57.8 43.3-96 0-7.6-.7-15-1.9-22.3 13.6-6.3 28.7-9.7 44.6-9.7h42.7c58.9 0 106.7 47.8 106.7 106.7 0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1-192 0zm-96 261.3c0-73.6 59.7-133.3 133.3-133.3h117.4c73.6 0 133.3 59.7 133.3 133.3 0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg> </a> <a href=https://github.com/CCBR target=_blank rel=noopener title=github.com class=md-social__link> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 496 512"><!-- Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg> </a> <a href=https://hub.docker.com/orgs/nciccbr/repositories target=_blank rel=noopener title=hub.docker.com class=md-social__link> <svg xmlns=http://www.w3.org/2000/svg viewbox="0 0 640 512"><!-- Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z"/></svg> </a> </div> </div> </div> </footer> </div> <div class=md-dialog data-md-component=dialog> <div class="md-dialog__inner md-typeset"></div> </div> <script id=__config type=application/json>{"base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "toc.integrate"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script> <script src=../assets/javascripts/bundle.51198bba.min.js></script> </body> </html>
