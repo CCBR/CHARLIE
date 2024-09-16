@@ -3,11 +3,16 @@
 **C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
 
 [![build](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml/badge.svg)](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml)
+[![docs](https://github.com/CCBR/CHARLIE/actions/workflows/docs-mkdocs.yml/badge.svg)](https://ccbr.github.io/CHARLIE)
+
 [![img](https://img.shields.io/github/issues/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/issues)
 [![img](https://img.shields.io/github/issues-pr/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/pulls)
 ![img](https://img.shields.io/github/forks/CCBR/CHARLIE?style=for-the-badge)
 ![img](https://img.shields.io/github/stars/CCBR/CHARLIE?style=for-the-badge)
 [![img](https://img.shields.io/github/license/CCBR/CHARLIE?style=for-the-badge)](https://github.com/CCBR/CHARLIE/blob/main/LICENSE)
+
+See the website for detailed information, documentation, and examples:
+<https://ccbr.github.io/CHARLIE/>
 
 ### Table of Contents
 
