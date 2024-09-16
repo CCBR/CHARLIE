@@ -1,4 +1,4 @@
-## CHARLIE development version
+## CHARLIE 0.11.0
 
 - Major updates to convert CHARLIE from a biowulf-specific to a platform-agnostic pipeline (#102, @kelly-sovacool):
   - All rules now use containers instead of envmodules.
