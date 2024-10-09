@@ -366,7 +366,7 @@ function set_singularity_binds(){
   while read a;do readlink -f $a;done < ${WORKDIR}/tmp3 | grep "[a-zA-Z0-9]"> ${WORKDIR}/tmp4
   binds=$(cat ${WORKDIR}/tmp2 ${WORKDIR}/tmp3 ${WORKDIR}/tmp4|sort|uniq |tr '\n' ',')
   rm -f ${WORKDIR}/tmp?
-  binds=$(echo $binds|awk '{print substr($1,1,length($1)-1)}')
+  binds=$(echo $binds|awk '{print substr($1,1,length($1)-1)}' | sed -s 's/"//g' | sed -s "s/'//g")
   SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
 }
 
