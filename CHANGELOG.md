@@ -1,6 +1,9 @@
 ## CHARLIE development version
 
-- Fix bug where CHARLIE was falsely throwing a file permissions error for tempdir values containing bash variables. (#118, @kelly-sovacool)
+### bug fixes
+
+- CHARLIE was falsely throwing a file permissions error for tempdir values containing bash variables. (#118, @kelly-sovacool)
+- Singularity bind paths were not being set properly. (#119, @kelly-sovacool)
 
 ## CHARLIE 0.11.0
 
