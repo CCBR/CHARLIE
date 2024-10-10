@@ -355,7 +355,7 @@ function unlock() {
 # SET SINGULARITY BINDS ... bind required singularity folders appropriately
 ##########################################################################################
 
-function set_singularity_binds(){
+function set_singularity_binds_bash(){
   # this functions tries find what folders to bind
   # TODO parse config file with pyyaml to determine singularity bind paths
   echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
@@ -370,6 +370,10 @@ function set_singularity_binds(){
   SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
 }
 
+function set_singularity_binds() {
+  binds=$( $PIPELINE_HOME/workflow/scripts/set_singularity_bind_paths.py ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)
+  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+}
 ##########################################################################################
 # PRINT SINGULARITY BINDS ... print bound singularity folders for debugging
 ##########################################################################################
