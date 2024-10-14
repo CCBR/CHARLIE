@@ -16,7 +16,7 @@ def print_bind_paths(config_filename, samples_filename):
 
 
 def get_paths(config_filename, samples_filename):
-    paths = list()
+    paths = set()
     with open(config_filename, "r") as config_file:
         config = yaml.safe_load(config_file)
     conf_keys = [
@@ -32,18 +32,18 @@ def get_paths(config_filename, samples_filename):
     # exclude tempdir from bind paths
     for key in conf_keys:
         if key in config:
-            paths.append(config[key])
+            paths.add(config[key])
 
     with open(samples_filename, "r") as samples_file:
         next(samples_file)  # skip header
         for line in samples_file:
             line_spl = line.split("\t")
             if len(line_spl) > 1:
-                paths.append(line_spl[1])
+                paths.add(line_spl[1])
             if len(line_spl) > 2:
-                paths.append(line_spl[2])
+                paths.add(line_spl[2])
 
-    return {os.path.realpath(path) for path in paths}
+    return paths
 
 
 def resolve_additional_bind_paths(search_paths):
