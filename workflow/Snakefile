@@ -305,7 +305,7 @@ include: "rules/post_findcircrna_processing.smk"
 
 on_finish_cmd = f"""
 sleep 10
-mkdir -p {WORKDIR}/log && run_jobby_on_snakemake_log {WORKDIR}/snakemake.log | tee {WORKDIR}/logs/snakemake.log.jobby | cut -f2,3,18 > {WORKDIR}/logs/snakemake.log.jobby.short
+mkdir -p {WORKDIR}/logs/ && run_jobby_on_snakemake_log {WORKDIR}/snakemake.log | tee {WORKDIR}/logs/snakemake.log.jobby | cut -f2,3,18 > {WORKDIR}/logs/snakemake.log.jobby.short
 if command -v spooker &> /dev/null; then
     spooker {WORKDIR} CHARLIE
 else
