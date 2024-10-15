@@ -7,7 +7,7 @@ def get_alignment_stats_input(wildcards):
     d['star2bam']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.bam")
     d['star2bam_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.chimeric.bam")
     d['star2bam_non_chimeric']=join(WORKDIR,"results",sample,"STAR2p",sample+"_p2.non_chimeric.bam")
-    d['filtered_bam']=join(WORKDIR,"results",sample,"circExplorer",sample+".bam")  
+    d['filtered_bam']=join(WORKDIR,"results",sample,"circExplorer",sample+".bam")
     d['linearbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".linear.bam")
     d['splicedbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".spliced.bam")
     d['BSJbam']=join(WORKDIR,"results",sample,"circExplorer",sample+".BSJ.bam")
@@ -108,21 +108,21 @@ python3 {params.scriptse} \\
 
 fi
 
-samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.plusBSJbam} {params.tmpdir}/{params.sample}.BSJ.plus.bam 
-samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.minusBSJbam} {params.tmpdir}/{params.sample}.BSJ.minus.bam 
+samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.plusBSJbam} {params.tmpdir}/{params.sample}.BSJ.plus.bam
+samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.minusBSJbam} {params.tmpdir}/{params.sample}.BSJ.minus.bam
 samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.BSJbam} {params.tmpdir}/{params.sample}.BSJ.bam
 
-for b in {output.plusBSJbam} {output.minusBSJbam} {output.BSJbam} 
+for b in {output.plusBSJbam} {output.minusBSJbam} {output.BSJbam}
 # for b in {output.plusBSJbam} {output.minusBSJbam}
 do
     bash {params.bam2bwscript} $b {params.tmpdir}
 done
 
-for i in $(echo {params.host}|tr ',' ' ');do 
+for i in $(echo {params.host}|tr ',' ' ');do
     samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}/{params.sample}.${{i}}.BSJ.bam
     bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}
 done
-for i in $(echo {params.viruses}|tr ',' ' ');do 
+for i in $(echo {params.viruses}|tr ',' ' ');do
     samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}/{params.sample}.${{i}}.BSJ.bam
     bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}
 done
@@ -253,9 +253,6 @@ rm -rf {params.tmpdir}
 # linear_spliced_BSJ_reads_same_strand
 # linear_BSJ_reads_opposite_strand
 # linear_spliced_BSJ_reads_opposite_strand
-localrules:
-    create_circExplorer_merged_found_counts_table,
-
 
 rule create_circExplorer_merged_found_counts_table:
     input:
@@ -404,10 +401,6 @@ else:
     """
 
 
-localrules:
-    merge_alignment_stats,
-
-
 rule merge_alignment_stats:
     input:
         expand(
@@ -432,7 +425,7 @@ for f in {input};do
         paste {output} {params.tmpdir}/${{count}} > {params.tmpdir}/${{count}}.tmp
         mv {params.tmpdir}/${{count}}.tmp {output}
     fi
-done 
+done
 """
 
 
