@@ -56,7 +56,7 @@ CIRCexplorer2 parse -t STAR junction > $PARSELOG 2>&1
 # copy back original back_spliced BED file
 cp back_spliced_junction.bed $ORIGINALBSJBED
 
-python ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.py ${JUNCTIONFILE} back_spliced_junction.bed ${MINREADS} > back_spliced_junction.strand_fixed.bed
+python -E ${SCRIPTDIR}/_circExplorer_BSJ_get_strand.py ${JUNCTIONFILE} back_spliced_junction.bed ${MINREADS} > back_spliced_junction.strand_fixed.bed
 
 # copy back strand_fixed BSJ BED
 cp back_spliced_junction.strand_fixed.bed $STRANDFIXEDBSJBED
@@ -72,7 +72,7 @@ cp low_conf_circRNA_known.txt $LOWCONF
 cat $KNOWNTXT |tr '/' '\t'|cut -f1-3,5- |awk -v m=$MINREADS '$4>=m' > $FILTEREDKNOWNTXT
 cat $LOWCONF |tr '/' '\t'|cut -f1-3,5- |awk -v m=$MINREADS '$4>=m' > $FILTEREDLOWCONF
 
-python ${SCRIPTDIR}/circExplorer_get_annotated_counts_per_sample.py \
+python -E ${SCRIPTDIR}/circExplorer_get_annotated_counts_per_sample.py \
 	--back_spliced_bed $STRANDFIXEDBSJBED \
 	--back_spliced_min_reads $MINREADS \
 	--circularRNA_known $FILTEREDKNOWNTXT \

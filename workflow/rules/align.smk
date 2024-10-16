@@ -244,7 +244,7 @@ rule merge_SJ_tabs:
         """
 set -exo pipefail
 cat {input} | \\
-python {params.script1} \\
+python -E {params.script1} \\
     --regions {params.regions} \\
     --filter1regions {params.filter1regions} \\
     --filter1_noncanonical {params.filter1_noncanonical} \\
