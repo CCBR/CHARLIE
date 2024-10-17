@@ -141,7 +141,7 @@ def get_per_sample_files_to_merge(wildcards):
 # 2. parse the back_spliced_junction BED from above along with known splicing annotations to CircExplorer2 'parse' to create
 #       a. circularRNA_known.txt ... circRNAs around known gene exons
 #       b. low_conf_circularRNA_known.txt .... circRNAs with low confidence
-# 3. parse back_spliced_junction BED along with circularRNA_known.txt and low_conf_circularRNA_known.txt to custom python script
+# 3. parse back_spliced_junction BED along with circularRNA_known.txt and low_conf_circularRNA_known.txt to custom python -E script
 # to create an aggregated list of BSJs with following columns:
 # | # | ColName     |
 # |---|-------------|
@@ -305,7 +305,7 @@ perl {params.ciripl} \\
 # samtools view -@{threads} -T {params.reffa} -CS {params.sample}.bwa.sam | samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O CRAM -o {output.ciribam} -
 samtools view -@{threads} -bS {params.sample}.bwa.sam | samtools sort -l 9 -T {params.tmpdir} --write-index -@{threads} -O BAM -o {output.ciribam} -
 rm -rf {params.sample}.bwa.sam
-python {params.script} \\
+python -E {params.script} \\
     --ciriout {output.ciriout} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
     --host "{params.host}" \\
@@ -411,7 +411,7 @@ rule create_ciri_count_matrix:
         """
 set -exo pipefail
 cd {params.outdir}
-python {params.script} {params.lookup} {params.hostID}
+python -E {params.script} {params.lookup} {params.hostID}
 """
 
 
@@ -441,8 +441,8 @@ rule create_circexplorer_count_matrix:
     shell:
         """
 cd {params.outdir}
-python {params.script} {params.lookup} {params.hostID}
-python {params.script2} {params.lookup} {params.hostID}
+python -E {params.script} {params.lookup} {params.hostID}
+python -E {params.script2} {params.lookup} {params.hostID}
 """
 
 
@@ -563,7 +563,7 @@ set -exo pipefail
 find {params.cleardir} -maxdepth 1 -type d -name "quant.txt*" -exec rm -rf {{}} \;
 if [[ "$(cat {input.quantfile} | wc -l)" != "0" ]]
 then
-python {params.script} {params.lookup} {input.quantfile} {params.hostID}
+python -E {params.script} {params.lookup} {input.quantfile} {params.hostID}
 else
 touch {output.annotatedquantfile}
 fi
@@ -722,10 +722,10 @@ ls -alrth {params.tmpdir}
 
 paste {output.cr} {output.linear} | cut -f1-5,9 > {params.tmpdir}/CircRNALinearCount
 
-python {params.script} \\
+python -E {params.script} \\
   --CircCoordinates {output.cc} --CircRNALinearCount {params.tmpdir}/CircRNALinearCount -o {output.ct}
 
-python {params.script2} \\
+python -E {params.script2} \\
     --in_dcc_counts_table {output.ct} \\
     --out_dcc_filtered_counts_table {output.ctf} \\
     --back_spliced_min_reads {params.bsj_min_nreads} \\
@@ -843,7 +843,7 @@ R2fn=$(basename {input.R2})
 zcat {input.R1} > {params.tmpdir}/${{R1fn%.*}}
 zcat {input.R2} > {params.tmpdir}/${{R2fn%.*}}
 
-python $MSHOME/mapsplice.py \\
+python -E $MSHOME/mapsplice.py \\
  -1 {params.tmpdir}/${{R1fn%.*}} \\
  -2 {params.tmpdir}/${{R2fn%.*}} \\
  -c {params.separate_fastas} \\
@@ -862,7 +862,7 @@ else
 R1fn=$(basename {input.R1})
 zcat {input.R1} > {params.tmpdir}/${{R1fn%.*}}
 
-python $MSHOME/mapsplice.py \
+python -E $MSHOME/mapsplice.py \
  -1 {params.tmpdir}/${{R1fn%.*}} \
  -c {params.separate_fastas} \
  -p {threads} \
@@ -934,7 +934,7 @@ rule mapsplice_postprocess:
         """
 set -exo pipefail
 mkdir -p {params.tmpdir}
-python {params.script} \\
+python -E {params.script} \\
     --circularRNAstxt {input.circRNAs} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
@@ -1027,7 +1027,7 @@ results_bn=$(basename {output.result})
 if [ "{params.peorse}" == "PE" ];then
 NCLscan.py -c {params.nclscan_config} -pj {params.sample} -o {params.tmpdir} --fq1 {input.R1} --fq2 {input.R2}
 rsync -az --progress {params.tmpdir}/${{results_bn}} {output.result}
-python {params.script} \\
+python -E {params.script} \\
     --result {output.result} \\
     -o {output.ct} \\
     -fo {output.ctf} \\
@@ -1163,7 +1163,7 @@ rule find_circ:
     shell:
         """
 set -exo pipefail
-python --version
+python -E --version
 which python
 mkdir -p {params.tmpdir}
 cd {params.tmpdir}
@@ -1223,7 +1223,7 @@ grep CIRCULAR {params.tmpdir}/{params.sample}.splice_sites.bed | \\
     > {output.find_circ_bsj_bed}
 
 echo -ne "chrom\\tstart\\tend\\tname\\tn_reads\\tstrand\\tn_uniq\\tuniq_bridges\\tbest_qual_left\\tbest_qual_right\\ttissues\\ttiss_counts\\tedits\\tanchor_overlap\\tbreakpoints\\tsignal\\tstrandmatch\\tcategory\\n" > {output.find_circ_bsj_bed_filtered}
-cat {output.find_circ_bsj_bed} | python {params.collapse_script} | awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>=m) {{print}}}}'  \\
+cat {output.find_circ_bsj_bed} | python -E {params.collapse_script} | awk -F"\\t" -v m={params.min_reads} -v OFS="\\t" '{{if ($5>=m) {{print}}}}'  \\
     >> {output.find_circ_bsj_bed_filtered}
 """
 
@@ -1332,7 +1332,7 @@ for f in {input};do
     fi
 done
 
-python {params.script} \\
+python -E {params.script} \\
     --counttablelist $infiles \\
     -o {output.matrix} \\
     --minreads {params.bsj_min_nreads}

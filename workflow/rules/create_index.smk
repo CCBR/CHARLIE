@@ -33,13 +33,13 @@ samtools faidx {params.reffa} && \\
 # bwa index -p ref {params.reffa} > bwa_index.log ... created in a separate rule
 
 # NCLscan files
-python {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
+python -E {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
 gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
 touch {output.lncRNA_transcripts_fa}
 create_reference.py -c {params.nclscan_config}
 
 gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \\
-    python {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
+    python -E {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
 
 stardir=$(dirname {output.sa})
 mkdir -p $stardir && \\
@@ -125,4 +125,4 @@ set -exo pipefail
 refdir=$(dirname {params.reffa})
 cd $refdir
 bowtie-build {params.reffa} ref
-"""  
+"""

@@ -14,7 +14,9 @@ WORKDIR /opt2
 RUN wget https://github.com/dieterich-lab/DCC/archive/${DCC_VERSION}.zip -O dcc.zip && \
     unzip dcc.zip && \
     cd DCC-${DCC_VERSION} && \
+    pip install numpy==1.21.0 && \
     python setup.py install
+ENV PYTHONPATH="/usr/local/lib/python3.8/dist-packages/"
 RUN which DCC && DCC -h
 
 # Save Dockerfile in the docker

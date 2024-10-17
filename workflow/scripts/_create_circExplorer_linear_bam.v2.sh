@@ -78,10 +78,10 @@ function printtime() {
     start0=$2
     start=$3
     msg=$4
-    end=$(date +%s.%N)    
-    runtime0=$(python -c "print(${end} - ${start0})")
+    end=$(date +%s.%N)
+    runtime0=$(python -E -c "print(${end} - ${start0})")
     runtime0=${runtime0%.*}
-    runtime=$(python -c "print(${end} - ${start})")
+    runtime=$(python -E -c "print(${end} - ${start})")
     runtime=${runtime%.*}
     echo "$scriptname | $runtime0 | $runtime | $msg"
 }
@@ -156,7 +156,7 @@ start=$(date +%s.%N)
 
 bedtools bamtobed -split -i $filtered_bam > ${tmpdir}/${sample_name}.bed
 
-python ${SCRIPT_DIR}/_process_bamtobed.py \
+python -E ${SCRIPT_DIR}/_process_bamtobed.py \
     --inbed ${tmpdir}/${sample_name}.bed \
     --outbed ${tmpdir}/${sample_name}.readends.bed \
     --linear ${tmpdir}/${sample_name}.linear.readids.gz \

@@ -13,6 +13,7 @@ WORKDIR /opt2
 RUN wget -O CIRI.zip https://sourceforge.net/projects/ciri/files/CIRI2/CIRI_v2.0.6.zip/download && \
     unzip CIRI.zip
 ENV PATH="/opt2/CIRI2_v2.0.6/:$PATH"
+ENV PYTHONPATH="/usr/local/lib/python3.8/dist-packages/"
 
 # Save Dockerfile in the docker
 COPY Dockerfile /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}

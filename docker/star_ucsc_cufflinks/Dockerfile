@@ -14,6 +14,7 @@ ENV CONDA_ENV=py3.6
 RUN mamba env create -n ${CONDA_ENV} -f /data2/environment.yml && \
     echo "conda activate ${CONDA_ENV}" > ~/.bashrc
 ENV PATH="/opt2/conda/envs/${CONDA_ENV}/bin:$PATH"
+ENV PYTHONPATH="/opt2/conda/envs/${CONDA_ENV}/lib/${CONDA_ENV}/site-packages/"
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
 
 # install find_circ
