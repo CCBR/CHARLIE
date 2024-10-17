@@ -12,6 +12,8 @@ ENV REPONAME=${REPONAME}
 COPY environment.txt /data2/
 RUN mamba install -c conda-forge -c bioconda --file /data2/environment.txt
 ENV R_LIBS_USER=/opt2/conda/lib/R/library/
+ENV PATH="/opt2/conda/bin/:$PATH"
+ENV PYTHONPATH=""
 
 # Save Dockerfile in the docker
 COPY Dockerfile /opt2/Dockerfile_${REPONAME}.${BUILD_TAG}
