@@ -14,6 +14,7 @@ WORKDIR /opt2
 RUN wget https://github.com/dieterich-lab/DCC/archive/${DCC_VERSION}.zip -O dcc.zip && \
     unzip dcc.zip && \
     cd DCC-${DCC_VERSION} && \
+    pip install numpy==1.21.0 && \
     python setup.py install
 RUN which DCC && DCC -h
 
