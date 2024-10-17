@@ -294,9 +294,13 @@ function reconfig(){
   # rebuild config file and replace the config.yaml in the WORKDIR
   # this is only for dev purposes when new key-value pairs are being added to the config file
   check_essential_files
-  sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
-  ${PIPELINE_HOME}/config/$PLATFORM/config.yaml |\
-  cat - ${PIPELINE_HOME}/config/containers.yaml > $WORKDIR/config.yaml
+  sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
+    -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
+    -e "s/HOST/${HOST}/g" \
+    -e "s/ADDITIVES/${ADDITIVES}/g" \
+    -e "s/VIRUSES/${VIRUSES}/g" \
+    ${PIPELINE_HOME}/config/$PLATFORM/config.yaml |\
+    cat - ${PIPELINE_HOME}/config/containers.yaml > $CONFIGFILE
   echo "$WORKDIR/config.yaml has been updated!"
 }
 
