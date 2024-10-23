@@ -444,24 +444,25 @@ rule create_hq_bams:
         additives=ADDITIVES,
         viruses=VIRUSES,
     container: config['containers']["base"]
-    shell:"""
-set -exo pipefail
-outdir=$(dirname {output.outbam})
-if [ ! -d $outdir ];then mkdir -p $outdir;fi
-cd $outdir
-python3 {params.script} \\
-    -i {input.inbam} \\
-    -t {input.countstable} \\
-    -o {output.outbam} \\
-    --regions {params.regions} \\
-    --host "{params.host}" \\
-    --additives "{params.additives}" \\
-    --viruses "{params.viruses}" \\
-    --sample_name {params.samplename}
-samtools index {output.outbam}
-for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
-    if [ ! -f "${{bam}}.bai" ];then
-        samtools index $bam
-    fi
-done
-"""
+    shell:
+        """
+        set -exo pipefail
+        outdir=$(dirname {output.outbam})
+        if [ ! -d $outdir ];then mkdir -p $outdir;fi
+        cd $outdir
+        python3 {params.script} \\
+            -i {input.inbam} \\
+            -t {input.countstable} \\
+            -o {output.outbam} \\
+            --regions {params.regions} \\
+            --host "{params.host}" \\
+            --additives "{params.additives}" \\
+            --viruses "{params.viruses}" \\
+            --sample_name {params.samplename}
+        samtools index {output.outbam}
+        for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
+            if [ ! -f "${{bam}}.bai" ];then
+                samtools index $bam
+            fi
+        done
+        """
