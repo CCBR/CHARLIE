@@ -509,6 +509,7 @@ function run() {
 #SBATCH --partition="$PARTITION"
 #SBATCH --time=48:00:00
 #SBATCH --cpus-per-task=2
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 cd \$SLURM_SUBMIT_DIR
 $MODULE_LOAD
