@@ -4,7 +4,7 @@
 
 - CHARLIE was falsely throwing a file permissions error for tempdir values containing bash variables. (#118, @kelly-sovacool)
 - Singularity bind paths were not being set properly. (#119, @kelly-sovacool)
-- Update docker containers to set `$PYTHONPATH`. (#119, @kelly-sovacool)
+- Update docker containers to set `$PYTHONPATH`. (#119, #125, @kelly-sovacool)
   - Otherwise, this environment variable can be carried over and cause package conflicts when singularity is not run with `-C`.
 - Fix `reconfig` to correctly replace variables in the config file. (#121, @kelly-sovacool)
 - Prevent using excessive memory when copying reference files. (#126, @kelly-sovacool)
