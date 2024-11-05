@@ -481,7 +481,7 @@ function run() {
     --use-singularity \
     --singularity-args "$SINGULARITY_BINDS" \
     --use-envmodules \
-    --latency-wait 120 \
+    --latency-wait 300 \
     --configfile $CONFIGFILE \
     --cores all \
     --rerun-incomplete \
@@ -521,7 +521,7 @@ snakemake -s $SNAKEFILE \
     --singularity-args "$SINGULARITY_BINDS" \
     --use-envmodules \
     --printshellcmds \
-    --latency-wait 120 \
+    --latency-wait 300 \
     --configfile $CONFIGFILE \
     --cluster-config $CLUSTERFILE \
     --cluster "$CLUSTER_SBATCH_CMD" \
@@ -562,7 +562,7 @@ EOF
     --use-singularity \
     --singularity-args "$SINGULARITY_BINDS" \
     --printshellcmds \
-    --latency-wait 120 \
+    --latency-wait 300 \
     --configfile $CONFIGFILE \
     --cluster-config $CLUSTERFILE \
     --cluster "$CLUSTER_SBATCH_CMD" \
