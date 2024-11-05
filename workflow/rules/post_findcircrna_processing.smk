@@ -74,7 +74,7 @@ BSJbedbn=$(basename {output.BSJbed})
 
 if [ "{params.peorse}" == "PE" ];then
 
-python3 {params.scriptpe} \\
+python3 -E {params.scriptpe} \\
     --inbam {input.chimericbam} \\
     --sample_counts_table {input.countstable} \\
     --plusbam {params.tmpdir}/{params.sample}.BSJ.plus.bam \\
@@ -91,7 +91,7 @@ python3 {params.scriptpe} \\
 
 else
 
-python3 {params.scriptse} \\
+python3 -E {params.scriptse} \\
     --inbam {input.chimericbam} \\
     --sample_counts_table {input.countstable} \\
     --plusbam {params.tmpdir}/{params.sample}.BSJ.plus.bam \\
@@ -127,7 +127,7 @@ for i in $(echo {params.viruses}|tr ',' ' ');do
     bash {params.bam2bwscript} ${{outdir}}/{params.sample}.${{i}}.BSJ.bam {params.tmpdir}
 done
 
-python3 {params.flankscript} --reffa {params.reffa} --inbsjbedgz {params.tmpdir}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
+python3 -E {params.flankscript} --reffa {params.reffa} --inbsjbedgz {params.tmpdir}/${{BSJbedbn}} --outbsjbedgz {output.BSJbed}
 
 rm -rf {params.tmpdir}
 """
@@ -283,12 +283,12 @@ rule create_circExplorer_merged_found_counts_table:
         """
         set -exo pipefail
         mkdir -p {params.tmpdir}
-        python3 {params.pythonscript} \\
+        python3 -E {params.pythonscript} \\
             -b {input.bsj_found_counts} \\
             -l {input.linear_spliced_counts} \\
             -o {output.found_counts_table}
 
-        python3 {params.pythonscript2} \\
+        python3 -E {params.pythonscript2} \\
             --annotationcounts {input.annotation_counts} \\
             --allfoundcounts {output.found_counts_table} \\
             --countstable {output.count_counts_table}
@@ -324,9 +324,9 @@ if RUN_MAPSPLICE:
     for bamfile in {input};do
         bamfile_bn=$(basename $bamfile)
         if [ "{params.peorse}" == "PE" ];then
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
+        echo "python3 -E {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
         else
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
+        echo "python3 -E {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
         fi
     done > {params.tmpdir}/do_bamstats
     parallel -j 2 < {params.tmpdir}/do_bamstats
@@ -374,9 +374,9 @@ else:
     for bamfile in {input};do
         bamfile_bn=$(basename $bamfile)
         if [ "{params.peorse}" == "PE" ];then
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
+        echo "python3 -E {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} --pe > {params.tmpdir}/${{bamfile_bn}}.counts"
         else
-        echo "python3 {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
+        echo "python3 -E {params.bash2nreads_pyscript} --inbam $bamfile --regions {params.regions} > {params.tmpdir}/${{bamfile_bn}}.counts"
         fi
     done > {params.tmpdir}/do_bamstats
     parallel -j 2 < {params.tmpdir}/do_bamstats
@@ -450,7 +450,7 @@ rule create_hq_bams:
         outdir=$(dirname {output.outbam})
         if [ ! -d $outdir ];then mkdir -p $outdir;fi
         cd $outdir
-        python3 {params.script} \\
+        python3 -E {params.script} \\
             -i {input.inbam} \\
             -t {input.countstable} \\
             -o {output.outbam} \\
