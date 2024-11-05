@@ -278,20 +278,21 @@ rule create_circExplorer_merged_found_counts_table:
         ),
         outdir=join(WORKDIR, "results", "{sample}", "circExplorer"),
         tmpdir=f"{TEMPDIR}/{str(uuid.uuid4())}",
+    container: config['containers']['star_ucsc_cufflinks']
     shell:
         """
-set -exo pipefail
-mkdir -p {params.tmpdir}
-python3 {params.pythonscript} \\
-    -b {input.bsj_found_counts} \\
-    -l {input.linear_spliced_counts} \\
-    -o {output.found_counts_table}
+        set -exo pipefail
+        mkdir -p {params.tmpdir}
+        python3 {params.pythonscript} \\
+            -b {input.bsj_found_counts} \\
+            -l {input.linear_spliced_counts} \\
+            -o {output.found_counts_table}
 
-python3 {params.pythonscript2} \\
-    --annotationcounts {input.annotation_counts} \\
-    --allfoundcounts {output.found_counts_table} \\
-    --countstable {output.count_counts_table}
-"""
+        python3 {params.pythonscript2} \\
+            --annotationcounts {input.annotation_counts} \\
+            --allfoundcounts {output.found_counts_table} \\
+            --countstable {output.count_counts_table}
+        """
 
 
 if RUN_MAPSPLICE:
@@ -443,24 +444,25 @@ rule create_hq_bams:
         additives=ADDITIVES,
         viruses=VIRUSES,
     container: config['containers']["base"]
-    shell:"""
-set -exo pipefail
-outdir=$(dirname {output.outbam})
-if [ ! -d $outdir ];then mkdir -p $outdir;fi
-cd $outdir
-python3 {params.script} \\
-    -i {input.inbam} \\
-    -t {input.countstable} \\
-    -o {output.outbam} \\
-    --regions {params.regions} \\
-    --host "{params.host}" \\
-    --additives "{params.additives}" \\
-    --viruses "{params.viruses}" \\
-    --sample_name {params.samplename}
-samtools index {output.outbam}
-for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
-    if [ ! -f "${{bam}}.bai" ];then
-        samtools index $bam
-    fi
-done
-"""
+    shell:
+        """
+        set -exo pipefail
+        outdir=$(dirname {output.outbam})
+        if [ ! -d $outdir ];then mkdir -p $outdir;fi
+        cd $outdir
+        python3 {params.script} \\
+            -i {input.inbam} \\
+            -t {input.countstable} \\
+            -o {output.outbam} \\
+            --regions {params.regions} \\
+            --host "{params.host}" \\
+            --additives "{params.additives}" \\
+            --viruses "{params.viruses}" \\
+            --sample_name {params.samplename}
+        samtools index {output.outbam}
+        for bam in $(ls {params.samplename}.*.HQ_only.BSJ.bam);do
+            if [ ! -f "${{bam}}.bai" ];then
+                samtools index $bam
+            fi
+        done
+        """
