@@ -141,7 +141,7 @@ def get_per_sample_files_to_merge(wildcards):
 # 2. parse the back_spliced_junction BED from above along with known splicing annotations to CircExplorer2 'parse' to create
 #       a. circularRNA_known.txt ... circRNAs around known gene exons
 #       b. low_conf_circularRNA_known.txt .... circRNAs with low confidence
-# 3. parse back_spliced_junction BED along with circularRNA_known.txt and low_conf_circularRNA_known.txt to custom python -E script
+# 3. parse back_spliced_junction BED along with circularRNA_known.txt and low_conf_circularRNA_known.txt to custom python script
 # to create an aggregated list of BSJs with following columns:
 # | # | ColName     |
 # |---|-------------|
@@ -1283,7 +1283,7 @@ rule merge_per_sample:
     container: config['containers']['star_ucsc_cufflinks']
     shell:
         """
-python3 {params.script} \\
+python3 -E {params.script} \\
         --pyscript {params.pyscript} \\
         --dcc {params.ndcc} \\
         --mapsplice {params.nmapsplice} \\

@@ -42,7 +42,7 @@ start0=$(date +%s.%N)
     # _bedintersect_to_rid2jid.py
 # also requires these tools
     # bedtools
-    # python3 with pysam library
+    # python3 -E with pysam library
     # samtools
     # bedSort from ucsc tools
     # ucsc
@@ -126,14 +126,14 @@ start=$(date +%s.%N)
 
 if [ "$peorse" == "PE" ];then
 
-python3 ${SCRIPT_DIR}/filter_bam.py \
+python3 -E ${SCRIPT_DIR}/filter_bam.py \
     --inbam $non_chimeric_star2p_bam \
     --outbam $filtered_bam \
     --pe
 
 else
 
-python3 ${SCRIPT_DIR}/filter_bam.py \
+python3 -E ${SCRIPT_DIR}/filter_bam.py \
     --inbam $non_chimeric_star2p_bam \
     --outbam $filtered_bam \
 
@@ -183,7 +183,7 @@ bedSort ${tmpdir}/BSJ.ends.bed ${tmpdir}/BSJ.ends.bed
 printtime $SCRIPT_NAME $start0 $start "finding max readlength"
 start=$(date +%s.%N)
 
-python3 ${SCRIPT_DIR}/bam_get_max_readlen.py -i $filtered_bam > ${tmpdir}/${sample_name}.maxrl
+python3 -E ${SCRIPT_DIR}/bam_get_max_readlen.py -i $filtered_bam > ${tmpdir}/${sample_name}.maxrl
 maxrl=$(cat ${tmpdir}/${sample_name}.maxrl)
 two_maxrl=$((maxrl*2))
 
@@ -226,7 +226,7 @@ pigz -p4 -f ${rid2jidgzip%.*} && rm -f ${rid2jidgzip%.*}.tmp
 printtime $SCRIPT_NAME $start0 $start "filter linear and spliced readids to those near BSJs only; creating counts table"
 start=$(date +%s.%N)
 
-python3 ${SCRIPT_DIR}/_filter_linear_spliced_readids_w_rid2jid.py \
+python3 -E ${SCRIPT_DIR}/_filter_linear_spliced_readids_w_rid2jid.py \
     --linearin ${tmpdir}/${sample_name}.linear.readids.gz \
     --splicedin ${tmpdir}/${sample_name}.spliced.readids.gz \
     --rid2jid ${rid2jidgzip} \
@@ -254,10 +254,10 @@ splicedbam_bn=$(basename $splicedbam)
 linearbam_all_bn=$(basename $linearbam_all)
 splicedbam_all_bn=$(basename $splicedbam_all)
 
-echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_bn} --readids $linearrids" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_bn} --readids $splicedrids" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_all_bn} --readids ${tmpdir}/${sample_name}.linear.readids.gz" >> ${tmpdir}/para2
-echo "python3 ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_all_bn} --readids ${tmpdir}/${sample_name}.spliced.readids.gz" >> ${tmpdir}/para2
+echo "python3 -E ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_bn} --readids $linearrids" >> ${tmpdir}/para2
+echo "python3 -E ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_bn} --readids $splicedrids" >> ${tmpdir}/para2
+echo "python3 -E ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${linearbam_all_bn} --readids ${tmpdir}/${sample_name}.linear.readids.gz" >> ${tmpdir}/para2
+echo "python3 -E ${SCRIPT_DIR}/filter_bam_by_readids.py --inputBAM $filtered_bam --outputBAM ${tmpdir}/${splicedbam_all_bn} --readids ${tmpdir}/${sample_name}.spliced.readids.gz" >> ${tmpdir}/para2
 
 parallel -j 4 < ${tmpdir}/para2
 
@@ -283,10 +283,10 @@ samtools sort -l 9 -T ${tmpdir}/sorttmp --write-index -@${threads} -O BAM -o ${s
 
 if [ -f ${tmpdir}/para3 ];then rm -f ${tmpdir}/para3;fi
 
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
 
 parallel -j 4 < ${tmpdir}/para3
 
