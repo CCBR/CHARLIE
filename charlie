@@ -640,6 +640,7 @@ function main(){
   esac
   done
 
+  WORKDIR=$(readlink -f $WORKDIR)
   echo "Working Dir: $WORKDIR"
 
   if [[ -z "$SING_CACHE_DIR" ]]; then

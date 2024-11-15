@@ -107,7 +107,7 @@ high_confidence_core_callers_plus_n: 1
 
 ciri_perl_script: "/opt2/CIRI_v2.0.6/CIRI2.pl" # path in docker container
 # change this path to a directory containing fasta and GTF files for all host and virus genomes
-fastas_gtfs_dir: "/data/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
+fastas_gtfs_dir: "/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs"
 
 annotation_lookups:
   hg38: "PIPELINE_HOME/resources/hg38_2_hg19_lookup.txt"
