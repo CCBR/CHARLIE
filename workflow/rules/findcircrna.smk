@@ -1104,6 +1104,7 @@ postProcessStarAlignment.pl \\
     --starDir ${{starDir}}/ \\
     --outDir ${{outDir}}/
 
+sleep 10
 echo -ne "chr\\tstart\\tend\\tstrand\\tread_count\\n" > {output.ctf}
 awk -F"\\t" -v OFS="\\t" -v minreads={params.bsj_min_nreads} '{{if ($5>=minreads) {{print $1,$2,$3,$6,$5}}}}' {output.bed} >> {output.ctf}
 
