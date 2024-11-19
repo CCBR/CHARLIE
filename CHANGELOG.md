@@ -9,7 +9,7 @@
   - Also use `python -E` to ensure the `$PYTHONPATH` is not carried over. (#129, @kelly-sovacool)
 - Fix `reconfig` to correctly replace variables in the config file. (#121, @kelly-sovacool)
 - Prevent using excessive memory when copying reference files. (#126, @kelly-sovacool)
-- Fix missing output files due to file system latency. (#130, @kelly-sovacool)
+- Fix missing output files due to file system latency and use real (absolute) paths where possible. (#130, @kelly-sovacool)
 
 ## CHARLIE 0.11.0
 
