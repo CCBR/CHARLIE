@@ -65,6 +65,14 @@ For complete documentation, view the website <https://CCBR.github.io/CHARLIE/>.
 
 ### 3. Software Dependencies
 
+CHARLIE is already installed on biowulf.
+It is included in the ccbrpipeliner module from release 7 onward.
+To load the module run:
+
+```bash
+module load ccbrpipeliner/7
+```
+
 The following version of various bioinformatics tools are using within CHARLIE:
 
 | tool          | version  |
@@ -97,7 +105,7 @@ The following version of various bioinformatics tools are using within CHARLIE:
 ### 4. Usage
 
 ```bash
- % ./charlie
+charlie
 
 
 ##########################################################################################
@@ -148,7 +156,7 @@ VIRUSES:
 ##########################################################################################
 
 USAGE:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
+  charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
 
 Required Arguments:
 1.  WORKDIR     : [Type: String]: Absolute or relative path to the output folder with write permissions.
@@ -177,17 +185,17 @@ Optional Arguments:
 
 
 Example commands:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=init
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=dryrun
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/activeDev/charlie -w=/my/output/folder -m=run
+  charlie -w=/my/output/folder -m=init
+  charlie -w=/my/output/folder -m=dryrun
+  charlie -w=/my/output/folder -m=run
 
 ##########################################################################################
 
 VersionInfo:
-  python          : 3.7
-  snakemake       : 7.19.1
-  pipeline_home   : /vf/users/Ziegelbauer_lab/Pipelines/circRNA/activeDev
-  git commit/tag  : 1ae5ca091976364369784f67adffbbbf1dcdb7d5    v0.8-197-g1ae5ca0
+  python          : 3
+  snakemake       : 7
+  pipeline_home   : /gpfs/gsfs10/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
+  git commit/tag  : 613fb617f1ed426fb8900f98e599ca0497a67cc0    v0.11.0-49-g613fb61
 
 ##########################################################################################
 ```
@@ -305,7 +313,7 @@ Running...
 The `/data/CCBR_Pipeliner/testdata/circRNA/human` folder in the repo has test dataset:
 
 ```bash
-% tree /data/CCBR_Pipeliner/testdata/circRNA/human
+tree /data/CCBR_Pipeliner/testdata/circRNA/human
 /data/CCBR_Pipeliner/testdata/circRNA/human
 ├── GI1_N_ss.R1.fastq.gz
 ├── GI1_N_ss.R2.fastq.gz

@@ -4,52 +4,22 @@
 
 - [Biowulf](https://hpc.nih.gov/) account: Biowulf account can be requested [here](https://hpc.nih.gov/docs/accounts.html).
 
-- Membership to Ziegelbauer user group on Biowulf. You can check this by typing the following command:
+#### Installation
 
-  ```bash
-  % groups
-  ```
-
-output:
+CHARLIE is already installed on biowulf.
+It is included in the ccbrpipeliner module from release 7 onward.
+To load the module run:
 
 ```bash
-CCBR kopardevn Ziegelbauer_lab
+module load ccbrpipeliner/7
 ```
-
-If `Ziegelbauer_lab` is not listed then you can email a request to be added to the groups [here](mailto:staff@hpc.nih.gov)
-
-#### Location
-
-Different versions of circRNA DAQ pipeline have been parked at `/data/Ziegelbauer_lab/Pipelines/circRNA`
-
-```bash
-% ls /data/Ziegelbauer_lab/Pipelines/circRNA
-```
-
-output:
-
-```bash
-v0.1.0
-v0.10.0
-v0.10.0-dev
-v0.2.1
-v0.3.3
-v0.4.2
-v0.5.2
-v0.6.5
-v0.7.0
-v0.8
-v0.9.0
-```
-
-The exacts versions listed here may changed as newer versions are added. Also, the `dev` version is pointing to the most recent untagged version of the pipeline (use at own risk!)
 
 #### Init
 
 To get help about the pipeline you can run:
 
 ```bash
-% bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie
+charlie --help
 ```
 
 output:
@@ -76,7 +46,7 @@ Please contact Vishal Koparde for comments/questions (vishal.koparde@nih.gov)
 
 ##########################################################################################
 
-CHARLIE can be used to DAQ(Detect/Annotate/Quantify) circRNAs in hosts and viruses.
+CHARLIE can be used to DAQ (Detect/Annotate/Quantify) circRNAs in hosts and viruses.
 
 Here is the list of hosts and viruses that are currently supported:
 
@@ -104,7 +74,7 @@ VIRUSES:
 ##########################################################################################
 
 USAGE:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
+  charlie -w/--workdir=<WORKDIR> -m/--runmode=<RUNMODE>
 
 Required Arguments:
 1.  WORKDIR     : [Type: String]: Absolute or relative path to the output folder with write permissions.
@@ -133,17 +103,17 @@ Optional Arguments:
 
 
 Example commands:
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=init
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=dryrun
-  bash /data/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev/charlie -w=/my/output/folder -m=run
+  charlie -w=/my/output/folder -m=init
+  charlie -w=/my/output/folder -m=dryrun
+  charlie -w=/my/output/folder -m=run
 
 ##########################################################################################
 
 VersionInfo:
-  python          : 3.7
-  snakemake       : 7.19.1
-  pipeline_home   : /vf/users/Ziegelbauer_lab/Pipelines/circRNA/v0.10.0-dev
-  git commit/tag  : b2cf2f089788651041b16bf4378c2c5172c13cb2    v0.10.0-2-gb2cf2f0
+  python          : 3
+  snakemake       : 7
+  pipeline_home   : /gpfs/gsfs10/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
+  git commit/tag  : 613fb617f1ed426fb8900f98e599ca0497a67cc0    v0.11.0-49-g613fb61
 
 ##########################################################################################
 ```
@@ -154,7 +124,7 @@ VersionInfo:
 To initial the working directory run:
 
 ```bash
-% bash <path to charlie> -w=<path to output dir> -m=init
+charlie -w=<path to output dir> -m=init
 ```
 
 This assumes that `<path to output dir>` does not exist before running the above command and is at a location where write permissions are available.
@@ -162,7 +132,7 @@ This assumes that `<path to output dir>` does not exist before running the above
 The above command creates `<path to output dir>` folder and creates 2 subfolders `logs` and `stats` inside that folder along with `config.yaml` and `samples.tsv` files.
 
 ```bash
-% tree <path to output dir>
+tree <path to output dir>
 ```
 
 ##### config.yaml
@@ -188,14 +158,15 @@ Tab delimited definition of sample sheet. The header is fixed and each row repre
 2. path_to_R1_fastq = absolute path to the read1 fastq.gz file.
 3. path_to_R2_fastq = absolute path to the read2 fastq.gz file. If the sample was sequenced in single-end mode, then leave this blank.
 
-The `.tests/dummy_fastqs` folder in the repo has test dataset:
+The `/data/CCBR_Pipeliner/testdata/circRNA/humans` folder in the repo has test dataset:
 
 ```bash
-% tree .tests/dummy_fastqs
-.tests/dummy_fastqs
-├── GI1_N.R1.fastq.gz
-├── GI1_N.R2.fastq.gz
-└── GI1_T.R1.fastq.gz
+tree /data/CCBR_Pipeliner/testdata/circRNA/humans
+/data/CCBR_Pipeliner/testdata/circRNA/humans
+├── GI1_N_ss.R1.fastq.gz
+├── GI1_N_ss.R2.fastq.gz
+├── GI1_T_ss.R1.fastq.gz
+└── samples.tsv
 ```
 
 `GI1_N` is a PE sample while `GI1_T` is a SE sample.
@@ -205,7 +176,7 @@ The `.tests/dummy_fastqs` folder in the repo has test dataset:
 Once the `samples.tsv` file has been edited appropriately to include the desired samples, it is a good idea to **dryrun** the pipeline to ensure that everything will work as desired. Dryrun can be run as follows:
 
 ```bash
-bash <path to charlie> -w=<path to output dir> -m=dryrun
+charlie -w=<path to output dir> -m=dryrun
 ```
 
 This will create the reference fasta and gtf file based on the selections made in the `config.yaml`. Hence, can take a few minutes to run.
@@ -215,7 +186,7 @@ This will create the reference fasta and gtf file based on the selections made i
 Upon verifying that dryrun is successful. You can then submit the job to the cluster using the following command:
 
 ```bash
-bash <path to charlie> -w=<path to output dir> -m=run
+charlie -w=<path to output dir> -m=run
 ```
 
 which will produce something like this:
@@ -273,7 +244,7 @@ Running...
 In this example, `14743440` is the jobid returned by the slurm job scheduler on biowulf. This means that the job was successfully submitted, it will spawn off other subjobs which in-turn will be run and outputs will be moved to the `results` folder created inside the working directory supplied at command line. You can check the status of your queue of jobs in biowulf running:
 
 ```bash
-% squeue -u `whoami`
+squeue -u `whoami`
 ```
 
 output:
@@ -290,7 +261,7 @@ Next, just sit tight until the pipeline finishes. You can keep monitoring the qu
 Once completed the output should something like this:
 
 ```bash
-% tree <path to output dir>
+tree <path to output dir>
 ```
 
 output:
