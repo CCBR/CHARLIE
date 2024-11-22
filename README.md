@@ -230,7 +230,7 @@ This will create the folder provided by `-w=`. The user should have write permis
 
 #### Dry-run
 
-Test data (1 paired-end subsample and 1 single-end subsample) have been including under the `.tests/dummy_fastqs` folder. After running in `-m=init`, `samples.tsv` should be edited to point the copies of the above mentioned samples with the column headers:
+Test data (1 paired-end subsample and 1 single-end subsample) have been including under the `/data/CCBR_Pipeliner/testdata/circRNA/human` folder. After running in `-m=init`, `samples.tsv` should be edited to point the copies of the above mentioned samples with the column headers:
 
 - sampleName
 - path_to_R1_fastq
@@ -302,14 +302,15 @@ Running...
 
 ##### 6.1 Test Data
 
-The `.tests/dummy_fastqs` folder in the repo has test dataset:
+The `/data/CCBR_Pipeliner/testdata/circRNA/human` folder in the repo has test dataset:
 
 ```bash
-% tree .tests/dummy_fastqs
-.tests/dummy_fastqs
-├── GI1_N.R1.fastq.gz
-├── GI1_N.R2.fastq.gz
-└── GI1_T.R1.fastq.gz
+% tree /data/CCBR_Pipeliner/testdata/circRNA/human
+/data/CCBR_Pipeliner/testdata/circRNA/human
+├── GI1_N_ss.R1.fastq.gz
+├── GI1_N_ss.R2.fastq.gz
+├── GI1_T_ss.R1.fastq.gz
+└── samples.tsv
 ```
 
 `GI1_N` is a PE sample while `GI1_T` is a SE sample.
