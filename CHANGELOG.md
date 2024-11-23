@@ -1,7 +1,5 @@
 ## CHARLIE development version
 
-### bug fixes
-
 - CHARLIE was falsely throwing a file permissions error for tempdir values containing bash variables. (#118, @kelly-sovacool)
 - Singularity bind paths were not being set properly. (#119, @kelly-sovacool)
 - Update docker containers to set `$PYTHONPATH`. (#119, #125, @kelly-sovacool)
@@ -10,6 +8,7 @@
 - Fix `reconfig` to correctly replace variables in the config file. (#121, @kelly-sovacool)
 - Prevent using excessive memory when copying reference files. (#126, @kelly-sovacool)
 - Fix missing output files due to file system latency and use real (absolute) paths where possible. (#130, @kelly-sovacool)
+- Update documentation to reflect biowulf usage and improved test dataset. (#132, @kelly-sovacool)
 
 ## CHARLIE 0.11.0
 
