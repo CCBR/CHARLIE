@@ -1,0 +1,23 @@
+cluster: sbatch
+  --parsable
+  --cpus-per-task {cluster.threads}
+  -p {cluster.partition}
+  -t {cluster.time}
+  --mem {cluster.mem}
+  --job-name {cluster.name}
+  --output {cluster.output}
+  --error {cluster.error}
+  --gres {cluster.gres}
+cluster-config: "cluster.json"
+cluster-status: "cluster_status.sh"
+jobs: 499
+immediate-submit: false
+verbose: true
+notemp: true
+latency-wait: 300
+printshellcmds: true
+use-singularity: true
+rerun-incomplete: true
+rerun-triggers: mtime
+retries: 2
+keep-going: true
