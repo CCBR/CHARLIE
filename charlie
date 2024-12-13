@@ -52,31 +52,34 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 
 PYTHONVERSION="3"
 SNAKEMAKEVERSION="7"
-CLUSTER_SBATCH_CMD="sbatch --parsable --cpus-per-task {cluster.threads} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --job-name {cluster.name} --output {cluster.output} --error {cluster.error}"
-PARTITION='norm'
 CONDA_ACTIVATE=''
 PATH_PREPEND=''
 MODULE_LOAD=''
 PLATFORM=$(get_platform)
+PARTITION='norm'
+EXTRA_SINGULARITY_BINDS=""
+TEMP_DIR=""
+REFS_DIR=""
+CLUSTER_PROFILE="config/unknown"
 if [ "$PLATFORM" == "biowulf" ]; then
-  EXTRA_SINGULARITY_BINDS="/lscratch"
-  CLUSTER_SBATCH_CMD="$CLUSTER_SBATCH_CMD --gres {cluster.gres}"
+  CLUSTER_PROFILE="config/slurm-biowulf"
   PARTITION="ccr,$PARTITION"
+  EXTRA_SINGULARITY_BINDS="/lscratch"
   CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
   MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $CONDA_ACTIVATE"
+  TEMP_DIR='/lscratch/$SLURM_JOB_ID/'
+  REFS_DIR="/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
 elif [ "$PLATFORM" == "fnlcr" ]; then
+  CLUSTER_PROFILE="config/slurm-fnlcr"
   EXTRA_SINGULARITY_BINDS="/scratch/local"
-  # activate conda env
   CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
   MODULE_LOAD="module load singularity; $PATH_PREPEND; $CONDA_ACTIVATE"
+  TEMP_DIR="/scratch/local/"
+  REFS_DIR="/mnt/projects/CCBR-Pipelines/db/charlie/fastas_gtfs/"
 else
-  EXTRA_SINGULARITY_BINDS=""
-  echo """WARNING: detected platform is $PLATFORM. Please edit the following files for compatibility with your computing environment:
-        config.yaml
-        cluster.json
-        submit_script.sbatch
+  echo """WARNING: detected platform is $PLATFORM. Please edit the files in config/unknown/ & config.yaml for compatibility with your computing environment
     """
 fi
 
@@ -213,22 +216,26 @@ function init() {
 if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
 mkdir -p $WORKDIR
 
-# copy config and samples files
+# copy config resources
+cp -r ${PIPELINE_HOME}/config $WORKDIR/
+
+# copy config template and samples files
 if [ ! -f $CONFIGFILE ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
     -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
     -e "s/HOST/${HOST}/g" \
     -e "s/ADDITIVES/${ADDITIVES}/g" \
     -e "s/VIRUSES/${VIRUSES}/g" \
-    ${PIPELINE_HOME}/config/$PLATFORM/config.yaml |\
-    cat - ${PIPELINE_HOME}/config/containers.yaml > $CONFIGFILE
+    -e "s/TEMP_DIR/${TEMP_DIR//\//\\/}/g" \
+    -e "s/REFS_DIR/${REFS_DIR//\//\\/}/g" \
+    -e "s|CLUSTER_PROFILE|${CLUSTER_PROFILE}|g" \
+    ${PIPELINE_HOME}/config/config.yaml \
+    > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
 fi
-if [ ! -f $CLUSTERFILE ];then
-cp ${PIPELINE_HOME}/config/$PLATFORM/cluster.json $CLUSTERFILE
-fi
+
 if [ ! -f $WORKDIR/samples.tsv ];then
 cp $MANIFEST $WORKDIR/samples.tsv
 fi
@@ -247,7 +254,7 @@ echo "Done Initializing $WORKDIR. You can now edit $WORKDIR/config.yaml and $WOR
 
 function check_essential_files() {
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
-  for f in config.yaml samples.tsv nclscan.config cluster.json; do
+  for f in config.yaml samples.tsv nclscan.config; do
     if [ ! -f $WORKDIR/$f ]; then err "Error: '${f}' file not found in workdir ... initialize first!";fi
   done
 }
@@ -299,8 +306,11 @@ function reconfig(){
     -e "s/HOST/${HOST}/g" \
     -e "s/ADDITIVES/${ADDITIVES}/g" \
     -e "s/VIRUSES/${VIRUSES}/g" \
-    ${PIPELINE_HOME}/config/$PLATFORM/config.yaml |\
-    cat - ${PIPELINE_HOME}/config/containers.yaml > $CONFIGFILE
+    -e "s/TEMP_DIR/${TEMP_DIR//\//\\/}/g" \
+    -e "s/REFS_DIR/${REFS_DIR//\//\\/}/g" \
+    -e "s|CLUSTER_PROFILE|${CLUSTER_PROFILE}|g" \
+    ${PIPELINE_HOME}/config/config.yaml \
+    > $CONFIGFILE
   echo "$WORKDIR/config.yaml has been updated!"
 }
 
@@ -523,9 +533,7 @@ snakemake -s $SNAKEFILE \
     --printshellcmds \
     --latency-wait 300 \
     --configfile $CONFIGFILE \
-    --cluster-config $CLUSTERFILE \
-    --cluster "$CLUSTER_SBATCH_CMD" \
-    --cluster-status $CLUSTERSTATUSCMD \
+    --profile $CLUSTER_PROFILE \
     -j 500 \
     --rerun-incomplete \
     --rerun-triggers $trigger \
@@ -554,8 +562,6 @@ EOF
 
   else # dry-run and unlock
 
-    echo $CLUSTER_SBATCH_CMD
-
     snakemake $1 -s $SNAKEFILE \
     --directory $WORKDIR \
     --use-envmodules \
@@ -564,8 +570,7 @@ EOF
     --printshellcmds \
     --latency-wait 300 \
     --configfile $CONFIGFILE \
-    --cluster-config $CLUSTERFILE \
-    --cluster "$CLUSTER_SBATCH_CMD" \
+    --profile $CLUSTER_PROFILE \
     -j 500 \
     --rerun-incomplete \
     --rerun-triggers $trigger \
@@ -656,8 +661,6 @@ function main(){
 
   # required files
   CONFIGFILE="${WORKDIR}/config.yaml"
-  CLUSTERFILE="${WORKDIR}/cluster.json"
-  CLUSTERSTATUSCMD="${PIPELINE_HOME}/resources/cluster_status.sh"
 
   # change group to Ziegelbauer_lab before doing anything
   if [ "$CHANGEGRP" == "1" ]; then change_grp "$allargs"; fi
