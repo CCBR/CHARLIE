@@ -110,7 +110,7 @@ Required Arguments:
     * init      : initialize workdir
     * dryrun    : dry run snakemake to generate DAG
     * run       : run by submitting the job with slurm
-    * runqsub   : run by submitting the job with qsub
+    * qsub      : run by submitting the job with qsub
     * runlocal  : run locally without submitting the job to a scheduler
     ADVANCED RUNMODES (use with caution!!)
     * unlock    : unlock WORKDIR if locked by snakemake NEVER UNLOCK WORKDIR WHERE PIPELINE IS CURRENTLY RUNNING!
@@ -118,6 +118,7 @@ Required Arguments:
     * reset     : DELETE workdir dir and re-init it (debugging option) EDITS TO ALL FILES IN WORKDIR WILL BE LOST!
     * printbinds: print singularity binds (paths)
     * local     : same as runlocal
+    * slurm     : same as run (run with slurm)
 
 Optional Arguments:
 
@@ -641,12 +642,13 @@ function main(){
     dryrun) dryrun && exit 0;;
     unlock) unlock && exit 0;;
     run) runslurm && exit 0;;
-    runqsub) runqsub && exit 0;;
+    slurm) runslurm && exit 0;; # same as run
+    qsub) runqsub && exit 0;;
     runlocal) runlocal && exit 0;;
+    local) runlocal && exit 0;;                  # hidden option
     reset) reset && exit 0;;
     touch) touch && exit 0;;
     dry) dryrun && exit 0;;                      # hidden option
-    local) runlocal && exit 0;;                  # hidden option
     reconfig) reconfig && exit 0;;               # hidden option for debugging
     printbinds) printbinds && exit 0;;           # hidden option
     help) usage && exit 0;;                      # print help
