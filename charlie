@@ -62,7 +62,7 @@ TEMP_DIR=""
 REFS_DIR=""
 CLUSTER_PROFILE="config/unknown"
 if [ "$PLATFORM" == "biowulf" ]; then
-  CLUSTER_PROFILE="config/slurm-biowulf"
+  CLUSTER_PROFILE="config/biowulf"
   PARTITION="ccr,$PARTITION"
   EXTRA_SINGULARITY_BINDS="/lscratch"
   CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
@@ -70,7 +70,7 @@ if [ "$PLATFORM" == "biowulf" ]; then
   TEMP_DIR='/lscratch/$SLURM_JOB_ID/'
   REFS_DIR="/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
 elif [ "$PLATFORM" == "fnlcr" ]; then
-  CLUSTER_PROFILE="config/slurm-fnlcr"
+  CLUSTER_PROFILE="config/fnlcr"
   EXTRA_SINGULARITY_BINDS="/scratch/local"
   CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
   # make sure spooker is in the path
