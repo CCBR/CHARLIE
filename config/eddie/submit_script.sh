@@ -7,6 +7,7 @@
 #$ -o logs/$JOB_NAME-$JOB_ID-$HOSTNAME.out
 #$ -e logs/$JOB_NAME-$JOB_ID-$HOSTNAME.err
 
+. /etc/profile.d/modules.sh
 $MODULE_LOAD
 $EXPORT_SING_CACHE_DIR_CMD
 
