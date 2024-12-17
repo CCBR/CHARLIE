@@ -181,6 +181,7 @@ Optional Arguments:
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
 --manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
 --changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
+--platform      : set the HPC platform (biowulf, fnlcr, eddie). If not set, CHARLIE will try to detect the platform with scontrol.
 --help|-h       : print this help
 
 
