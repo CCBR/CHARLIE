@@ -172,6 +172,8 @@ function init() {
   if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
   mkdir -p $WORKDIR
 
+  mkdir -p $SING_CACHE_DIR
+
   # copy config resources
   cp -r ${PIPELINE_HOME}/config $WORKDIR/
 
@@ -592,7 +594,6 @@ function main(){
     fi
     echo "singularity cache dir (--singcache) is not set, using ${SING_CACHE_DIR}"
   fi
-  mkdir -p $SING_CACHE_DIR
   export EXPORT_SING_CACHE_DIR_CMD="export SINGULARITY_CACHEDIR=\"${SING_CACHE_DIR}\""
 
   # required files
