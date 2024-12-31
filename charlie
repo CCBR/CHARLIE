@@ -626,7 +626,8 @@ function main(){
   elif [ "$PLATFORM" == "eddie" ]; then
     # TODO fill in other variables for eddie
     CLUSTER_PROFILE="config/eddie"
-    MODULE_LOAD="module load singularity"
+    PATH_PREPEND='export PATH="/home/ttakanob/py3.8_venv/bin/:$PATH"'
+    MODULE_LOAD="module load singularity; $PATH_PREPEND"
     # python & snakemake are already in Taka's path in his bashrc
     TEMP_DIR="/exports/eddie/scratch/$USER"
   else
