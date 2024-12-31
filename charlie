@@ -631,7 +631,9 @@ function main(){
     TEMP_DIR="/exports/eddie/scratch/$USER"
   else
     CLUSTER_PROFILE="config/unknown"
-    echo """WARNING: detected platform is $PLATFORM. Please edit the files in $CLUSTER_PROFILE & config.yaml for compatibility with your computing environment
+    echo """WARNING: detected platform is $PLATFORM.
+        Please edit the files in $CLUSTER_PROFILE & config.yaml for compatibility with your computing environment.
+        Also, make sure Singularity, Snakemake $SNAKEMAKEVERSION, Python $PYTHONVERSION, and pandas are installed.
       """
   fi
   export PLATFORM CLUSTER_PROFILE PARTITION EXTRA_SINGULARITY_BINDS CONDA_ACTIVATE MODULE_LOAD TEMP_DIR REFS_DIR
