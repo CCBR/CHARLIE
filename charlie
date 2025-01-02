@@ -338,8 +338,6 @@ function printbinds(){
 
 function runlocal() {
   runcheck
-  # TODO do not assume $SLURM_JOB_ID exists, may run on other platform without slurm e.g. eddie
-  if [ "$SLURM_JOB_ID" == "" ];then err "runlocal can only be done on an interactive node"; exit 1; fi
   run "local"
 }
 
@@ -431,6 +429,12 @@ function run() {
 
   if [ "$1" == "local" ];then
 
+    if [ "$PLATFORM" == "biowulf" ] || [ "$PLATFORM" == "fnlcr"]; then
+      if [ "$SLURM_JOB_ID" == "" ]; then
+        err "runlocal can only be done on an interactive node";
+        exit 1;
+      fi
+    fi
     preruncleanup
 
     $EXPORT_SING_CACHE_DIR_CMD
