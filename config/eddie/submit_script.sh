@@ -1,11 +1,6 @@
-#!/usr/bin/env bash
-#$ -N charlie
-#$ -cwd
-#$ -l h_rt=48:00:00
-#$ -l h_vmem=40g
-#$ -pe sharedmem 2
-#$ -o logs/$JOB_NAME-$JOB_ID-$HOSTNAME.out
-#$ -e logs/$JOB_NAME-$JOB_ID-$HOSTNAME.err
+#!usr/bin/env bash
+# do not submit this script with qsub
+# as worker nodes cannot submit additional jobs themselves
 
 . /etc/profile.d/modules.sh
 $MODULE_LOAD
@@ -27,10 +22,3 @@ snakemake -s $SNAKEFILE \
     --keep-going \
     --stats ${WORKDIR}/snakemake.stats \
     2>&1 | tee ${WORKDIR}/snakemake.log
-
-if [ "$?" -eq "0" ];then
-  snakemake -s $SNAKEFILE \
-  --directory $WORKDIR \
-  --report ${WORKDIR}/runqsub_snakemake_report.html \
-  --configfile $CONFIGFILE
-fi

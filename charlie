@@ -475,8 +475,8 @@ function run() {
     preruncleanup
     cat ${WORKDIR}/config/${PLATFORM}/submit_script.sh |\
       envsubst '$CLUSTER_PROFILE $CONFIGFILE $EXPORT_SING_CACHE_DIR_CMD $MODULE_LOAD $PARTITION $SINGULARITY_BINDS $SNAKEFILE $trigger $WORKDIR' \
-      > ${WORKDIR}/submit_script.sh
-    pushd $WORKDIR && qsub submit_script.sh && popd
+      > ${WORKDIR}/run_script.sh
+    pushd $WORKDIR && bash run_script.sh && popd
 
   elif [ "$1" == "--touch" ];then
 
