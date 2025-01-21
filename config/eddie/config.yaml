@@ -1,7 +1,7 @@
 cluster: qsub
-  -cwd
+  -terse -cwd -V
   -l h_rt={cluster.time}
-  -l h_vmem={cluster.mem}
+  -l h_vmem={cluster.mem_mib}M
   -pe sharedmem {cluster.threads}
   -N {cluster.name}
   -o {cluster.output}
