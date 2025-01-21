@@ -1,0 +1,95 @@
+__default__:
+  output: "logs/{rule}.{wildcards}.$JOB_ID.out"
+  error: "logs/{rule}.{wildcards}.$JOB_ID.err"
+  mem_mib: 40960
+  threads: 2
+  time: 4:00:00
+  name: "{rule}.{wildcards}"
+
+test:
+  mem_mib: 10240
+cutadapt:
+  mem_mib: 122880
+  threads: 56
+  time: 6:00:00
+dcc:
+  mem_mib: 122880
+  threads: 4
+  time: 4:00:00
+find_circ_align:
+  mem_mib: 122880
+  threads: 56
+  time: 6:00:00
+find_circ:
+  mem_mib: 122880
+  threads: 56
+  time: 6:00:00
+mapsplice:
+  mem_mib: 204800
+  threads: 56
+  time: 48:00:00
+mapsplice_postprocess:
+  mem_mib: 122880
+  threads: 4
+  time: 4:00:00
+nclscan:
+  mem_mib: 524288
+  threads: 56
+  time: 4:00:00
+  partition: largemem
+fastqc:
+  mem_mib: 40960
+  threads: 4
+  time: 4:00:00
+ciri:
+  mem_mib: 524288
+  threads: 56
+  time: 4:00:00
+  partition: largemem
+filter_ciri_bam_for_BSJs:
+  mem_mib: 524288
+  threads: 4
+  time: 24:00:00
+  partition: largemem
+create_index:
+  mem_mib: 204800
+  threads: 56
+  time: 12:00:00
+star1p:
+  mem_mib: 204800
+  threads: 56
+  time: 6:00:00
+star2p:
+  mem_mib: 204800
+  threads: 56
+  time: 6:00:00
+star_circrnafinder:
+  mem_mib: 204800
+  threads: 56
+  time: 6:00:00
+estimate_duplication:
+  mem_mib: 204800
+  threads: 4
+  time: 4:00:00
+create_circExplorer_BSJ_bam:
+  mem_mib: 122880
+  threads: 4
+  time: 4:00:00
+create_circExplorer_linear_spliced_bams:
+  mem_mib: 122880
+  threads: 56
+  time: 8:00:00
+clear:
+  time: 1:00:00
+split_splice_reads_BAM_create_BW:
+  mem_mib: 122880
+  time: 24:00:00
+split_linear_reads_BAM_create_BW:
+  mem_mib: 122880
+  time: 24:00:00
+alignment_stats:
+  time: 1:00:00
+merge_per_sample:
+  time: 1:00:00
+merge_SJ_tabs:
+  time: 1:00:00
