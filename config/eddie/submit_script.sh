@@ -4,7 +4,8 @@
 
 . /etc/profile.d/modules.sh
 $MODULE_LOAD
-$EXPORT_SING_CACHE_DIR_CMD
+export SINGULARITY_CACHEDIR=$SING_CACHE_DIR
+export SINGULARITY_TMPDIR=$TMPDIR
 
 snakemake -s $SNAKEFILE \
     --directory $WORKDIR \

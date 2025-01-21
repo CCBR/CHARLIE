@@ -437,7 +437,8 @@ function run() {
     fi
     preruncleanup
 
-    $EXPORT_SING_CACHE_DIR_CMD
+    export SINGULARITY_CACHEDIR=$SING_CACHE_DIR
+    export SINGULARITY_TMPDIR=$TMPDIR
 
     snakemake -s $SNAKEFILE\
     --directory $WORKDIR \
@@ -466,7 +467,7 @@ function run() {
 
     preruncleanup
     cat ${WORKDIR}/config/${PLATFORM}/submit_script.sh |\
-      envsubst '$CLUSTER_PROFILE $CONFIGFILE $EXPORT_SING_CACHE_DIR_CMD $MODULE_LOAD $PARTITION $SINGULARITY_BINDS $SNAKEFILE $trigger $WORKDIR' \
+      envsubst '$CLUSTER_PROFILE $CONFIGFILE $SING_CACHE_DIR $MODULE_LOAD $PARTITION $SINGULARITY_BINDS $SNAKEFILE $trigger $WORKDIR' \
       > ${WORKDIR}/submit_script.sh
     sbatch ${WORKDIR}/submit_script.sh
 
@@ -474,7 +475,7 @@ function run() {
 
     preruncleanup
     cat ${WORKDIR}/config/${PLATFORM}/submit_script.sh |\
-      envsubst '$CLUSTER_PROFILE $CONFIGFILE $EXPORT_SING_CACHE_DIR_CMD $MODULE_LOAD $PARTITION $SINGULARITY_BINDS $SNAKEFILE $trigger $WORKDIR' \
+      envsubst '$CLUSTER_PROFILE $CONFIGFILE $SING_CACHE_DIR $MODULE_LOAD $PARTITION $SINGULARITY_BINDS $SNAKEFILE $trigger $WORKDIR' \
       > ${WORKDIR}/run_script.sh
     pushd $WORKDIR && bash run_script.sh && popd
 
@@ -593,12 +594,14 @@ function main(){
   if [[ -z "$SING_CACHE_DIR" ]]; then
     if [[ -d "/data/$USER" ]]; then
       SING_CACHE_DIR="/data/$USER/.singularity"
+    elif [[ "$PLATFORM" == "eddie" ]]; then
+      SING_CACHE_DIR="/exports/eddie/scratch/$USER/.singularity"
     else
       SING_CACHE_DIR="${WORKDIR}/.singularity"
     fi
+    export SING_CACHE_DIR
     echo "singularity cache dir (--singcache) is not set, using ${SING_CACHE_DIR}"
   fi
-  export EXPORT_SING_CACHE_DIR_CMD="export SINGULARITY_CACHEDIR=\"${SING_CACHE_DIR}\""
 
   # required files
   export CONFIGFILE="${WORKDIR}/config.yaml"
