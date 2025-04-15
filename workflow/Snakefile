@@ -304,13 +304,13 @@ include: "rules/findcircrna.smk"
 include: "rules/post_findcircrna_processing.smk"
 
 on_finish_cmd = f"""
-sleep 10
-mkdir -p {WORKDIR}/logs/ && run_jobby_on_snakemake_log {WORKDIR}/snakemake.log | tee {WORKDIR}/logs/snakemake.log.jobby | cut -f2,3,18 > {WORKDIR}/logs/snakemake.log.jobby.short
-if command -v spooker &> /dev/null; then
-    spooker {WORKDIR} CHARLIE
-else
-    echo 'WARNING: spooker is not available in the PATH'
-fi
+for cmd in spooker run_jobby_on_snakemake_log; do
+    if ! command -v $cmd 2>&1 >/dev/null; then
+        export PATH="$PATH:{config['ccbr_tools_path']}"
+    fi
+done
+run_jobby_on_snakemake_log logs/snakemake.log | tee logs/snakemake.log.jobby | cut -f2,3,18 > logs/snakemake.log.jobby.short
+spooker {WORKDIR} {config['pipeline']} {config['version']}
 """
 
 def on_complete(msg):
