@@ -132,3 +132,6 @@ containers:
 
 pipeline: CHARLIE
 version: "$VERSION"
+pipeline_home: "$PIPELINE_HOME"
+
+ccbr_tools_path: "/data/CCBR_Pipeliner/Tools/ccbr_tools/v0.4/bin/"
