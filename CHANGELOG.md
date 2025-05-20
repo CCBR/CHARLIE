@@ -1,5 +1,7 @@
 ## CHARLIE development version
 
+## CHARLIE 0.12.0
+
 - Now depends on ccbr_tools v0.4 for updated jobby & spooker utilities. (#142, @kelly-sovacool)
 
 ## CHARLIE 0.11.2
