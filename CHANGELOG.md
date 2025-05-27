@@ -1,5 +1,13 @@
 ## CHARLIE development version
 
+## CHARLIE 0.12.0
+
+- Now depends on ccbr_tools v0.4 for updated jobby & spooker utilities. (#142, @kelly-sovacool)
+
+## CHARLIE 0.11.2
+
+- Minor documentation updates. (#138, @kelly-sovacool)
+
 ## CHARLIE 0.11.1
 
 - CHARLIE was falsely throwing a file permissions error for tempdir values containing bash variables. (#118, @kelly-sovacool)

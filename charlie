@@ -38,8 +38,8 @@ function get_platform() {
 ##########################################################################################
 
 # set PIPELINE_HOME
-PIPELINE_HOME=$(readlink -f $(dirname "$0"))
-
+export PIPELINE_HOME=$(readlink -f $(dirname "$0"))
+export VERSION="$(echo -ne $(cat $PIPELINE_HOME/VERSION))"
 # set snakefile
 SNAKEFILE="${PIPELINE_HOME}/workflow/Snakefile"
 
@@ -58,9 +58,9 @@ MODULE_LOAD=''
 PLATFORM=$(get_platform)
 PARTITION='norm'
 EXTRA_SINGULARITY_BINDS=""
-TEMP_DIR=""
-REFS_DIR=""
-CLUSTER_PROFILE="config/unknown"
+export TEMP_DIR=""
+export REFS_DIR=""
+export CLUSTER_PROFILE="config/unknown"
 if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_PROFILE="config/slurm-biowulf"
   PARTITION="ccr,$PARTITION"
@@ -84,9 +84,9 @@ else
 fi
 
 # set defaults
-HOST="hg38"
-ADDITIVES="ERCC"
-VIRUSES="NC_009333.1"
+export HOST="hg38"
+export ADDITIVES="ERCC"
+export VIRUSES="NC_009333.1"
 MANIFEST="${PIPELINE_HOME}/config/samples.tsv"
 
 # set variables
@@ -214,6 +214,7 @@ function init() {
 
 # create output folder
 if [ -d $WORKDIR ];then err "Folder $WORKDIR already exists!"; fi
+export WORKDIR
 mkdir -p $WORKDIR
 
 # copy config resources
@@ -221,16 +222,9 @@ cp -r ${PIPELINE_HOME}/config $WORKDIR/
 
 # copy config template and samples files
 if [ ! -f $CONFIGFILE ];then
-sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
-    -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
-    -e "s/HOST/${HOST}/g" \
-    -e "s/ADDITIVES/${ADDITIVES}/g" \
-    -e "s/VIRUSES/${VIRUSES}/g" \
-    -e "s/TEMP_DIR/${TEMP_DIR//\//\\/}/g" \
-    -e "s/REFS_DIR/${REFS_DIR//\//\\/}/g" \
-    -e "s|CLUSTER_PROFILE|${CLUSTER_PROFILE}|g" \
-    ${PIPELINE_HOME}/config/config.yaml \
-    > $CONFIGFILE
+cat ${PIPELINE_HOME}/config/config.yaml |\
+  envsubst '$PIPELINE_HOME $WORKDIR $HOST $ADDITIVES $VIRUSES $TEMP_DIR $REFS_DIR $CLUSTER_PROFILE $VERSION' \
+  > $CONFIGFILE
 fi
 if [ ! -f $WORKDIR/nclscan.config ];then
 sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" -e "s/WORKDIR/${WORKDIR//\//\\/}/g" ${PIPELINE_HOME}/resources/NCLscan.config.template > $WORKDIR/nclscan.config
@@ -301,15 +295,8 @@ function reconfig(){
   # rebuild config file and replace the config.yaml in the WORKDIR
   # this is only for dev purposes when new key-value pairs are being added to the config file
   check_essential_files
-  sed -e "s/PIPELINE_HOME/${PIPELINE_HOME//\//\\/}/g" \
-    -e "s/WORKDIR/${WORKDIR//\//\\/}/g" \
-    -e "s/HOST/${HOST}/g" \
-    -e "s/ADDITIVES/${ADDITIVES}/g" \
-    -e "s/VIRUSES/${VIRUSES}/g" \
-    -e "s/TEMP_DIR/${TEMP_DIR//\//\\/}/g" \
-    -e "s/REFS_DIR/${REFS_DIR//\//\\/}/g" \
-    -e "s|CLUSTER_PROFILE|${CLUSTER_PROFILE}|g" \
-    ${PIPELINE_HOME}/config/config.yaml \
+  cat ${PIPELINE_HOME}/config/config.yaml |\
+    envsubst '$PIPELINE_HOME $WORKDIR $HOST $ADDITIVES $VIRUSES $TEMP_DIR $REFS_DIR $CLUSTER_PROFILE $VERSION' \
     > $CONFIGFILE
   echo "$WORKDIR/config.yaml has been updated!"
 }
