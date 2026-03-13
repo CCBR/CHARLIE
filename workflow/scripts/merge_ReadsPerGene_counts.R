@@ -16,15 +16,15 @@ for (i in 1:length(files)){
   sname=unlist(strsplit(basename(files[i]),"_p2"))[1]
   datasets_unstranded[[sname]]=read_counts(files[i],sname,2)
   datasets_stranded[[sname]]=read_counts(files[i],sname,3)
-  datasets_revstranded[[sname]]=read_counts(files[i],sname,4)	
+  datasets_revstranded[[sname]]=read_counts(files[i],sname,4)
 }
 
 
-x=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE), 
+x=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE),
        datasets_unstranded)
-y=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE), 
+y=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE),
          datasets_stranded)
-z=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE), 
+z=Reduce(function(d1, d2) merge(d1, d2, by = "Gene", all.x = TRUE, all.y = FALSE),
          datasets_revstranded)
 
 write.table(x,file="unstranded_STAR_GeneCounts.tsv",quote = FALSE,row.names = FALSE,sep="\t")
