@@ -52,12 +52,14 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 
 PYTHONVERSION="3"
 SNAKEMAKEVERSION="7"
-CONDA_ACTIVATE=''
+ENV_ACTIVATE=''
 PATH_PREPEND=''
 MODULE_LOAD=''
 PLATFORM=$(get_platform)
 PARTITION='norm'
 EXTRA_SINGULARITY_BINDS=""
+MAMBA_ROOT_PREFIX=""
+PY311_ENV_PATH=""
 export TEMP_DIR=""
 export REFS_DIR=""
 export CLUSTER_PROFILE="config/unknown"
@@ -65,17 +67,21 @@ if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_PROFILE="config/slurm-biowulf"
   PARTITION="ccr,$PARTITION"
   EXTRA_SINGULARITY_BINDS="/lscratch"
-  CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
-  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $CONDA_ACTIVATE"
+  MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/data/CCBR_Pipeliner/db/PipeDB/miniforge3}"
+  PY311_ENV_PATH="${PY311_ENV_PATH:-${MAMBA_ROOT_PREFIX%/}/envs/py3.11-8}"
+  ENV_ACTIVATE="if ! command -v mamba >/dev/null 2>&1; then echo \"ERROR: mamba not found in PATH. Load ccbrpipeliner module first.\"; exit 1; fi; if [ ! -x \"$PY311_ENV_PATH/bin/python\" ]; then echo \"ERROR: missing mamba environment at $PY311_ENV_PATH\"; exit 1; fi; export MAMBA_PREFIX=\"$PY311_ENV_PATH\"; export PATH=\"$PY311_ENV_PATH/bin:\$PATH\""
+  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $ENV_ACTIVATE"
   TEMP_DIR='/lscratch/$SLURM_JOB_ID/'
   REFS_DIR="/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
 elif [ "$PLATFORM" == "fnlcr" ]; then
   CLUSTER_PROFILE="config/slurm-fnlcr"
   EXTRA_SINGULARITY_BINDS="/scratch/local"
-  CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
+  MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/mnt/projects/CCBR-Pipelines/resources/miniforge3}"
+  PY311_ENV_PATH="${PY311_ENV_PATH:-${MAMBA_ROOT_PREFIX%/}/envs/py3.11-8}"
+  ENV_ACTIVATE="if ! command -v mamba >/dev/null 2>&1; then echo \"ERROR: mamba not found in PATH. Load ccbrpipeliner module first.\"; exit 1; fi; if [ ! -x \"$PY311_ENV_PATH/bin/python\" ]; then echo \"ERROR: missing mamba environment at $PY311_ENV_PATH\"; exit 1; fi; export MAMBA_PREFIX=\"$PY311_ENV_PATH\"; export PATH=\"$PY311_ENV_PATH/bin:\$PATH\""
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
-  MODULE_LOAD="module load singularity; $PATH_PREPEND; $CONDA_ACTIVATE"
+  MODULE_LOAD="module load singularity; $PATH_PREPEND; $ENV_ACTIVATE"
   TEMP_DIR="/scratch/local/"
   REFS_DIR="/mnt/projects/CCBR-Pipelines/db/charlie/fastas_gtfs/"
 else
@@ -311,7 +317,7 @@ function check_deps() {
 
 # load modules if available, or check whether they're in the path
 function load_modules() {
-  eval $MODULE_LOAD
+  eval "$MODULE_LOAD"
   check_deps
 }
 
