@@ -91,7 +91,7 @@ fi
 
 # set defaults
 export HOST="hg38"
-export ADDITIVES="ERCC"
+export ADDITIVES=""
 export VIRUSES="NC_009333.1"
 MANIFEST="${PIPELINE_HOME}/config/samples.tsv"
 
@@ -174,7 +174,7 @@ Required Arguments:
 Optional Arguments:
 
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
---additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
+--additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (default: blank) (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
 --manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
 --changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
