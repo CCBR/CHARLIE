@@ -64,6 +64,7 @@ export REFS_DIR=""
 export CLUSTER_PROFILE="config/unknown"
 if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_PROFILE="config/slurm-biowulf"
+  PARTITION="norm"
   EXTRA_SINGULARITY_BINDS="/lscratch"
   MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/data/CCBR_Pipeliner/db/PipeDB/miniforge3}"
   PY311_ENV_PATH="${PY311_ENV_PATH:-${MAMBA_ROOT_PREFIX%/}/envs/py3.11-8}"
