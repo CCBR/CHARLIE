@@ -72,7 +72,7 @@ if [ "$PLATFORM" == "biowulf" ]; then
   ENV_ACTIVATE="if ! command -v mamba >/dev/null 2>&1; then echo \"ERROR: mamba not found in PATH. Load ccbrpipeliner module first.\"; exit 1; fi; if [ ! -x \"$PY311_ENV_PATH/bin/python\" ]; then echo \"ERROR: missing mamba environment at $PY311_ENV_PATH\"; exit 1; fi; export MAMBA_PREFIX=\"$PY311_ENV_PATH\"; export PATH=\"$PY311_ENV_PATH/bin:\$PATH\""
   MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $ENV_ACTIVATE"
   TEMP_DIR='/lscratch/$SLURM_JOB_ID/'
-  REFS_DIR="/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
+  REFS_DIR="/vf/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
 elif [ "$PLATFORM" == "fnlcr" ]; then
   CLUSTER_PROFILE="config/slurm-fnlcr"
   EXTRA_SINGULARITY_BINDS="/scratch/local"

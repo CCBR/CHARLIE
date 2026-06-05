@@ -112,7 +112,7 @@ Example commands:
 VersionInfo:
   python          : 3
   snakemake       : 7
-  pipeline_home   : /gpfs/gsfs10/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
+  pipeline_home   : /vf/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
   git commit/tag  : 613fb617f1ed426fb8900f98e599ca0497a67cc0    v0.11.0-49-g613fb61
 
 ##########################################################################################
