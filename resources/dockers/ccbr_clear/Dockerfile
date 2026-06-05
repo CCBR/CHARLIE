@@ -18,9 +18,9 @@ ENV PATH="/opt2:$PATH"
 # Circexplorer2 --> bowtie
 ADD bowtie-1.1.2.tar.gz /opt2
 ENV PATH="/opt2/bowtie-1.1.2:$PATH"
-# Circexplorer2 --> UCSC bedtools tophat 
+# Circexplorer2 --> UCSC bedtools tophat
 RUN apt-get install -y bedtools
-# Circexplorer2 --> UCSC tophat 
+# Circexplorer2 --> UCSC tophat
 ADD tophat-2.1.0.Linux_x86_64.tar.gz /opt2
 ENV PATH="/opt2/tophat-2.1.0.Linux_x86_64:$PATH"
 # Circexplorer2 --> UCSC boostlibraries cufflinks

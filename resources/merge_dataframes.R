@@ -1,27 +1,27 @@
 #!/usr/bin/env Rscript --vanilla
 
 # suppressPackageStartupMessages(library("argparse"))
-# 
+#
 # # create parser object
 # parser <- ArgumentParser()
-# 
-# # specify our desired options 
-# # by default ArgumentParser will add an help option 
+#
+# # specify our desired options
+# # by default ArgumentParser will add an help option
 # parser$add_argument("-v", "--verbose", action="store_true", default=TRUE,
 #                     help="Print extra output [default]")
-# parser$add_argument("--df1", 
+# parser$add_argument("--df1",
 #                     dest="df1", help="dataframe1")
-# parser$add_argument("--df1_colname", 
+# parser$add_argument("--df1_colname",
 #                     help="dataframe1 columnname to merge by")
-# parser$add_argument("--df2", 
+# parser$add_argument("--df2",
 #                     dest="df2", help="dataframe2")
-# parser$add_argument("--df2_colname", 
+# parser$add_argument("--df2_colname",
 #                     help="dataframe2 columnname to merge by")
-# parser$add_argument("--out", 
+# parser$add_argument("--out",
 #                     dest="out", help="out filename")
-# 
+#
 # # get command line options, if help option encountered print help and exit,
-# # otherwise if options not found on command line then set defaults, 
+# # otherwise if options not found on command line then set defaults,
 # args <- parser$parse_args()
 
 setwd("~/Ziegelbauer_lab/circRNADetection/scripts/circRNA/resources")
