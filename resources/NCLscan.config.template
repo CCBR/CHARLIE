@@ -68,7 +68,7 @@ SeqOut_bin              = {NCLscan_bin}/SeqOut
 ### Advanced parameters ###
 ###########################
 
-## The following two parameters indicate the maximal read length (L) and fragment size of the used paired-end RNA-seq data (FASTQ files), where fragment size = 2L + insert size. 
+## The following two parameters indicate the maximal read length (L) and fragment size of the used paired-end RNA-seq data (FASTQ files), where fragment size = 2L + insert size.
 ## If L > 151, the users should change these two parameters to (L, 2L + insert size).
 max_read_len      = 151
 max_fragment_size = 500
@@ -96,6 +96,3 @@ bwa-mem-t = 56
 ## NOTE: The memory usage of each blat process would be up to 4 GB!
 ##
 mp_blat_process = 56
-
-
-

@@ -5,15 +5,15 @@ TODO
 
 1. Clone CHARLIE.
 
-   ```sh
-   git clone https://github.com/CCBR/charlie
-   ```
+    ```sh
+    git clone https://github.com/CCBR/charlie
+    ```
 
 1. Initialize your project working directory.
 
-   ```sh
+    ```sh
 
-   ```
+    ```
 
 1. Create a directory of reference files.
 

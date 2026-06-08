@@ -142,12 +142,12 @@ This file is used to fine tune the execution of the pipeline by setting:
 - sample sheet location ... aka `samples.tsv`
 - the temporary directory -- make sure this is correct for your computing environment.
 - which circRNA finding tools to use by editing these:
-  - run_clear: True
-  - run_dcc: True
-  - run_mapsplice: False
-  - run_circRNAFinder: True
-  - run_nclscan: False
-  - run_findcirc: False
+    - run_clear: True
+    - run_dcc: True
+    - run_mapsplice: False
+    - run_circRNAFinder: True
+    - run_nclscan: False
+    - run_findcirc: False
 - describes the location of other resources/indexes/tools etc. Generally, these do NOT need to be changed.
 
 ##### samples.tsv
