@@ -405,9 +405,11 @@ function set_singularity_binds() {
   done
 
   # Step 4: combine -- EXTRA (platform scratch) + explicit + filtered Python
-  all_binds="${EXTRA_SINGULARITY_BINDS}"
-  [[ -n "$explicit_binds"  ]] && all_binds="${all_binds},${explicit_binds}"
-  [[ -n "$filtered_python" ]] && all_binds="${all_binds},${filtered_python}"
+  # Build without leading/trailing commas to keep -B argument valid on all platforms
+  all_binds=""
+  for part in "$EXTRA_SINGULARITY_BINDS" "$explicit_binds" "$filtered_python"; do
+    [[ -n "$part" ]] && all_binds="${all_binds:+${all_binds},}${part}"
+  done
 
   SINGULARITY_BINDS="-B ${all_binds}"
 }
