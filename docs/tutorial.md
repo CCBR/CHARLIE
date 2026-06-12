@@ -28,7 +28,7 @@ output:
 
 ##########################################################################################
 
-Welcome to charlie(v0.10.0-dev)
+Welcome to charlie(v0.13.0)
  _______  __   __  _______  ______    ___      ___   _______
 |       ||  | |  ||   _   ||    _ |  |   |    |   | |       |
 |       ||  |_|  ||  |_|  ||   | ||  |   |    |   | |    ___|
@@ -93,10 +93,10 @@ Required Arguments:
 
 Optional Arguments:
 
---singcache|-c  : singularity cache directory. Default is `/data/${USER}/.singularity` if available, or falls back to `${WORKDIR}/.singularity`. Use this flag to specify a different singularity cache directory.
+--singcache|-c  : singularity cache directory. If `$SIFCACHE` is set in the environment (e.g. via `module load ccbrpipeliner`), it is used automatically as the cache and singularity image prefix. Otherwise defaults to `/data/${USER}/.singularity` if available, or falls back to `${WORKDIR}/.singularity`. Use this flag to override.
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
---additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
---viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
+--additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (default: blank). Omit for host-only circRNA discovery. (--runmode=init only)
+--viruses|-v    : supply comma-separated list of viruses at command line. Omit for host-only circRNA discovery. (--runmode=init only)
 --manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
 --changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
 --help|-h       : print this help
@@ -112,7 +112,7 @@ Example commands:
 VersionInfo:
   python          : 3
   snakemake       : 7
-  pipeline_home   : /gpfs/gsfs10/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
+  pipeline_home   : /vf/users/CCBR_Pipeliner/Pipelines/CHARLIE/.v0.11.1
   git commit/tag  : 613fb617f1ed426fb8900f98e599ca0497a67cc0    v0.11.0-49-g613fb61
 
 ##########################################################################################

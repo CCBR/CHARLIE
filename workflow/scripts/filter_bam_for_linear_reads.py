@@ -21,33 +21,42 @@ from collections import defaultdict
 # """
 
 # if readid is NOT in the junctions file then it is a read with no Junction ... aka LINEAR!
-            
+
+
 class Read:
     def __init__(self):
-        self.alignments=list()
-        self.read1exists=False
-        self.read2exists=False
-        
-    def append_alignment(self,alignment):
+        self.alignments = list()
+        self.read1exists = False
+        self.read2exists = False
+
+    def append_alignment(self, alignment):
         self.alignments.append(alignment)
         if alignment.is_read1:
-            self.read1exists=True
+            self.read1exists = True
         if alignment.is_read2:
-            self.read2exists=True
-    
+            self.read2exists = True
+
     def is_valid_read(self):
-        return(self.read1exists and self.read2exists)
-        
+        return self.read1exists and self.read2exists
 
 
-
-parser = argparse.ArgumentParser(description='Filter BAM to exclude BSJs and other chimeric alignments')
-parser.add_argument('--inputBAM', dest='inputBAM', type=str, required=True,
-                    help='input BAM file')
-parser.add_argument('--outputBAM', dest='outputBAM', type=str, required=True,
-                    help='filtered output BAM file')
-parser.add_argument('-j',dest='junctions',required=True,help='chimeric junctions file')
-parser.add_argument('-p',dest='paired', help='bam is paired', action='store_true')
+parser = argparse.ArgumentParser(
+    description="Filter BAM to exclude BSJs and other chimeric alignments"
+)
+parser.add_argument(
+    "--inputBAM", dest="inputBAM", type=str, required=True, help="input BAM file"
+)
+parser.add_argument(
+    "--outputBAM",
+    dest="outputBAM",
+    type=str,
+    required=True,
+    help="filtered output BAM file",
+)
+parser.add_argument(
+    "-j", dest="junctions", required=True, help="chimeric junctions file"
+)
+parser.add_argument("-p", dest="paired", help="bam is paired", action="store_true")
 args = parser.parse_args()
 # rids=list()
 inBAM = pysam.AlignmentFile(args.inputBAM, "rb")
@@ -98,31 +107,36 @@ reads = defaultdict(lambda: Read())
 
 
 # get a list of the chimeric readids
-rids_dict=dict()
-with open(args.junctions, 'r') as junc_f:
+rids_dict = dict()
+with open(args.junctions, "r") as junc_f:
     for line in junc_f:
         if "junction_type" in line:
             continue
-        readid=line.split()[9] # 10th column is read-name
-        rids_dict[readid]=1
+        readid = line.split()[9]  # 10th column is read-name
+        rids_dict[readid] = 1
 
 print(f"Total chimeric readids:{len(rids_dict)}")
 
-if args.paired: # paired-end
+if args.paired:  # paired-end
     for read in inBAM.fetch(until_eof=True):
-        if not read.is_proper_pair or read.is_secondary or read.is_supplementary or read.is_unmapped:
+        if (
+            not read.is_proper_pair
+            or read.is_secondary
+            or read.is_supplementary
+            or read.is_unmapped
+        ):
             continue
         qname = read.query_name
-        if qname in rids_dict: # "in" dict is much faster than "in" list
-            continue # if readid is in dict then it is a junction read ... so ignore it!
+        if qname in rids_dict:  # "in" dict is much faster than "in" list
+            continue  # if readid is in dict then it is a junction read ... so ignore it!
         else:
             outBAM.write(read)
-else: # single-end
-    incount=0
-    outcount=0
+else:  # single-end
+    incount = 0
+    outcount = 0
     for read in inBAM.fetch(until_eof=True):
-        incount+=1
-        if incount%1000==0:
+        incount += 1
+        if incount % 1000 == 0:
             print(f"{incount/1000000:.4f}m reads read in")
             print(f"{outcount/1000000:.4f}m reads written out")
         if read.is_secondary or read.is_supplementary or read.is_unmapped:
@@ -131,9 +145,8 @@ else: # single-end
         if qname in rids_dict:
             continue
         else:
-            outcount+=1
+            outcount += 1
             outBAM.write(read)
-
 
 
 inBAM.close()

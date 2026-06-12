@@ -52,30 +52,35 @@ GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
 
 PYTHONVERSION="3"
 SNAKEMAKEVERSION="7"
-CONDA_ACTIVATE=''
+ENV_ACTIVATE=''
 PATH_PREPEND=''
 MODULE_LOAD=''
 PLATFORM=$(get_platform)
 PARTITION='norm'
 EXTRA_SINGULARITY_BINDS=""
+
 export TEMP_DIR=""
 export REFS_DIR=""
 export CLUSTER_PROFILE="config/unknown"
 if [ "$PLATFORM" == "biowulf" ]; then
   CLUSTER_PROFILE="config/slurm-biowulf"
-  PARTITION="ccr,$PARTITION"
+  PARTITION="norm"
   EXTRA_SINGULARITY_BINDS="/lscratch"
-  CONDA_ACTIVATE='. "/data/CCBR_Pipeliner/db/PipeDB/Conda/etc/profile.d/conda.sh" && conda activate py311'
-  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $CONDA_ACTIVATE"
+  MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/data/CCBR_Pipeliner/db/PipeDB/miniforge3}"
+  PY311_ENV_PATH="${PY311_ENV_PATH:-${MAMBA_ROOT_PREFIX%/}/envs/py3.11-8}"
+  ENV_ACTIVATE="if ! command -v mamba >/dev/null 2>&1; then echo \"ERROR: mamba not found in PATH. Load ccbrpipeliner module first.\"; exit 1; fi; if [ ! -x \"$PY311_ENV_PATH/bin/python\" ]; then echo \"ERROR: missing mamba environment at $PY311_ENV_PATH\"; exit 1; fi; export MAMBA_PREFIX=\"$PY311_ENV_PATH\"; export PATH=\"$PY311_ENV_PATH/bin:\$PATH\""
+  MODULE_LOAD="module load python/$PYTHONVERSION snakemake/$SNAKEMAKEVERSION singularity; $ENV_ACTIVATE"
   TEMP_DIR='/lscratch/$SLURM_JOB_ID/'
-  REFS_DIR="/gpfs/gsfs10/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
+  REFS_DIR="/vf/users/CCBR_Pipeliner/db/PipeDB/charlie/fastas_gtfs/"
 elif [ "$PLATFORM" == "fnlcr" ]; then
   CLUSTER_PROFILE="config/slurm-fnlcr"
   EXTRA_SINGULARITY_BINDS="/scratch/local"
-  CONDA_ACTIVATE=". '/mnt/projects/CCBR-Pipelines/resources/miniconda3/etc/profile.d/conda.sh' && conda activate py311"
+  MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/mnt/projects/CCBR-Pipelines/resources/miniforge3}"
+  PY311_ENV_PATH="${PY311_ENV_PATH:-${MAMBA_ROOT_PREFIX%/}/envs/py3.11-8}"
+  ENV_ACTIVATE="if ! command -v mamba >/dev/null 2>&1; then echo \"ERROR: mamba not found in PATH. Load ccbrpipeliner module first.\"; exit 1; fi; if [ ! -x \"$PY311_ENV_PATH/bin/python\" ]; then echo \"ERROR: missing mamba environment at $PY311_ENV_PATH\"; exit 1; fi; export MAMBA_PREFIX=\"$PY311_ENV_PATH\"; export PATH=\"$PY311_ENV_PATH/bin:\$PATH\""
   # make sure spooker is in the path
   PATH_PREPEND='export PATH="/mnt/projects/CCBR-Pipelines/bin:$PATH"'
-  MODULE_LOAD="module load singularity; $PATH_PREPEND; $CONDA_ACTIVATE"
+  MODULE_LOAD="module load singularity; $PATH_PREPEND; $ENV_ACTIVATE"
   TEMP_DIR="/scratch/local/"
   REFS_DIR="/mnt/projects/CCBR-Pipelines/db/charlie/fastas_gtfs/"
 else
@@ -85,7 +90,7 @@ fi
 
 # set defaults
 export HOST="hg38"
-export ADDITIVES="ERCC"
+export ADDITIVES=""
 export VIRUSES="NC_009333.1"
 MANIFEST="${PIPELINE_HOME}/config/samples.tsv"
 
@@ -168,7 +173,7 @@ Required Arguments:
 Optional Arguments:
 
 --host|-g       : supply host at command line. hg38 or mm39.                                            (--runmode=init only)
---additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (--runmode=init only)
+--additives|-a  : supply comma-separated list of additives at command line. ERCC or BAC16Insert or both (default: blank) (--runmode=init only)
 --viruses|-v    : supply comma-separated list of viruses at command line                                (--runmode=init only)
 --manifest|-s   : absolute path to samples.tsv. This will be copied to output folder                    (--runmode=init only)
 --changegrp|-z  : change group to "Ziegelbauer_lab" before running anything. Biowulf-only. Useful for correctly setting permissions.
@@ -311,7 +316,7 @@ function check_deps() {
 
 # load modules if available, or check whether they're in the path
 function load_modules() {
-  eval $MODULE_LOAD
+  eval "$MODULE_LOAD"
   check_deps
 }
 
@@ -330,6 +335,7 @@ function runcheck(){
 
 function dryrun() {
   runcheck
+  set_singularity_binds
   timestamp=$(date +"%y%m%d%H%M%S")
   nfiles=$(find ${WORKDIR} -maxdepth 1 -name "dryrun.*.log"|wc -l)
   if [ "$nfiles" != "0" ];then
@@ -342,6 +348,7 @@ function dryrun() {
 
 function touch() {
   runcheck
+  set_singularity_binds
   timestamp=$(date +"%y%m%d%H%M%S")
   run "--touch" | tee ${WORKDIR}/touch.${timestamp}.log
 }
@@ -352,6 +359,7 @@ function touch() {
 
 function unlock() {
   runcheck
+  set_singularity_binds
   run "--unlock"
 }
 
@@ -360,8 +368,50 @@ function unlock() {
 ##########################################################################################
 
 function set_singularity_binds() {
-  binds=$( $PIPELINE_HOME/workflow/scripts/set_singularity_bind_paths.py ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)
-  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+  # Step 1: get Python-derived paths from config + samples
+  python_binds=$($PIPELINE_HOME/workflow/scripts/set_singularity_bind_paths.py \
+    ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)
+
+  # Step 2: walk up parents of WORKDIR and PIPELINE_HOME.
+  # If /data/<name> is a symlink resolving to that ancestor,
+  # include both the symlink path and the real path.
+  explicit_binds=""
+  for src in "$WORKDIR" "$PIPELINE_HOME"; do
+    p=$(dirname "$src")
+    while [[ "$p" != "/" ]]; do
+      alias="/data/$(basename $p)"
+      if [[ -L "$alias" && "$(readlink -f $alias 2>/dev/null)" == "$p" ]]; then
+        explicit_binds="${explicit_binds:+${explicit_binds},}${alias},${p}"
+        break
+      fi
+      p=$(dirname "$p")
+    done
+  done
+
+  # Step 3: filter Python paths -- remove any that are ancestors or descendants
+  # of the explicit (bash-derived) paths, as those are already well-covered
+  filtered_python=""
+  IFS=',' read -ra explicit_arr <<< "$explicit_binds"
+  IFS=',' read -ra python_arr  <<< "$python_binds"
+  for p in "${python_arr[@]}"; do
+    [[ -z "$p" ]] && continue
+    skip=false
+    for e in "${explicit_arr[@]}"; do
+      [[ -z "$e" ]] && continue
+      [[ "$e" == "$p/"* ]] && skip=true && break  # p is ancestor of e (too broad)
+      [[ "$p" == "$e/"* ]] && skip=true && break  # p is descendant of e (too specific)
+    done
+    $skip || filtered_python="${filtered_python:+${filtered_python},}${p}"
+  done
+
+  # Step 4: combine -- EXTRA (platform scratch) + explicit + filtered Python
+  # Build without leading/trailing commas to keep -B argument valid on all platforms
+  all_binds=""
+  for part in "$EXTRA_SINGULARITY_BINDS" "$explicit_binds" "$filtered_python"; do
+    [[ -n "$part" ]] && all_binds="${all_binds:+${all_binds},}${part}"
+  done
+
+  SINGULARITY_BINDS="-B ${all_binds}"
 }
 ##########################################################################################
 # PRINT SINGULARITY BINDS ... print bound singularity folders for debugging
@@ -470,6 +520,17 @@ function run() {
 
     preruncleanup
 
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "========================================"
+    echo ""
+
     $EXPORT_SING_CACHE_DIR_CMD
 
     snakemake -s $SNAKEFILE\
@@ -477,6 +538,7 @@ function run() {
     --printshellcmds \
     --use-singularity \
     --singularity-args "$SINGULARITY_BINDS" \
+    --singularity-prefix "$SING_CACHE_DIR" \
     --use-envmodules \
     --latency-wait 300 \
     --configfile $CONFIGFILE \
@@ -499,6 +561,19 @@ function run() {
 
     preruncleanup
 
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "Cluster profile    : $CLUSTER_PROFILE"
+    echo "Partition          : $PARTITION"
+    echo "========================================"
+    echo ""
+
     cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
 #SBATCH --job-name="charlie"
@@ -516,6 +591,7 @@ snakemake -s $SNAKEFILE \
     --directory $WORKDIR \
     --use-singularity \
     --singularity-args "$SINGULARITY_BINDS" \
+    --singularity-prefix "$SING_CACHE_DIR" \
     --use-envmodules \
     --printshellcmds \
     --latency-wait 300 \
@@ -549,11 +625,24 @@ EOF
 
   else # dry-run and unlock
 
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "Cluster profile    : $CLUSTER_PROFILE"
+    echo "========================================"
+    echo ""
+
     snakemake $1 -s $SNAKEFILE \
     --directory $WORKDIR \
     --use-envmodules \
     --use-singularity \
     --singularity-args "$SINGULARITY_BINDS" \
+    --singularity-prefix "$SING_CACHE_DIR" \
     --printshellcmds \
     --latency-wait 300 \
     --configfile $CONFIGFILE \
@@ -636,7 +725,9 @@ function main(){
   echo "Working Dir: $WORKDIR"
 
   if [[ -z "$SING_CACHE_DIR" ]]; then
-    if [[ -d "/data/$USER" ]]; then
+    if [[ -n "$SIFCACHE" ]]; then
+      SING_CACHE_DIR="$SIFCACHE"
+    elif [[ -d "/data/$USER" ]]; then
       SING_CACHE_DIR="/data/$USER/.singularity"
     else
       SING_CACHE_DIR="${WORKDIR}/.singularity"

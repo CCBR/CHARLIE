@@ -1,4 +1,14 @@
-## CHARLIE development version
+## CHARLIE 0.13.0
+
+- Migrate runtime activation to a mamba-safe flow to avoid shared-environment activation failures. (#149, @kopardev)
+- **Host-only circRNA discovery is now supported.** Additives (e.g. ERCC) and viruses are now fully optional — omitting them runs the pipeline in host-only mode, a long-standing user request. Make host/additives/viruses config placeholders envsubst-compatible and default additives to blank when omitted. (#149, @kopardev)
+- Replace hard-coded CCBR base paths under `/gpfs` with `/vf` for current filesystem layout compatibility. (#149, @kopardev)
+- Update Biowulf partition handling by removing deprecated `ccr` usage and forcing/defaulting to `norm`. (#149, @kopardev)
+- Align `onsuccess`/`onerror` completion hooks with CARLISLE behavior while preserving CHARLIE's shared hook implementation, including stricter shell setup and completion-log checks. (#153, @kopardev)
+- Auto-detect `$SIFCACHE` (set by `module load ccbrpipeliner`) and use it as the singularity cache and `--singularity-prefix` so Snakemake finds pre-downloaded SIF files without pulling from Docker Hub. (#154, @kopardev)
+- Print a configuration summary block (workdir, snakefile, config, singularity cache, binds, platform) to the terminal before each pipeline run. (#154, @kopardev)
+- Fix `set_singularity_binds` not being called in `unlock()`, `dryrun()`, and `touch()`, which left `SINGULARITY_BINDS` empty. (#154, @kopardev)
+- Smarter singularity bind path detection: walk up parents of `WORKDIR` and `PIPELINE_HOME` to find `/data/<name>` symlinks and include both the symlink and real path; filter Python-derived paths that are ancestors (too broad) or descendants (too specific) of the bash-derived explicit paths. (#154, @kopardev)
 
 ## CHARLIE 0.12.0
 

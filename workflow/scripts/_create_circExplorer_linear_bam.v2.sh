@@ -283,10 +283,32 @@ samtools sort -l 9 -T ${tmpdir}/sorttmp --write-index -@${threads} -O BAM -o ${s
 
 if [ -f ${tmpdir}/para3 ];then rm -f ${tmpdir}/para3;fi
 
-echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam --sample_name $sample_name --regions $regions --prefix linear_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam --sample_name $sample_name --regions $regions --prefix spliced_BSJ --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $linearbam_all --sample_name $sample_name --regions $regions --prefix linear --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
-echo "python3 -E ${SCRIPT_DIR}/bam_split_by_regions.py --inbam $splicedbam_all --sample_name $sample_name --regions $regions --prefix spliced --outdir $outdir --host $host --additives $additives --viruses $viruses" >> ${tmpdir}/para3
+split_region_common_args=(
+    --sample_name "$sample_name"
+    --regions "$regions"
+    --outdir "$outdir"
+    --host "$host"
+)
+if [[ -n "$additives" ]]; then
+    split_region_common_args+=(--additives "$additives")
+fi
+if [[ -n "$viruses" ]]; then
+    split_region_common_args+=(--viruses "$viruses")
+fi
+
+write_split_cmd() {
+    local inbam="$1"
+    local prefix="$2"
+    local cmd=(python3 -E "${SCRIPT_DIR}/bam_split_by_regions.py" --inbam "$inbam" --prefix "$prefix")
+    cmd+=("${split_region_common_args[@]}")
+    printf '%q ' "${cmd[@]}" >> "${tmpdir}/para3"
+    printf '\n' >> "${tmpdir}/para3"
+}
+
+write_split_cmd "$linearbam" "linear_BSJ"
+write_split_cmd "$splicedbam" "spliced_BSJ"
+write_split_cmd "$linearbam_all" "linear"
+write_split_cmd "$splicedbam_all" "spliced"
 
 parallel -j 4 < ${tmpdir}/para3
 

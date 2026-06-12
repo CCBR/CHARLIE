@@ -79,4 +79,3 @@ echo "INFILE: \${INFILE}"
 echo "OUTFILE: \${OUTFILE}"
 FOO
 fi
-

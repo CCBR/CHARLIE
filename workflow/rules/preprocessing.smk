@@ -54,7 +54,7 @@ rule cutadapt:
             -j {threads} \\
             -o {params.tmpdir}/${{of1bn}} -p {params.tmpdir}/${{of2bn}} \\
             {input.R1} {input.R2}
-            
+
         # filter for average read quality
             fastq-filter \\
                 -q {params.cutadapt_q} \\
@@ -73,7 +73,7 @@ rule cutadapt:
             -j {threads} \\
             -o {params.tmpdir}/${{of1bn}} \\
             {input.R1}
-            
+
             touch {output.of2}
 
         # filter for average read quality
