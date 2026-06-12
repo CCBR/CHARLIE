@@ -357,6 +357,7 @@ function touch() {
 
 function unlock() {
   runcheck
+  set_singularity_binds
   run "--unlock"
 }
 
