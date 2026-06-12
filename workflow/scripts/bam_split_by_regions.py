@@ -8,28 +8,48 @@ def get_ctime():
     return time.ctime(time.time())
 
 
+def _split_csv(arg):
+    return [token for token in arg.split(",") if token]
+
+
 def read_regions(regionsfile, host, additives, viruses):
-    host = host.split(",")
-    additives = additives.split(",")
-    viruses = viruses.split(",")
-    infile = open(regionsfile, "r")
+    host = set(_split_csv(host))
+    additives = set(_split_csv(additives))
+    viruses = set(_split_csv(viruses))
+    if not host:
+        exit("Host argument is required and cannot be empty.")
+
     regions = dict()
-    for l in infile.readlines():
-        l = l.strip().split("\t")
-        region_name = l[0]
-        regions[region_name] = dict()
-        regions[region_name]["sequences"] = dict()
-        if region_name in host:
-            regions[region_name]["host_additive_virus"] = "host"
-        elif region_name in additives:
-            regions[region_name]["host_additive_virus"] = "additive"
-        elif region_name in viruses:
-            regions[region_name]["host_additive_virus"] = "virus"
-        else:
-            exit("%s has unknown region. Its not a host or a additive or a virus!!")
-        sequence_names = l[1].split()
-        for s in sequence_names:
-            regions[region_name]["sequences"][s] = 1
+    unknown_regions = []
+    with open(regionsfile, "r") as infile:
+        for l in infile.readlines():
+            l = l.strip().split("\t")
+            region_name = l[0]
+            regions[region_name] = dict()
+            regions[region_name]["sequences"] = dict()
+            if region_name in host:
+                regions[region_name]["host_additive_virus"] = "host"
+            elif region_name in additives:
+                regions[region_name]["host_additive_virus"] = "additive"
+            elif region_name in viruses:
+                regions[region_name]["host_additive_virus"] = "virus"
+            else:
+                unknown_regions.append(region_name)
+                continue
+            sequence_names = l[1].split()
+            for s in sequence_names:
+                regions[region_name]["sequences"][s] = 1
+
+    if unknown_regions:
+        exit(
+            "Unknown region(s) in regions file: %s. Declared categories: host=%s additives=%s viruses=%s"
+            % (
+                ",".join(sorted(unknown_regions)),
+                ",".join(sorted(host)),
+                ",".join(sorted(additives)),
+                ",".join(sorted(viruses)),
+            )
+        )
     return regions
 
 
@@ -90,14 +110,16 @@ def main():
         "--additives",
         dest="additives",
         type=str,
-        required=True,
+        required=False,
+        default="",
         help="additive name(s) eg.ERCC... comma-separated list... all BSJs in this region are filtered out",
     )
     parser.add_argument(
         "--viruses",
         dest="viruses",
         type=str,
-        required=True,
+        required=False,
+        default="",
         help="virus name(s) eg.NC_009333.1... comma-separated list",
     )
     parser.add_argument(
