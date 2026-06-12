@@ -36,5 +36,5 @@
         "threads": "56",
         "time": "48:00:00",
         "partition": "largemem"
-    }    
+    }
 }

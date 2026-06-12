@@ -27,32 +27,63 @@ rule create_index:
         """
 set -exo pipefail
 cd {params.refdir}
+progress_log={params.refdir}/create_index.progress.log
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Starting create_index in {params.refdir}; threads={threads}" | tee -a "$progress_log"
+
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Building FASTA index (.fai) and genome sizes" | tee -a "$progress_log"
 samtools faidx {params.reffa} && \\
     cut -f1-2 {params.reffa}.fai > {params.reffa}.sizes
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Finished FASTA index and sizes" | tee -a "$progress_log"
 
 # bwa index -p ref {params.reffa} > bwa_index.log ... created in a separate rule
 
 # NCLscan files
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Running fix_gtfs.py" | tee -a "$progress_log"
 python -E {params.script3} --ingtf {params.refgtf} --outgtf {output.fixed_gtf}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Extracting transcript FASTA with gffread" | tee -a "$progress_log"
 gffread -w {output.transcripts_fa} -g {params.reffa} {output.fixed_gtf}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Preparing NCLscan reference files" | tee -a "$progress_log"
 touch {output.lncRNA_transcripts_fa}
 create_reference.py -c {params.nclscan_config}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Finished NCLscan reference preparation" | tee -a "$progress_log"
 
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Building genePred and appending gene IDs" | tee -a "$progress_log"
 gtfToGenePred -ignoreGroupsWithoutExons {output.fixed_gtf} ref.genes.genepred && \\
     python -E {params.script1} {output.fixed_gtf} ref.genes.genepred > {output.genepred_w_geneid}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Finished genePred generation" | tee -a "$progress_log"
 
 stardir=$(dirname {output.sa})
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Starting STAR genomeGenerate into $stardir" | tee -a "$progress_log"
 mkdir -p $stardir && \\
 STAR \\
     --runThreadN {threads} \\
     --runMode genomeGenerate \\
     --genomeDir $stardir \\
     --genomeFastaFiles {params.reffa}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Finished STAR genomeGenerate" | tee -a "$progress_log"
 
 # MapSplice requires the {params.reffa} multifasta to be split into separate fastas
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Splitting multifasta for MapSplice" | tee -a "$progress_log"
 bash {params.script2} {params.reffa} {params.refdir}/separate_fastas
 ls {params.refdir}/separate_fastas/*.fa | awk {AWK1} > {output.fastalst}
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] Wrote separate FASTA list to {output.fastalst}" | tee -a "$progress_log"
 # may have to create bowtie1 index here.. has to be a separate rule ... see below
+
+ts=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[create_index][$ts] create_index completed successfully" | tee -a "$progress_log"
 """
 
 
