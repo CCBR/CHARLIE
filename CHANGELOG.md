@@ -1,4 +1,4 @@
-## CHARLIE development version
+## CHARLIE 0.13.0
 
 - Migrate runtime activation to a mamba-safe flow to avoid shared-environment activation failures. (#149, @kopardev)
 - **Host-only circRNA discovery is now supported.** Additives (e.g. ERCC) and viruses are now fully optional — omitting them runs the pipeline in host-only mode, a long-standing user request. Make host/additives/viruses config placeholders envsubst-compatible and default additives to blank when omitted. (#149, @kopardev)
