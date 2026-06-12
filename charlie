@@ -368,8 +368,48 @@ function unlock() {
 ##########################################################################################
 
 function set_singularity_binds() {
-  binds=$( $PIPELINE_HOME/workflow/scripts/set_singularity_bind_paths.py ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)
-  SINGULARITY_BINDS="-B $EXTRA_SINGULARITY_BINDS,$binds"
+  # Step 1: get Python-derived paths from config + samples
+  python_binds=$($PIPELINE_HOME/workflow/scripts/set_singularity_bind_paths.py \
+    ${WORKDIR}/config.yaml ${WORKDIR}/samples.tsv)
+
+  # Step 2: walk up parents of WORKDIR and PIPELINE_HOME.
+  # If /data/<name> is a symlink resolving to that ancestor,
+  # include both the symlink path and the real path.
+  explicit_binds=""
+  for src in "$WORKDIR" "$PIPELINE_HOME"; do
+    p=$(dirname "$src")
+    while [[ "$p" != "/" ]]; do
+      alias="/data/$(basename $p)"
+      if [[ -L "$alias" && "$(readlink -f $alias 2>/dev/null)" == "$p" ]]; then
+        explicit_binds="${explicit_binds:+${explicit_binds},}${alias},${p}"
+        break
+      fi
+      p=$(dirname "$p")
+    done
+  done
+
+  # Step 3: filter Python paths -- remove any that are ancestors or descendants
+  # of the explicit (bash-derived) paths, as those are already well-covered
+  filtered_python=""
+  IFS=',' read -ra explicit_arr <<< "$explicit_binds"
+  IFS=',' read -ra python_arr  <<< "$python_binds"
+  for p in "${python_arr[@]}"; do
+    [[ -z "$p" ]] && continue
+    skip=false
+    for e in "${explicit_arr[@]}"; do
+      [[ -z "$e" ]] && continue
+      [[ "$e" == "$p/"* ]] && skip=true && break  # p is ancestor of e (too broad)
+      [[ "$p" == "$e/"* ]] && skip=true && break  # p is descendant of e (too specific)
+    done
+    $skip || filtered_python="${filtered_python:+${filtered_python},}${p}"
+  done
+
+  # Step 4: combine -- EXTRA (platform scratch) + explicit + filtered Python
+  all_binds="${EXTRA_SINGULARITY_BINDS}"
+  [[ -n "$explicit_binds"  ]] && all_binds="${all_binds},${explicit_binds}"
+  [[ -n "$filtered_python" ]] && all_binds="${all_binds},${filtered_python}"
+
+  SINGULARITY_BINDS="-B ${all_binds}"
 }
 ##########################################################################################
 # PRINT SINGULARITY BINDS ... print bound singularity folders for debugging
