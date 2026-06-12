@@ -475,6 +475,17 @@ function run() {
 
     preruncleanup
 
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "========================================"
+    echo ""
+
     $EXPORT_SING_CACHE_DIR_CMD
 
     snakemake -s $SNAKEFILE\
@@ -504,6 +515,19 @@ function run() {
   elif [ "$1" == "slurm" ];then
 
     preruncleanup
+
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "Cluster profile    : $CLUSTER_PROFILE"
+    echo "Partition          : $PARTITION"
+    echo "========================================"
+    echo ""
 
     cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
@@ -555,6 +579,18 @@ EOF
     --cores 1
 
   else # dry-run and unlock
+
+    echo ""
+    echo "========================================"
+    echo "Working directory  : $WORKDIR"
+    echo "Snakefile          : $SNAKEFILE"
+    echo "Config file        : $CONFIGFILE"
+    echo "Singularity cache  : $SING_CACHE_DIR"
+    echo "Singularity binds  : $SINGULARITY_BINDS"
+    echo "Platform           : $PLATFORM"
+    echo "Cluster profile    : $CLUSTER_PROFILE"
+    echo "========================================"
+    echo ""
 
     snakemake $1 -s $SNAKEFILE \
     --directory $WORKDIR \
