@@ -335,6 +335,7 @@ function runcheck(){
 
 function dryrun() {
   runcheck
+  set_singularity_binds
   timestamp=$(date +"%y%m%d%H%M%S")
   nfiles=$(find ${WORKDIR} -maxdepth 1 -name "dryrun.*.log"|wc -l)
   if [ "$nfiles" != "0" ];then
@@ -347,6 +348,7 @@ function dryrun() {
 
 function touch() {
   runcheck
+  set_singularity_binds
   timestamp=$(date +"%y%m%d%H%M%S")
   run "--touch" | tee ${WORKDIR}/touch.${timestamp}.log
 }
