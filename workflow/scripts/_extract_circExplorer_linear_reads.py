@@ -500,9 +500,9 @@ def main():
                             junction_counts[short_jid].increment_linear_spliced(
                                 strand_info
                             )
-                            splicedbsj[
-                                rid
-                            ] = 1  # aka read is spliced and is spliced at BSJ
+                            splicedbsj[rid] = (
+                                1  # aka read is spliced and is spliced at BSJ
+                            )
                             count4 += 1
                             # splicedbsjjid[jid][rid]=1
                     else:  # read has multiple splicing events
@@ -520,9 +520,9 @@ def main():
                                     junction_counts[short_jid].increment_linear_spliced(
                                         strand_info
                                     )
-                                    splicedbsj[
-                                        rid
-                                    ] = 1  # aka read is spliced and is spliced at BSJ
+                                    splicedbsj[rid] = (
+                                        1  # aka read is spliced and is spliced at BSJ
+                                    )
                                     count4 += 1
                                     # splicedbsjjid[jid][rid]=1
                                     break

@@ -504,12 +504,12 @@ def main():
             nclscan.rename({"read_count": "nclscan_read_count"}, axis=1, inplace=True)
             nclscan.drop(["chrom", "start", "end"], axis=1, inplace=True)
             nclscan = _df_setcol_as_str(nclscan, ["nclscan_annotation"])
-            nclscan.loc[
-                nclscan["nclscan_annotation"] == "1", "nclscan_annotation"
-            ] = "Intragenic"
-            nclscan.loc[
-                nclscan["nclscan_annotation"] == "0", "nclscan_annotation"
-            ] = "Intergenic"
+            nclscan.loc[nclscan["nclscan_annotation"] == "1", "nclscan_annotation"] = (
+                "Intragenic"
+            )
+            nclscan.loc[nclscan["nclscan_annotation"] == "0", "nclscan_annotation"] = (
+                "Intergenic"
+            )
             # nclscan.loc[nclscan['nclscan_annotation']!="0" and nclscan['nclscan_annotation']!="1" , 'nclscan_annotation'] = "Unknown"
             nclscan.set_index(["circRNA_id"], inplace=True, drop=True)
 
