@@ -64,11 +64,9 @@ def get_cigars(l):
     return cigars
 
 
-parser = argparse.ArgumentParser(
-    description="""
+parser = argparse.ArgumentParser(description="""
 Extract readids,strand,site,cigar etc. of reads with spliced junction from chimeric junctions file generated using STAR.
-"""
-)
+""")
 parser.add_argument(
     "-j", dest="junctions", required=True, help="chimeric junctions file"
 )

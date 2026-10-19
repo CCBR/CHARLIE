@@ -78,9 +78,9 @@ new_names = [
 ]
 CircCoordinates.rename(columns=dict(zip(old_names, new_names)), inplace=True)
 CircCoordinates[["junction_type"]] = CircCoordinates[["junction_type"]].astype(str)
-CircCoordinates.loc[
-    CircCoordinates["junction_type"] == "0", "junction_type"
-] = "Non-canonical"
+CircCoordinates.loc[CircCoordinates["junction_type"] == "0", "junction_type"] = (
+    "Non-canonical"
+)
 CircCoordinates.loc[CircCoordinates["junction_type"] == "1", "junction_type"] = "GT/AG"
 CircCoordinates.loc[CircCoordinates["junction_type"] == "2", "junction_type"] = "CT/AC"
 CircCoordinates.loc[CircCoordinates["junction_type"] == "3", "junction_type"] = "GC/AG"
