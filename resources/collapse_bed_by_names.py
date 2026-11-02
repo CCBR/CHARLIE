@@ -2,8 +2,7 @@
 import sys
 import textwrap
 
-usage_txt = textwrap.dedent(
-    """\
+usage_txt = textwrap.dedent("""\
 	Description:
 	The script collapses bed entries, ie, if the bed file has repeated
 	regions but with different names, then they are all collaped into
@@ -14,10 +13,7 @@ usage_txt = textwrap.dedent(
 	@Parameters:
 	1. <inputBed6>: BED6 file that needs to be collapsed by name
 	2. <outputBed6>: BED6 collaped output file
-""".format(
-        __file__
-    )
-)
+""".format(__file__))
 
 
 if len(sys.argv) != 3:
