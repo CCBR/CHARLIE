@@ -1,5 +1,7 @@
 ## CHARLIE development version
 
+- Pin `ccbr_tools` to v0.7. (#161, @kelly-sovacool)
+
 ## CHARLIE 0.13.0
 
 - Migrate runtime activation to a mamba-safe flow to avoid shared-environment activation failures. (#149, @kopardev)
