@@ -19,8 +19,8 @@ jobs:
         python-version: ["3.11"]
         snakemake-version: ["7.32.3"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: actions/checkout@v7
+      - uses: mamba-org/setup-micromamba@v3
         with:
           environment-name: build
           cache-environment: true
