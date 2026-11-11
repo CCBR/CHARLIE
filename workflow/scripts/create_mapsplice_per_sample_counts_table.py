@@ -119,7 +119,7 @@ regions["additive"] = list(
 # load files
 circularRNAstxt = pandas.read_csv(args.circularRNAstxt, sep="\t", header=None)
 
-# file has no column lables ... add them
+# file has no column labels ... add them
 # ref: https://github.com/Aufiero/circRNAprofiler/blob/master/R/importFilesPredictionTool.R
 circularRNAstxt.columns = [
     "chrom",

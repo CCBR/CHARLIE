@@ -22,7 +22,7 @@ def main():
         dest="outtsv",
         required=True,
         type=str,
-        help="Output tsv... gziped",
+        help="Output tsv... gzipped",
     )
     parser.add_argument(
         "-m",
