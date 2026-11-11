@@ -29,7 +29,7 @@ def main():
         dest="counttablelist",
         type=str,
         required=True,
-        help="comma separted list of per sample counts tables to merge",
+        help="comma separated list of per sample counts tables to merge",
     )
     parser.add_argument(
         "--minreads",

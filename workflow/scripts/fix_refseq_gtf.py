@@ -5,7 +5,6 @@
 
 import sys, copy, argparse
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i",
