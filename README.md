@@ -1,6 +1,6 @@
 # CHARLIE
 
-**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
+**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line <!-- codespell:ignore nd -->
 
 [![build](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml/badge.svg)](https://github.com/CCBR/CHARLIE/actions/workflows/build.yml)
 [![docs](https://github.com/CCBR/CHARLIE/actions/workflows/docs-mkdocs.yml/badge.svg)](https://ccbr.github.io/CHARLIE)
@@ -29,7 +29,7 @@ See the website for detailed information, documentation, and examples:
 
 ### 1. Introduction
 
-**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line
+**C**ircrnas in **H**ost **A**nd vi**R**uses ana**L**ysis p**I**p**E**line <!-- codespell:ignore nd -->
 
 Things to know about CHARLIE:
 

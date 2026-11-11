@@ -28,7 +28,7 @@ crossmap bed mm9ToMm10.over.chain.gz mm9.circBase.bed mm10.circBase.bed
 crossmap bed mm10ToMm39.over.chain.gz mm10.circBase.bed mm39.circBase.bed
 
 # collapse the mm39 bed file by name
-# idential regions may have different names in column4... we need to collapse them into a comma-separated list in column 4
+# identical regions may have different names in column4... we need to collapse them into a comma-separated list in column 4
 
 python collapse_bed_by_names.py mm39.circBase.bed mm39.circBase.collapsed.bed
 

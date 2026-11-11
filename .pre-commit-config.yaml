@@ -19,7 +19,8 @@ repos:
     rev: v2.4.3
     hooks:
       - id: codespell
-        # https://github.com/codespell-project/codespell/issues/1498
+        args: ["-I", ".github/WORDLIST.txt"]
+        exclude: ^resources/(hg38_2_hg19_lookup|mm39_circBase_annotation_lookup)\.txt$
   # Python formatting
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.10.1

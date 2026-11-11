@@ -130,7 +130,7 @@ regions["additive"] = list(
 # load files
 resultsfile = pandas.read_csv(args.resultsfile, sep="\t", header=None)
 
-# file has no column lables ... add them ... the file format is:
+# file has no column labels ... add them ... the file format is:
 # ref: https://github.com/TreesLab/NCLscan
 # | #  | Description                                | ColName
 # |----|--------------------------------------------|------------

@@ -131,7 +131,7 @@ for line in readids:
     site2 = line[4]
     cigars = line[5].split(",")
     cigars.sort()
-    ## as we are searching for the alignment which represents this occurance
+    ## as we are searching for the alignment which represents this occurrence
     ## (which of the multiple HI values should we report in the output BAM)
     ## of this readid in the readids file,
     ## TEST #1

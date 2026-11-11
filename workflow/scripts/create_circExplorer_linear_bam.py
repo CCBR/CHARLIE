@@ -593,7 +593,7 @@ def main():
     # print("Reopening")
     # print(args.inbam)
     # samfile = pysam.AlignmentFile(args.inbam, "rb")
-    # print("Reseting")
+    # print("Resetting")
     samfile.reset()
     print("Writing BAMs")
     print("Re-Reading...alignments!...")
