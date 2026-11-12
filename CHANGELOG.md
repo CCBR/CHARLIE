@@ -1,5 +1,7 @@
 ## CHARLIE development version
 
+## CHARLIE 0.13.1
+
 - Pin `ccbr_tools` to v0.7. (#161, @kelly-sovacool)
 
 ## CHARLIE 0.13.0
