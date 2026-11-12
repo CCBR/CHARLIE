@@ -1,27 +1,25 @@
 cff-version: 1.2.0
 message: Please cite CHARLIE as below.
 authors:
-  - family-names: Koparde
-    given-names: Vishal
-    orcid: https://orcid.org/0000-0001-8978-8495
-    affiliation:
-      Advanced Biomedical Computational Science, Frederick National Laboratory
-      for Cancer Research, Frederick, MD 21702, USA
-  - family-names: Sovacool
-    given-names: Kelly
-    orcid: https://orcid.org/0000-0003-3283-829X
-    affiliation:
-      Advanced Biomedical Computational Science, Frederick National Laboratory
-      for Cancer Research, Frederick, MD 21702, USA
-title: "CHARLIE: Circrnas in Host And viRuses anaLysis pIpEline"
+- family-names: Koparde
+  given-names: Vishal
+  orcid: https://orcid.org/0000-0001-8978-8495
+  affiliation: Advanced Biomedical Computational Science, Frederick National Laboratory
+    for Cancer Research, Frederick, MD 21702, USA
+- family-names: Sovacool
+  given-names: Kelly
+  orcid: https://orcid.org/0000-0003-3283-829X
+  affiliation: Advanced Biomedical Computational Science, Frederick National Laboratory
+    for Cancer Research, Frederick, MD 21702, USA
+title: 'CHARLIE: Circrnas in Host And viRuses anaLysis pIpEline'
 url: https://ccbr.github.io/CHARLIE/
 repository-code: https://github.com/CCBR/CHARLIE
 license: MIT
 type: software
 identifiers:
-  - description: Archived snapshots of all versions
-    type: doi
-    value: 10.5281/zenodo.13770166
+- description: Archived snapshots of all versions
+  type: doi
+  value: 10.5281/zenodo.13770166
 doi: 10.5281/zenodo.13770166
-version: v0.12.0
-date-released: "2025-05-19"
+version: v0.13.1
+date-released: '2026-11-12'
